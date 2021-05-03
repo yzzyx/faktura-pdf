@@ -1,0 +1,18 @@
+{% for inv in invoices %}
+<tr>
+    <td><a href="/invoice/{{inv.ID}}">{{ inv.Number }}</a></td>
+    <td>{{ inv.DateCreated|date }}</td>
+    <td><a href="/invoice/{{inv.ID}}">{{ inv.Name }}</a></td>
+    <td>{{ inv.TotalSum|money }}</td>
+    <td>{{ inv.Customer.Email}}</td>
+    <td>
+        {% if inv.IsPayed %}
+        <span class="badge badge-success">Betald</span>
+        {% elif inv.IsInvoiced %}
+        <span class="badge badge-info">Faktura skickad</span>
+        {% elif inv.IsOffered %}
+        <span class="badge badge-primary">Offert skickad</span>
+        {% endif %}
+    </td>
+</tr>
+{% endfor %}

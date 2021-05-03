@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="/static/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+
+    {% block css %}
+    {% endblock %}
+    <title>{% block title %}Faktura-PDF - {% block pagetitle %}{% endblock %}{% endblock %}</title>
+</head>
+
+<body class="lpc">
+<div class="wrapper wrapper-boxed">
+    <div class="main">
+        <nav class="navbar navbar-expand navbar-dark bg-success">
+            <a class="navbar-brand" href="/">Faktura-PDF</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+        </nav>
+
+        <main class="content">
+            <div class="container-fluid">
+                {% block content %}
+                {% endblock content %}
+            </div>
+        </main>
+    </div>
+</div>
+</body>
+
+<script src="/static/js/jquery.min.js"></script>
+<script src="/static/js/bootstrap.bundle.min.js"></script>
+{% block javascript %}
+{% endblock %}
+</body>
+</html>

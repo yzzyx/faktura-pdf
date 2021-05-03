@@ -1,0 +1,14 @@
+<div class="row">
+    <div class="col-2">
+        <strong>{{name}}:</strong>
+    </div>
+    <div class="col-6">
+        {% if invoice.ID > 0 %}
+            <span class="current-value">{{ val }}</span>
+            <textarea name="{{field|lower}}" disabled class="new-value form-control form-control-sm form-inline" style="display: none;">{{ val }}</textarea>
+            <a href="#" class="edit text-secondary small">editera</a>
+        {% else %}
+            <textarea name="{{field|lower}}" class="new-value form-control form-control-sm form-inline">{{ val }}</textarea>
+        {% endif %}
+    </div>
+</div>

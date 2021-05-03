@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block css %}
+<link rel="stylesheet" href="/static/vendor/font-awesome-4.7.0/css/font-awesome.min.css">
+{% endblock %}
+
+{% block content %}
+<table id="invoice-list" class="table table-striped sortable" data-target="#invoice-list tbody" data-url="/">
+    <thead>
+        <tr>
+            <th data-column="number">Nummer</th>
+            <th data-column="date_created">Skapad</th>
+            <th class="w-50" data-column="name">Faktura</th>
+            <th data-column="total_sum">Summa</th>
+            <th data-column="customer_email">E-post</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% include "invoice-list-contents.html" %}
+    </tbody>
+</table>
+
+<a href="/invoice/-1" class="btn btn-success">Skapa ny faktura</a>
+{% endblock %}
+
+{% block javascript %}
+<script src="/static/js/search.js"></script>
+<script src="/static/js/sort.js"></script>
+{% endblock %}
