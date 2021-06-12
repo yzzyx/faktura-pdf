@@ -27,6 +27,25 @@
                     {{ invoice.DateCreated|date }}
                 </div>
             </div>
+            {% if invoice.DateDue %}
+            <div class="row">
+                <div class="col-2">
+                    <strong>Förfallodatum:</strong>
+                </div>
+                <div class="col-6">
+                    {{ invoice.DateDue|date }}
+                    <small>
+                    {% if daysLeft > 0 %}
+                      ({{daysLeft}} dagar)
+                    {% elif daysLeft == 0 %}
+                      (idag)
+                    {% else %}
+                       <span class="error">({{-daysLeft}} försenad)</span>
+                    {% endif %}
+                    </small>
+                </div>
+            </div>
+            {% endif %}
             {% include "invoice-field-textarea.html" with name="Ytterligare information" field="additional_info" val=invoice.AdditionalInfo %}
 
             <h4>Kund</h4>

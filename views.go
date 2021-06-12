@@ -61,6 +61,11 @@ func ViewInvoice(w http.ResponseWriter, r *http.Request) {
 		"today":          time.Now(),
 		"defaultDueDate": time.Now().AddDate(0, 1, 0),
 	}
+
+	if invoice.DateDue != nil {
+		daysLeft := invoice.DateDue.Sub(time.Now()) / (time.Hour * 24)
+		data["daysLeft"] = daysLeft
+	}
 	Render("invoice.html", w, r, data)
 }
 
