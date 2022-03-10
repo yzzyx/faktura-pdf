@@ -7,7 +7,7 @@
     <td>{{ inv.TotalSum|money }}</td>
     <td>{{ inv.Customer.Email}}</td>
     <td>
-        {% if inv.IsPayed %}
+        {% if inv.IsPaid %}
         <span class="badge badge-success">Betald</span>
         {% elif inv.IsInvoiced %}
         <span class="badge badge-info">Faktura skickad</span>

@@ -15,7 +15,7 @@ type Invoice struct {
 	Number         int
 	Name           string
 	DateCreated    time.Time
-	DatePayed      *time.Time
+	DatePaid       *time.Time
 	DateInvoiced   *time.Time
 	DateDue        *time.Time
 	TotalSum       decimal.Decimal
@@ -23,7 +23,7 @@ type Invoice struct {
 	Rows           []InvoiceRow
 	IsOffered      bool
 	IsInvoiced     bool
-	IsPayed        bool
+	IsPaid         bool
 	IsDeleted      bool
 	AdditionalInfo string
 }
@@ -37,9 +37,9 @@ type InvoiceRow struct {
 }
 
 type InvoiceFilter struct {
-	IncludePayed bool
-	OrderBy      string
-	Direction    string
+	IncludePaid bool
+	OrderBy     string
+	Direction   string
 }
 
 func InvoiceGet(ctx context.Context, id int) (Invoice, error) {
@@ -49,12 +49,12 @@ SELECT invoice.id,
 invoice.number,
 invoice.name,
 date_created,
-date_payed,
+date_paid,
 date_invoiced,
 date_due,
 is_offered,
 is_invoiced,
-is_payed,
+is_paid,
 is_deleted,
 additional_info,
 customer.id AS "customer.id",
@@ -88,7 +88,7 @@ name = $2,
 customer_id = $3,
 is_invoiced = $4,
 is_offered = $5,
-is_payed = $6,
+is_paid = $6,
 additional_info = $7,
 date_invoiced = $8,
 date_due = $9
@@ -97,7 +97,7 @@ WHERE id = $1`, invoice.ID,
 			invoice.Customer.ID,
 			invoice.IsInvoiced,
 			invoice.IsOffered,
-			invoice.IsPayed,
+			invoice.IsPaid,
 			invoice.AdditionalInfo,
 			invoice.DateInvoiced,
 			invoice.DateDue)
@@ -120,12 +120,12 @@ invoice.number,
 invoice.name,
 customer.email AS "customer.email",
 date_created,
-date_payed,
+date_paid,
 date_invoiced,
 date_due,
 is_offered,
 is_invoiced,
-is_payed,
+is_paid,
 is_deleted,
 COALESCE((SELECT SUM(r.cost) FROM invoice_row r WHERE r.invoice_id = invoice.id), 0) AS total_sum
 FROM invoice
@@ -136,7 +136,7 @@ INNER JOIN customer ON customer.id = invoice.customer_id`
 		"name":           "invoice.name",
 		"customer_email": "customer.email",
 		"date_created":   "date_created",
-		"date_payed":     "date_payed",
+		"date_paid":      "date_paid",
 		"date_due":       "date_due",
 		"total_sum":      "total_sum",
 	}

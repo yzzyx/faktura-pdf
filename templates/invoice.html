@@ -7,7 +7,7 @@
 
 {% block content %}
 <h1>Faktura {{invoice.Number}}</h1>
-{% if invoice.IsPayed %}
+{% if invoice.IsPaid %}
 <span class="badge badge-success">Betald</span>
 {% elif invoice.IsInvoiced %}
 <span class="badge badge-info">Faktura skickad</span>
@@ -61,7 +61,7 @@
             {% if not invoice.IsInvoiced %}
             <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#invoice-modal">Skapa faktura</button>
             {% endif %}
-            {% if not invoice.IsPayed %}
+            {% if not invoice.IsPaid %}
             <div class="dropdown">
                 <button class="btn btn-sm btn-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false">
                     Uppdatera
@@ -73,14 +73,14 @@
                     <div class="dropdown-divider"></div>
                     {% endif %}
                     {% if not invoice.IsInvoiced %}
-                    <li><a class="dropdown-item" href="/invoice/{{invoice.ID}}/invoice">Skapa faktura</a></li>
+                    <li><a class="dropdown-item" href="/invoice/{{invoice.ID}}/invoice">Ladda hem faktura</a></li>
                     <div class="dropdown-divider"></div>
                     {% endif %}
-                    {% if not invoice.IsPayed %}
-                    <li><a class="dropdown-item" href="/invoice/{{invoice.ID}}/payed">Markera som betald</a></li>
-                    {% endif %}
+                    <li><a class="dropdown-item" href="/invoice/{{invoice.ID}}/flag?flag=paid">Markera som betald</a></li>
                 </ul>
             </div>
+            {% else %}
+            <a class="btn btn-danger" href="/invoice/{{invoice.ID}}/flag?flag=paid&revoke=true">Markera som obetald</a>
             {% endif %}
         </div>
     </div>

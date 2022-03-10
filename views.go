@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"path"
 	"strconv"
 	"strings"
 	"time"
@@ -184,9 +185,9 @@ func SetInvoiceFlag(w http.ResponseWriter, r *http.Request) {
 		invoice.DateInvoiced = &now
 	case "offered":
 		invoice.IsOffered = val
-	case "payed":
-		invoice.IsPayed = val
-		invoice.DatePayed = &now
+	case "paid":
+		invoice.IsPaid = val
+		invoice.DatePaid = &now
 	default:
 		RenderError(w, r, errors.New("invalid flag"))
 		return
@@ -198,7 +199,7 @@ func SetInvoiceFlag(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Location", "/")
+	w.Header().Set("Location", path.Join("/invoice", strconv.Itoa(id)))
 	w.WriteHeader(http.StatusFound)
 }
 
