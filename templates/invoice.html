@@ -51,6 +51,7 @@
             <h4>Kund</h4>
             {% include "invoice-field.html" with name="Namn" field="customer.name" val=invoice.Customer.Name %}
             {% include "invoice-field.html" with name="E-post" field="customer.email" val=invoice.Customer.Email %}
+            {% include "invoice-field.html" with name="Personnummer" field="customer.pnr" val=invoice.Customer.PNR %}
             {% include "invoice-field.html" with name="Adress 1" field="customer.address1" val=invoice.Customer.Address1 %}
             {% include "invoice-field.html" with name="Adress 2" field="customer.address2" val=invoice.Customer.Address2 %}
             {% include "invoice-field.html" with name="Postkod" field="customer.postcode" val=invoice.Customer.Postcode %}

@@ -64,6 +64,7 @@ customer.address1 AS "customer.address1",
 customer.address2 AS "customer.address2",
 customer.postcode AS "customer.postcode",
 customer.city AS "customer.city",
+customer.pnr AS "customer.pnr",
 COALESCE((SELECT SUM(r.cost) FROM invoice_row r WHERE r.invoice_id = invoice.id), 0) AS total_sum
 FROM invoice
 INNER JOIN customer ON customer.id = invoice.customer_id

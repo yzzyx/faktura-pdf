@@ -5,7 +5,8 @@ CREATE TABLE IF NOT EXISTS customer (
    address1 text NOT NULL DEFAULT '',
    address2 text NOT NULL DEFAULT '',
    postcode text NOT NULL DEFAULT '',
-   city text NOT NULL DEFAULT ''
+   city text NOT NULL DEFAULT '',
+   pnr text NOT NULL DEFAULT ''
 );
 
 CREATE TABLE IF NOT EXISTS invoice (

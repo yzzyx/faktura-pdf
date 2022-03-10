@@ -232,6 +232,7 @@ func SaveInvoice(w http.ResponseWriter, r *http.Request) {
 		"customer.address2": &invoice.Customer.Address2,
 		"customer.postcode": &invoice.Customer.Postcode,
 		"customer.city":     &invoice.Customer.City,
+		"customer.pnr":      &invoice.Customer.PNR,
 		"additional_info":   &invoice.AdditionalInfo,
 	}
 	for formName, field := range fields {
