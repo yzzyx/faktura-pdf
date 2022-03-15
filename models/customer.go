@@ -39,7 +39,7 @@ WHERE id = $1`, customer.ID,
 	}
 
 	query := `INSERT INTO customer 
-(name, email, address1, address2, postcode, city)
+(name, email, address1, address2, postcode, city, pnr)
 VALUES
 ($1, $2, $3, $4, $5, $6, $7)
 RETURNING id`
