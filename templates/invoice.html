@@ -7,22 +7,7 @@
 
 {% block content %}
 <h1>Faktura {{invoice.Number}}</h1>
-{% if invoice.IsPaid %}
-<span class="badge badge-success">Betalad</span>
-{% if invoice.RutApplicable %}
-    {% if invoice.IsRutPaid %}
-        <span class="badge badge-success">RUT betalad</span>
-    {% elif invoice.IsRutSent %}
-        <span class="badge badge-info">RUT inskickad</span>
-    {% else %}
-        <span class="badge badge-warning">RUT ej skickad</span>
-    {% endif %}
-{% endif %}
-{% elif invoice.IsInvoiced %}
-<span class="badge badge-info">Faktura skickad</span>
-{% elif invoice.IsOffered %}
-<span class="badge badge-primary">Offert skickad</span>
-{% endif %}
+{% include "invoice-flags.html" %}
 
 <form method="POST">
     <div class="row mt-2">
@@ -84,7 +69,7 @@
 
             {% if invoice.RutApplicable and invoice.IsPaid %}
             <span class="dropdown">
-                <button class="btn btn-sm btn-warning dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false">
+                <button class="btn btn-sm btn-primary dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false">
                     ROT/RUT
                 </button>
                 <ul class="dropdown-menu dropdown-menu-right">
