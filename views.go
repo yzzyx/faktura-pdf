@@ -104,50 +104,10 @@ func ViewInvoiceInvoice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	updated := false
-	if r.Method == "POST" {
-		invoiceDateStr := r.FormValue("invoiceDate")
-		dueDateStr := r.FormValue("dueDate")
-		preview, _ := strconv.ParseBool(r.FormValue("preview"))
-
-		if invoiceDateStr != "" {
-			v, err := time.Parse("2006-01-02", invoiceDateStr)
-			if err != nil {
-				RenderError(w, r, err)
-				return
-			}
-			invoice.DateInvoiced = &v
-			updated = true
-		}
-
-		if dueDateStr != "" {
-			v, err := time.Parse("2006-01-02", dueDateStr)
-			if err != nil {
-				RenderError(w, r, err)
-				return
-			}
-			invoice.DateDue = &v
-			updated = true
-		}
-
-		if preview {
-			updated = false
-		}
-	}
-
 	data, err := generatePDF(ctx, invoice, "invoice.tex")
 	if err != nil {
 		RenderError(w, r, err)
 		return
-	}
-
-	if updated {
-		invoice.IsInvoiced = true
-		_, err = models.InvoiceSave(ctx, invoice)
-		if err != nil {
-			RenderError(w, r, err)
-			return
-		}
 	}
 
 	now := time.Now()
@@ -228,7 +188,7 @@ func SaveInvoice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fields := map[string]*string{
+	fields := map[string]interface{}{
 		"customer.name":     &invoice.Customer.Name,
 		"customer.email":    &invoice.Customer.Email,
 		"customer.address1": &invoice.Customer.Address1,
@@ -237,13 +197,31 @@ func SaveInvoice(w http.ResponseWriter, r *http.Request) {
 		"customer.city":     &invoice.Customer.City,
 		"customer.pnr":      &invoice.Customer.PNR,
 		"additional_info":   &invoice.AdditionalInfo,
+		"date_due":          &invoice.DateDue,
+		"date_invoiced":     &invoice.DateInvoiced,
 	}
 	for formName, field := range fields {
 		_, ok := r.Form[formName]
 		if !ok {
 			continue
 		}
-		*field = r.FormValue(formName)
+
+		switch f := field.(type) {
+		case *string:
+			*f = r.FormValue(formName)
+		case **time.Time:
+			v := r.FormValue(formName)
+			tv, err := time.Parse("2006-01-02", v)
+			if err != nil {
+				RenderError(w, r, err)
+				return
+			}
+			*f = &tv
+		default:
+			err = fmt.Errorf("unknown field type %T, %v for field %s\n", f, f, formName)
+			RenderError(w, r, err)
+		}
+
 		if !strings.HasPrefix(formName, "customer") {
 			updated = true
 		}
