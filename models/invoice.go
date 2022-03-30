@@ -25,6 +25,8 @@ type Invoice struct {
 	IsInvoiced     bool
 	IsPaid         bool
 	IsDeleted      bool
+	IsRutSent      bool
+	IsRutPaid      bool
 	RutApplicable  bool // Is ROT/RUT applicable for this invoice?
 	AdditionalInfo string
 }
@@ -58,6 +60,8 @@ is_offered,
 is_invoiced,
 is_paid,
 is_deleted,
+is_rut_sent,
+is_rut_paid,
 additional_info,
 customer.id AS "customer.id",
 customer.name AS "customer.name",
@@ -94,7 +98,9 @@ is_paid = $6,
 additional_info = $7,
 date_invoiced = $8,
 date_due = $9,
-rut_applicable = $10
+rut_applicable = $10,
+is_rut_sent = $11,
+is_rut_paid = $12
 WHERE id = $1`, invoice.ID,
 			invoice.Name,
 			invoice.Customer.ID,
@@ -104,7 +110,9 @@ WHERE id = $1`, invoice.ID,
 			invoice.AdditionalInfo,
 			invoice.DateInvoiced,
 			invoice.DateDue,
-			invoice.RutApplicable)
+			invoice.RutApplicable,
+			invoice.IsRutSent,
+			invoice.IsRutPaid)
 		return invoice.ID, err
 	}
 
@@ -132,6 +140,8 @@ is_offered,
 is_invoiced,
 is_paid,
 is_deleted,
+is_rut_sent,
+is_rut_paid,
 COALESCE((SELECT SUM(r.cost) FROM invoice_row r WHERE r.invoice_id = invoice.id), 0) AS total_sum
 FROM invoice
 INNER JOIN customer ON customer.id = invoice.customer_id`

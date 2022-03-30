@@ -23,6 +23,8 @@ CREATE TABLE IF NOT EXISTS invoice (
    is_invoiced boolean NOT NULL default false,
    is_paid boolean NOT NULL default false,
    is_deleted boolean NOT NULL default false,
+   is_rut_sent boolean NOT NULL default false,
+   is_rut_paid boolean NOT NULL default false,
    additional_info text NOT NULL default '',
    FOREIGN KEY(customer_id)
        REFERENCES customer(id)
