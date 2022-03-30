@@ -209,6 +209,7 @@ func SaveInvoice(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
+	updated := false
 
 	err = r.ParseForm()
 	if err != nil {
@@ -220,6 +221,7 @@ func SaveInvoice(w http.ResponseWriter, r *http.Request) {
 		invoice, err = models.InvoiceGet(ctx, id)
 	} else {
 		invoice.Number, err = models.InvoiceGetNextNumber(ctx)
+		updated = true
 	}
 	if err != nil {
 		RenderError(w, r, err)
@@ -242,6 +244,14 @@ func SaveInvoice(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		*field = r.FormValue(formName)
+		if !strings.HasPrefix(formName, "customer") {
+			updated = true
+		}
+	}
+
+	if v, _ := strconv.ParseBool(r.FormValue("rut_applicable_set")); v {
+		invoice.RutApplicable, _ = strconv.ParseBool(r.FormValue("rut_applicable"))
+		updated = true
 	}
 
 	invoice.Customer.ID, err = models.CustomerSave(ctx, invoice.Customer)
@@ -253,10 +263,10 @@ func SaveInvoice(w http.ResponseWriter, r *http.Request) {
 	name := r.FormValue("name")
 	if name != "" {
 		invoice.Name = name
+		updated = true
 	}
 
-	// FIXME - cleanup "invoice-changed"-check
-	if name != "" || r.FormValue("additional_info") != "" {
+	if updated {
 		invoice.ID, err = models.InvoiceSave(ctx, invoice)
 		if err != nil {
 			RenderError(w, r, err)
