@@ -27,25 +27,11 @@
                     {{ invoice.DateCreated|date }}
                 </div>
             </div>
-            {% if invoice.DateDue %}
-            <div class="row">
-                <div class="col-2">
-                    <strong>Förfallodatum:</strong>
-                </div>
-                <div class="col-6">
-                    {{ invoice.DateDue|date }}
-                    <small>
-                    {% if daysLeft > 0 %}
-                      ({{daysLeft}} dagar)
-                    {% elif daysLeft == 0 %}
-                      (idag)
-                    {% else %}
-                       <span class="error">({{-daysLeft}} försenad)</span>
-                    {% endif %}
-                    </small>
-                </div>
-            </div>
+            {% if invoice.ID > 0 %}
+            {% include "invoice-field-date.html" with name="Fakturadatum" field="date_invoiced" val=invoice.DateInvoiced default=today %}
+            {% include "invoice-field-date.html" with name="Förfallodatum" field="date_due" val=invoice.DateDue default=defaultDueDate includeDaysLeft=true %}
             {% endif %}
+
             {% include "invoice-field-textarea.html" with name="Ytterligare information" field="additional_info" val=invoice.AdditionalInfo %}
             {% include "invoice-field-bool.html" with name="ROT/RUT avdragsgill" field="rut_applicable" val=invoice.RutApplicable default=true %}
 
@@ -59,30 +45,33 @@
             {% include "invoice-field.html" with name="Stad" field="customer.city" val=invoice.Customer.City %}
         </div>
         <div class="col-4">
-            {% if not invoice.IsInvoiced %}
-            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#invoice-modal">Skapa faktura</button>
-            {% endif %}
-            {% if not invoice.IsPaid %}
-            <div class="dropdown">
+            {% if not invoice.IsOffered and not invoice.IsInvoiced and not invoice.IsPaid %}
+            <span class="dropdown">
                 <button class="btn btn-sm btn-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false">
-                    Uppdatera
+                    Offert
                 </button>
                 <ul class="dropdown-menu dropdown-menu-right">
-                    {% if not invoice.IsOffered %}
-                    <li><a class="dropdown-item" href="/invoice/{{invoice.ID}}/offer">Skapa offert</a></li>
+                    <li><a class="dropdown-item" href="/invoice/{{invoice.ID}}/offer">Ladda hem offert</a></li>
                     <li><a class="dropdown-item" href="/invoice/{{invoice.ID}}/flag?flag=offered">Markera offert som skickad</a></li>
-                    <div class="dropdown-divider"></div>
-                    {% endif %}
-                    {% if not invoice.IsInvoiced %}
-                    <li><a class="dropdown-item" href="/invoice/{{invoice.ID}}/invoice">Ladda hem faktura</a></li>
-                    <div class="dropdown-divider"></div>
-                    {% endif %}
-                    <li><a class="dropdown-item" href="/invoice/{{invoice.ID}}/flag?flag=paid">Markera som betald</a></li>
                 </ul>
-            </div>
-            {% else %}
-            <a class="btn btn-danger" href="/invoice/{{invoice.ID}}/flag?flag=paid&revoke=true">Markera som obetald</a>
+            </span>
             {% endif %}
+
+            <span class="dropdown">
+                <button class="btn btn-sm btn-primary dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false">
+                    Faktura
+                </button>
+                <ul class="dropdown-menu dropdown-menu-right">
+                    <li><a class="dropdown-item" href="/invoice/{{invoice.ID}}/invoice">Ladda hem faktura</a></li>
+                    {% if not invoice.IsInvoiced %}
+                        <li><a class="dropdown-item" href="/invoice/{{invoice.ID}}/flag?flag=invoiced">Markera faktura som skickad</a></li>
+                    {% elif not invoice.IsPaid%}
+                        <li><a class="dropdown-item" href="/invoice/{{invoice.ID}}/flag?flag=paid">Markera faktura som betalad</a></li>
+                    {% else %}
+                        <li><a class="dropdown-item" href="/invoice/{{invoice.ID}}/flag?flag=paid&revoke=true">Markera som obetald</a></li>
+                    {% endif %}
+                </ul>
+            </span>
         </div>
     </div>
 
@@ -119,37 +108,6 @@
 <button id="add_row" class="btn btn-primary">Lägg till rad</button>
 <button type="submit" class="btn btn-success">Spara</button>
 </form>
-
-
-<div id="invoice-modal" class="modal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form method="POST" action="/invoice/{{invoice.ID}}/invoice">
-                <div class="modal-header">
-                    <h5 class="modal-title">Skapa faktura</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <label>
-                        Fakturadatum:
-                        <input type="text" name="invoiceDate" class="datepicker form-control form-inline" id="invoicedate" value="{% if invoice.DateInvoiced %}{{invoice.DateInvoiced|date:'2006-01-02'}}{% else %}{{today|date:'2006-01-02'}}{% endif %}">
-                    </label>
-                    <label>
-                        Förfallodatum:
-                        <input type="text" name="dueDate" class="datepicker form-control form-inline" id="duedate" value="{% if invoice.DateDue %}{{invoice.DateDue|date:'2006-01-02'}}{% else %}{{defaultDueDate|date:'2006-01-02'}}{% endif %}">
-                    </label>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="submit" name="preview" value="1" class="btn btn-info">Förhandsgranska</button>
-                    <button type="submit" class="btn btn-primary">Skapa faktura</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
 {% endblock %}
 
 {% block javascript %}

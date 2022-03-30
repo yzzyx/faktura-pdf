@@ -81,7 +81,6 @@ func main() {
 	r.Get("/invoice/{id}", ViewInvoice)
 	r.Get("/invoice/{id}/offer", ViewInvoiceOffer)
 	r.Get("/invoice/{id}/invoice", ViewInvoiceInvoice)
-	r.Post("/invoice/{id}/invoice", ViewInvoiceInvoice)
 	r.Get("/invoice/{id}/flag", SetInvoiceFlag)
 	r.Post("/invoice/{id}", SaveInvoice)
 
