@@ -25,6 +25,7 @@ type Invoice struct {
 	IsInvoiced     bool
 	IsPaid         bool
 	IsDeleted      bool
+	RutApplicable  bool // Is ROT/RUT applicable for this invoice?
 	AdditionalInfo string
 }
 
@@ -52,6 +53,7 @@ date_created,
 date_paid,
 date_invoiced,
 date_due,
+rut_applicable,
 is_offered,
 is_invoiced,
 is_paid,
@@ -91,7 +93,8 @@ is_offered = $5,
 is_paid = $6,
 additional_info = $7,
 date_invoiced = $8,
-date_due = $9
+date_due = $9,
+rut_applicable = $10
 WHERE id = $1`, invoice.ID,
 			invoice.Name,
 			invoice.Customer.ID,
@@ -100,12 +103,13 @@ WHERE id = $1`, invoice.ID,
 			invoice.IsPaid,
 			invoice.AdditionalInfo,
 			invoice.DateInvoiced,
-			invoice.DateDue)
+			invoice.DateDue,
+			invoice.RutApplicable)
 		return invoice.ID, err
 	}
 
-	query := `INSERT INTO invoice (number, name, customer_id) VALUES($1, $2, $3) RETURNING id`
-	err := dbpool.QueryRow(ctx, query, invoice.Number, invoice.Name, invoice.Customer.ID).Scan(&invoice.ID)
+	query := `INSERT INTO invoice (number, name, customer_id, rut_applicable) VALUES($1, $2, $3, $4) RETURNING id`
+	err := dbpool.QueryRow(ctx, query, invoice.Number, invoice.Name, invoice.Customer.ID, invoice.RutApplicable).Scan(&invoice.ID)
 	if err != nil {
 		return 0, err
 	}
@@ -123,6 +127,7 @@ date_created,
 date_paid,
 date_invoiced,
 date_due,
+rut_applicable,
 is_offered,
 is_invoiced,
 is_paid,

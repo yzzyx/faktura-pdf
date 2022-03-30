@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS invoice (
    date_paid timestamp with time zone,
    name text NOT NULL,
    customer_id int NOT NULL,
+   rut_applicable boolean NOT NULL default false,
    is_offered boolean NOT NULL default false,
    is_invoiced boolean NOT NULL default false,
    is_paid boolean NOT NULL default false,
