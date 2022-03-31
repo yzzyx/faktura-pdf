@@ -31,12 +31,55 @@ type Invoice struct {
 	AdditionalInfo string
 }
 
+type UnitType int
+
+var unitTypeString = map[int]string{
+	0: "-",
+	1: "st",
+	2: "timmar",
+	3: "dagar",
+}
+
+func (u UnitType) Validate() bool {
+	_, ok := unitTypeString[int(u)]
+	return ok
+}
+
+func (u UnitType) String() string {
+	v := unitTypeString[int(u)]
+	return v
+}
+
+type VATType int
+
+var vatTypeString = map[int]string{
+	0: "25 %",
+	1: "12 %",
+	2: "6 %",
+	3: "0 %",
+}
+
+func (u VATType) Validate() bool {
+	_, ok := vatTypeString[int(u)]
+	return ok
+}
+
+func (u VATType) String() string {
+	v := vatTypeString[int(u)]
+	return v
+}
+
 type InvoiceRow struct {
 	ID          int
-	RowOrder    int
-	Description string
-	Cost        decimal.Decimal
-	IsRotRut    bool
+	RowOrder    int             `json:"row_order"`
+	Description string          `json:"description"`
+	Cost        decimal.Decimal `json:"cost"`
+	Count       decimal.Decimal `json:"count"`
+	Unit        UnitType        `json:"unit"`
+	VAT         VATType         `json:"vat"`
+	IsRotRut    bool            `json:"is_rot_rut"`
+
+	Total decimal.Decimal
 }
 
 type InvoiceFilter struct {
@@ -71,7 +114,7 @@ customer.address2 AS "customer.address2",
 customer.postcode AS "customer.postcode",
 customer.city AS "customer.city",
 customer.pnr AS "customer.pnr",
-COALESCE((SELECT SUM(r.cost) FROM invoice_row r WHERE r.invoice_id = invoice.id), 0) AS total_sum
+COALESCE((SELECT SUM(r.cost*r.count) FROM invoice_row r WHERE r.invoice_id = invoice.id), 0) AS total_sum
 FROM invoice
 INNER JOIN customer ON customer.id = invoice.customer_id
 WHERE invoice.id = $1`, id)
@@ -79,7 +122,7 @@ WHERE invoice.id = $1`, id)
 		return inv, err
 	}
 
-	err = pgxscan.Select(ctx, dbpool, &inv.Rows, "SELECT id, row_order, description, cost, is_rot_rut FROM invoice_row WHERE invoice_id = $1 ORDER BY row_order", inv.ID)
+	err = pgxscan.Select(ctx, dbpool, &inv.Rows, "SELECT id, row_order, description, cost, count, unit, vat, is_rot_rut, cost*count AS total FROM invoice_row WHERE invoice_id = $1 ORDER BY row_order", inv.ID)
 	if err != nil {
 		return inv, err
 	}
@@ -183,8 +226,9 @@ INNER JOIN customer ON customer.id = invoice.customer_id`
 }
 
 func InvoiceRowAdd(ctx context.Context, invoiceID int, row InvoiceRow) error {
-	_, err := dbpool.Exec(ctx, `INSERT INTO invoice_row (invoice_id, row_order, description, cost, is_rot_rut) VALUES ($1, $2, $3, $4, $5)`,
-		invoiceID, row.RowOrder, row.Description, row.Cost, row.IsRotRut)
+	_, err := dbpool.Exec(ctx, `INSERT INTO invoice_row (invoice_id, row_order, description, cost, count, unit, vat, is_rot_rut)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+		invoiceID, row.RowOrder, row.Description, row.Cost, row.Count, row.Unit, row.VAT, row.IsRotRut)
 	if err != nil {
 		return err
 	}

@@ -107,6 +107,10 @@
         <tr data-row="{{r.ID}}">
             <td>{{ r.Description }}</td>
             <td class="text-right">{{ r.Cost|money }}</td>
+            <td class="text-right">{{ r.Count }}</td>
+            <td class="text-right">{{ r.Unit.String }}</td>
+            <td class="text-right">{{ r.Total|money }}</td>
+            <td class="text-right">{{ r.VAT.String }}</td>
             <td class="text-center">{% if r.IsRotRut %}x{% endif %}</td>
             <td class="text-center">
                 <button class="delete-row btn btn-sm btn-danger">x</button>
