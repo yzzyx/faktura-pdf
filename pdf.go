@@ -67,7 +67,7 @@ func generatePDF(ctx context.Context, invoice models.Invoice, templateFile strin
 		"duedate":          dueDate.Format("2006-01-02"),
 		"invoicenumber":    fmt.Sprintf("%d", invoice.Number),
 		"total":            invoice.TotalSum.StringFixedBank(2),
-		"vat":              invoice.TotalSum.Mul(decimal.NewFromFloat(0.25)).StringFixedBank(2),
+		"totalvat":         invoice.TotalSum.Mul(decimal.NewFromFloat(0.25)).StringFixedBank(2),
 		"additionalinfo":   invoice.AdditionalInfo,
 	}
 
@@ -94,6 +94,10 @@ func generatePDF(ctx context.Context, invoice models.Invoice, templateFile strin
 		for _, row := range invoice.Rows {
 			s := strings.ReplaceAll(rowStr, "<description>", latexEscape(row.Description))
 			s = strings.ReplaceAll(s, "<cost>", row.Cost.StringFixedBank(2))
+			s = strings.ReplaceAll(s, "<count>", row.Count.Truncate(2).String())
+			s = strings.ReplaceAll(s, "<unit>", latexEscape(row.Unit.String()))
+			s = strings.ReplaceAll(s, "<vat>", latexEscape(row.VAT.String()))
+			s = strings.ReplaceAll(s, "<rowtotal>", row.Total.StringFixedBank(2))
 
 			rotRut := ""
 			if row.IsRotRut {

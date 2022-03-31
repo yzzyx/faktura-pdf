@@ -78,18 +78,22 @@ oddbike}}
 \hline
 \end{tabular*}
 
-\begin{tabularx}{\textwidth}{Xrc}
+\begin{tabularx}{\textwidth}{Xrrrrrc}
 \rowcolor{Gray}
 \changefont \textbf{Beskrivning} &
-\multicolumn{1}{l}{\changefont \textbf{Belopp (SEK)}} &
+\multicolumn{1}{l}{\changefont \textbf{À pris (inkl. moms)}} &
+\multicolumn{1}{c}{\changefont \textbf{Antal}} &
+\multicolumn{1}{c}{\changefont \textbf{Enhet}} &
+\multicolumn{1}{l}{\changefont \textbf{Totalt}} &
+\multicolumn{1}{c}{\changefont \textbf{Moms}} &
 \changefont \textbf{RUT}\\
 \hline
-    <row><description> & <cost> & <isRotRut>\\
+    <row><description> & <cost> & <count> & <unit> & <rowtotal> & <vat> & <isRotRut>\\
     </row>
-    & & \\
+    & & & & & & \\
 \hline
-    \multicolumn{1}{r}{\textbf{Att betala}} & <total> \\
-    \multicolumn{1}{r}{\textbf{Varav moms (25 \%)}} & <vat> \\
+    \multicolumn{5}{r}{\textbf{Att betala}} & \multicolumn{2}{r}{<total>} \\
+    \multicolumn{5}{r}{\textbf{Varav moms (25 \%)}} & \multicolumn{2}{r}{<totalvat>} \\
 \hline
 \end{tabularx}
 
