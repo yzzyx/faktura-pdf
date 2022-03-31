@@ -1,0 +1,65 @@
+<div class="modal fade" id="invoice-row-modal" tabindex="-1" aria-labelledby="invoice-row-modal-title" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="invoice-row-modal-title">Lägg till rad</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="invoice-row-form">
+                    <div class="row">
+                        <div class="form-group col-12">
+                            <label class="form-label">Beskrivning</label>
+                            <input type="text" required class="form-control" id="invoice-row-description" placeholder="Ange beskrivning på varan eller tjänsten">
+                            <div class="invalid-feedback">
+                                En beskrivning måste anges
+                            </div>
+                        </div>
+                        <div class="form-group col-6">
+                            <label class="form-label">Pris per enhet (inkl moms)</label>
+                            <input type="text" class="form-control invoice-row-price" id="invoice-row-price-incl" data-vat-incl="true" data-price-target="#invoice-row-price-exkl" placeholder="" value="0">
+                        </div>
+                        <div class="form-group col-6">
+                            <label class="form-label">Pris per enhet (exkl moms)</label>
+                            <input type="text" class="form-control invoice-row-price" id="invoice-row-price-exkl" data-price-target="#invoice-row-price-incl" placeholder="" value="0">
+                        </div>
+                        <div class="form-group col-6">
+                            <label class="form-label">Antal</label>
+                            <input type="number" class="form-control" id="invoice-row-count" placeholder="" value="1" min="1">
+                        </div>
+                        <div class="form-group col-6">
+                            <label class="form-label">Enhet</label>
+                            <select class="form-control" id="invoice-row-unit">
+                                <option value="0" selected>-</option>
+                                <option value="1">st</option>
+                                <option value="2">timmar</option>
+                                <option value="3">dagar</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-6">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="invoice-row-rut-rot" value="1" checked>
+                                <label class="form-check-label" for="invoice-row-rut-rot">RUT/ROT-avdrag</label>
+                            </div>
+                        </div>
+                        <div class="form-group col-6">
+                            <label class="form-label">Moms-sats</label>
+                            <select class="form-control" id="invoice-row-vat" data-price-target=".invoice-row-price">
+                                <option value="0.25" selected>25 %</option>
+                                <option value="0.12">12 %</option>
+                                <option value="0.8">6 %</option>
+                                <option value="0">0 %</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="add-row">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
