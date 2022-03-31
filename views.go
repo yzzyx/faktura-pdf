@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -11,7 +12,6 @@ import (
 
 	"github.com/flosch/pongo2"
 	"github.com/go-chi/chi/v5"
-	"github.com/shopspring/decimal"
 	"github.com/yzzyx/faktura-pdf/models"
 )
 
@@ -257,21 +257,13 @@ func SaveInvoice(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check for new rows
-	for _, rowNumber := range r.Form["row[]"] {
-		row := models.InvoiceRow{
-			Description: r.FormValue(fmt.Sprintf("description[%s]", rowNumber)),
-		}
-		if row.Description == "" {
-			fmt.Printf("skipping %s\n", rowNumber)
-			continue
-		}
-
-		row.Cost, err = decimal.NewFromString(r.FormValue(fmt.Sprintf("cost[%s]", rowNumber)))
+	for _, rowData := range r.Form["row[]"] {
+		var row models.InvoiceRow
+		err := json.Unmarshal([]byte(rowData), &row)
 		if err != nil {
 			RenderError(w, r, err)
 			return
 		}
-		row.IsRotRut, _ = strconv.ParseBool(r.FormValue(fmt.Sprintf("is_rot_rut[%s]", rowNumber)))
 
 		err = models.InvoiceRowAdd(ctx, invoice.ID, row)
 		if err != nil {
