@@ -38,6 +38,8 @@
             {% include "invoice-field.html" with name="Postkod" field="customer.postcode" val=invoice.Customer.Postcode %}
             {% include "invoice-field.html" with name="Stad" field="customer.city" val=invoice.Customer.City %}
         </div>
+
+        {% if invoice.ID > 0 %}
         <div class="col-4">
             {% if not invoice.IsOffered and not invoice.IsInvoiced and not invoice.IsPaid %}
             <span class="dropdown">
@@ -83,6 +85,7 @@
             </span>
             {% endif %}
         </div>
+        {% endif %}
     </div>
 
     <h4>Fakturarader</h4>
