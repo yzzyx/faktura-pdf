@@ -93,10 +93,12 @@
     <thead>
         <tr>
             <th>Beskrivning</th>
-            <th class="text-right">Kostnad (inkl moms)</th>
-            {% if invoice.RutApplicable %}
+            <th class="text-right">Kostnad per enhet</th>
+            <th class="text-right">Antal</th>
+            <th class="text-right">Enhet</th>
+            <th class="text-right">Total kostnad</th>
+            <th class="text-right">Varav moms</th>
             <th class="text-center">ROT/RUT</th>
-            {% endif %}
             <th></th>
         </tr>
     </thead>
@@ -105,11 +107,7 @@
         <tr data-row="{{r.ID}}">
             <td>{{ r.Description }}</td>
             <td class="text-right">{{ r.Cost|money }}</td>
-
-            {% if invoice.RutApplicable %}
             <td class="text-center">{% if r.IsRotRut %}x{% endif %}</td>
-            {% endif %}
-
             <td class="text-center">
                 <button class="delete-row btn btn-sm btn-danger">x</button>
             </td>
@@ -118,9 +116,11 @@
     </tbody>
 </table>
 
-<button id="add_row" class="btn btn-primary">Lägg till rad</button>
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#invoice-row-modal">Lägg till rad</button>
 <button type="submit" class="btn btn-success">Spara</button>
+
 </form>
+{% include "invoice-row-modal.html" %}
 {% endblock %}
 
 {% block javascript %}
@@ -152,24 +152,73 @@
             return false;
         });
 
+        let update_price = function () {
+            let $t = $(this);
+            if (this.id === "invoice-row-vat") {
+                $t = $("#invoice-row-price-incl");
+            }
+
+            let price = parseFloat($t.val());
+            let vat = parseFloat($("#invoice-row-vat").val());
+
+            if (price === undefined) return;
+
+            if (!$t.data("vat-incl")) {
+                price = price*(1+vat);
+            } else {
+                price = price/(1+vat);
+            }
+
+            if (parseInt(price) !== price) price = price.toFixed(2);
+            $($t.data("price-target")).val(price);
+        };
+
+        $("#invoice-row-price-incl").on({keyup: update_price, change: update_price});
+        $("#invoice-row-price-exkl").on({keyup: update_price, change: update_price});
+        $("#invoice-row-vat").on({change: update_price});
+
         let rowID = 0;
-        $("#add_row").on('click', function (ev) {
-            ev.preventDefault();
+        $("#add-row").on('click', function (ev) {
+            let form = $("#invoice-row-form")[0];
+            if (form.checkValidity() === false) {
+                ev.preventDefault();
+                ev.stopPropagation();
+                form.classList.add("was-validated");
+                return false;
+            }
+
+            let entry = {
+                description: $("#invoice-row-description").val(),
+                cost: parseFloat($("#invoice-row-price-incl").val()),
+                count: parseFloat($("#invoice-row-count").val()),
+                unit: parseInt($("#invoice-row-unit").val()),
+                vat: parseInt($("#invoice-row-vat").val()),
+                is_rot_rut: $("#invoice-row-rut-rot").is(":checked"),
+            };
+            entry.total = entry.cost * entry.count;
+
+
+            let units = ["-", "st", "timmar", "dagar"];
+            let vat = ["25 %", "12 %", "6 %", "0 %"];
             let el = newEl("tr", {
                 children: [
-                    newEl("td", {children: [
-                            newEl("input", {name: "row[]", type: "hidden", value: rowID}),
-                            newEl("input", {name: "description["+rowID+"]", type: "text", classList: "form-control form-control-sm"})]}),
-                    newEl("td", {classList: "text-right", children: [
-                            newEl("input", {name: "cost["+rowID+"]", type: "text", classList: "form-control form-control-sm"})]}),
-                    {% if invoice.RutApplicable %}
-                    newEl("td", {classList: "text-center", children: [
-                            newEl("input", {name: "is_rot_rut["+rowID+"]", value: "1", type: "checkbox", classList: "form-check-input"})]})
-                    {% endif %}
+                    newEl("td", {
+                        children: [
+                            newEl("input", {name: "row[]", type: "hidden", value: JSON.stringify(entry)}),
+                            newEl("span", {textContent: entry.description}),
+                        ]
+                    }),
+                    newEl("td", {classList: "text-right", children: [ newEl("span", {textContent: entry.cost}), ]}),
+                    newEl("td", {classList: "text-right", children: [ newEl("span", {textContent: entry.count}), ]}),
+                    newEl("td", {classList: "text-right", children: [ newEl("span", {textContent: units[entry.unit]}), ]}),
+                    newEl("td", {classList: "text-right", children: [ newEl("span", {textContent: entry.total}), ]}),
+                    newEl("td", {classList: "text-right", children: [ newEl("span", {textContent: vat[entry.vat]}), ]}),
+                    newEl("td", {classList: "text-center", children: [ newEl("span", {textContent: entry.is_rot_rut ? "x" : ""}), ]}),
                 ]
-            })
+            });
             rowID++;
             $("#invoice_rows tbody").append(el);
+            $("#invoice-row-modal").modal('hide');
             return false;
         });
     });
