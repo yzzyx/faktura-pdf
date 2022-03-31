@@ -21,7 +21,9 @@
             -
         {% endif %}
         </span>
+        {% if not viewOnly %}
         <input disabled style="display: none;" type="text" name="{{field|lower}}" class="new-value datepicker form-control form-inline" value="{% if val %}{{val|date:'2006-01-02'}}{% else %}{{default|date:'2006-01-02'}}{% endif %}">
         <a href="#" class="edit text-secondary small">editera</a>
+        {% endif %}
     </div>
 </div>
