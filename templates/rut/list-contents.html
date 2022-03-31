@@ -1,0 +1,15 @@
+{% for rut in rutRequests %}
+<tr>
+    <td><a href="/rut/{{rut.ID}}">{{ rut.Invoice.Number }}</a></td>
+    <td><a href="/rut/{{rut.ID}}">{{ rut.Invoice.Name }}</a></td>
+    <td>{{ rut.Invoice.Customer.Email}}</td>
+    <td>{{ rut.DateSent|date }}</td>
+    <td>
+        {{ rut.Status.String }}
+    </td>
+</tr>
+{% empty %}
+<tr>
+    <td colspan="5">Inga ärenden att visa</td>
+</tr>
+{% endfor %}

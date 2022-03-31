@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block css %}
+<link rel="stylesheet" href="/static/vendor/font-awesome-4.7.0/css/font-awesome.min.css">
+{% endblock %}
+
+
+{% block content %}
+<h1 class="mt-1 mb-2">ROT/RUT-ärenden</h1>
+
+<ul class="nav nav-tabs">
+    <li class="nav-item">
+        <a class="nav-link {% if not filterPaid %}active{% endif %}" href="/rut">Pågående ärenden</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% if filterPaid %}active{% endif %}" href="/rut?paid=1">Tidigare ärenden</a>
+    </li>
+</ul>
+<table id="rut-list" class="table table-striped sortable" data-target="#rut-list tbody" data-url="/rut">
+    <thead>
+        <tr>
+            <th data-column="number">Fakturanummer</th>
+            <th class="w-50" data-column="name">Faktura</th>
+            <th data-column="customer_email">E-post</th>
+            <th data-column="date_sent">Inskickad datum</th>
+            <th data-colum="status">Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% include "rut/list-contents.html" %}
+    </tbody>
+</table>
+{% endblock %}
+
+{% block javascript %}
+<script src="/static/js/search.js"></script>
+<script src="/static/js/sort.js"></script>
+{% endblock %}

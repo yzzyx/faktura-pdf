@@ -160,10 +160,6 @@ func SetInvoiceFlag(w http.ResponseWriter, r *http.Request) {
 	case "paid":
 		invoice.IsPaid = val
 		invoice.DatePaid = &date
-	case "rut_sent":
-		invoice.IsRutSent = val
-	case "rut_paid":
-		invoice.IsRutPaid = val
 	default:
 		RenderError(w, r, errors.New("invalid flag"))
 		return

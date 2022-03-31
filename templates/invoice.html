@@ -72,22 +72,6 @@
                     {% endif %}
                 </ul>
             </span>
-
-            {% if invoice.RutApplicable and invoice.IsPaid %}
-            <span class="dropdown">
-                <button class="btn btn-sm btn-primary dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false">
-                    ROT/RUT
-                </button>
-                <ul class="dropdown-menu dropdown-menu-right">
-                    {% if not invoice.IsRutPaid %}
-                        <li><a class="dropdown-item" href="/invoice/{{invoice.ID}}/flag?flag=rut_sent">Markera ROT/RUT som inskickad</a></li>
-                        <li><a class="dropdown-item" href="/invoice/{{invoice.ID}}/flag?flag=rut_paid">Markera ROT/RUT som betalad</a></li>
-                    {% else %}
-                        <li><a class="dropdown-item" href="/invoice/{{invoice.ID}}/flag?flag=rut_paid&revoke=true">Markera ROT/RUT som obetald</a></li>
-                    {% endif %}
-                </ul>
-            </span>
-            {% endif %}
         </div>
         {% endif %}
     </div>
