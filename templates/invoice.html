@@ -148,9 +148,15 @@
             $(this).hide();
         });
 
-        $(".delete-row").on('click', function (ev) {
+        $("#invoice_rows").on('click', ".delete-row", function (ev) {
             ev.preventDefault();
             let parent = $(this).closest("tr");
+
+            if (parent.hasClass("new")) {
+                parent.remove();
+                return false;
+            }
+
             let el = newEl("input", {name: "delete_row[]", type: "hidden", value: parent.data("row")});
             parent.replaceWith(el);
             return false;
@@ -204,7 +210,7 @@
 
             let units = ["-", "st", "timmar", "dagar"];
             let vat = ["25 %", "12 %", "6 %", "0 %"];
-            let el = newEl("tr", {
+            let el = newEl("tr", { classList: "new",
                 children: [
                     newEl("td", {
                         children: [
@@ -218,6 +224,9 @@
                     newEl("td", {classList: "text-right", children: [ newEl("span", {textContent: entry.total}), ]}),
                     newEl("td", {classList: "text-right", children: [ newEl("span", {textContent: vat[entry.vat]}), ]}),
                     newEl("td", {classList: "text-center", children: [ newEl("span", {textContent: entry.is_rot_rut ? "x" : ""}), ]}),
+                    newEl("td", {classList: "text-center", children: [
+                            newEl("button", {classList: "delete-row btn btn-sm btn-danger", textContent: "x"}),
+                        ]})
                 ]
             });
             rowID++;
