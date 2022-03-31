@@ -204,7 +204,7 @@ func InvoiceRowRemove(ctx context.Context, invoiceID int, rowID int) error {
 func InvoiceGetNextNumber(ctx context.Context) (int, error) {
 	var num int
 	row := dbpool.QueryRow(ctx, `
-SELECT MAX(number) + 1 FROM invoice 
+SELECT COALESCE(MAX(number), 0) + 1 FROM invoice 
 `)
 
 	err := row.Scan(&num)
