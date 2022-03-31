@@ -22,8 +22,12 @@
                 </div>
             </div>
             {% if invoice.ID > 0 %}
-            {% include "invoice-field-date.html" with name="Fakturadatum" field="date_invoiced" val=invoice.DateInvoiced default=today %}
-            {% include "invoice-field-date.html" with name="Förfallodatum" field="date_due" val=invoice.DateDue default=defaultDueDate includeDaysLeft=true %}
+                {% include "invoice-field-date.html" with name="Fakturadatum" field="date_invoiced" val=invoice.DateInvoiced default=today viewOnly=invoice.IsPaid %}
+                {% include "invoice-field-date.html" with name="Förfallodatum" field="date_due" val=invoice.DateDue default=defaultDueDate includeDaysLeft=true viewOnly=invoice.IsPaid %}
+
+                {% if invoice.IsPaid %}
+                    {% include "invoice-field-date.html" with name="Betalad" field="date_due" val=invoice.DatePaid viewOnly=true %}
+                {% endif %}
             {% endif %}
 
             {% include "invoice-field-textarea.html" with name="Ytterligare information" field="additional_info" val=invoice.AdditionalInfo %}
@@ -62,7 +66,7 @@
                     {% if not invoice.IsInvoiced %}
                         <li><a class="dropdown-item" href="/invoice/{{invoice.ID}}/flag?flag=invoiced">Markera faktura som skickad</a></li>
                     {% elif not invoice.IsPaid%}
-                        <li><a class="dropdown-item" href="/invoice/{{invoice.ID}}/flag?flag=paid">Markera faktura som betalad</a></li>
+                        <li><a class="dropdown-item" data-toggle="modal" data-target="#invoice-date-modal">Markera faktura som betalad</a></li>
                     {% else %}
                         <li><a class="dropdown-item" href="/invoice/{{invoice.ID}}/flag?flag=paid&revoke=true">Markera som obetald</a></li>
                     {% endif %}
@@ -124,7 +128,9 @@
 <button type="submit" class="btn btn-success">Spara</button>
 
 </form>
+
 {% include "invoice-row-modal.html" %}
+{% include "invoice-date-modal.html" %}
 {% endblock %}
 
 {% block javascript %}

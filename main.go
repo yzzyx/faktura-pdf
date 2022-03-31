@@ -82,6 +82,7 @@ func main() {
 	r.Get("/invoice/{id}/offer", ViewInvoiceOffer)
 	r.Get("/invoice/{id}/invoice", ViewInvoiceInvoice)
 	r.Get("/invoice/{id}/flag", SetInvoiceFlag)
+	r.Post("/invoice/{id}/flag", SetInvoiceFlag)
 	r.Post("/invoice/{id}", SaveInvoice)
 
 	serveAddress := ":3000"

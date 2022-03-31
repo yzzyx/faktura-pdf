@@ -138,16 +138,22 @@ func SetInvoiceFlag(w http.ResponseWriter, r *http.Request) {
 	}
 
 	flag := r.FormValue("flag")
-	now := time.Now()
+	date := time.Now()
+	if _, ok := r.Form["date"]; ok {
+		if v, err := time.Parse("2006-01-02", r.FormValue("date")); err == nil {
+			date = v
+		}
+	}
+
 	switch flag {
 	case "invoiced":
 		invoice.IsInvoiced = val
-		invoice.DateInvoiced = &now
+		invoice.DateInvoiced = &date
 	case "offered":
 		invoice.IsOffered = val
 	case "paid":
 		invoice.IsPaid = val
-		invoice.DatePaid = &now
+		invoice.DatePaid = &date
 	case "rut_sent":
 		invoice.IsRutSent = val
 	case "rut_paid":

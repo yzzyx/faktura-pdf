@@ -1,0 +1,27 @@
+<div class="modal fade" id="invoice-date-modal" tabindex="-1" aria-labelledby="invoice-date-modal-title" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form method="POST" action="/invoice/{{invoice.ID}}/flag">
+                <input type="hidden" name="flag" value="paid">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="invoice-date-modal-title">Registrera betalning</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="form-group col-12">
+                            <label class="form-label">Datum betalning genomfördes</label>
+                            <input required type="text" name="date" id="invoice-date" class="datepicker form-control" value="{{today|date:'2006-01-02'}}">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Avbryt</button>
+                    <button type="submit" class="btn btn-primary">Registrera betalning</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
