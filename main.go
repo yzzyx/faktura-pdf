@@ -78,6 +78,7 @@ func main() {
 	})
 
 	r.Get("/", ViewInvoiceList)
+	r.Get("/rut", ViewRutList)
 	r.Get("/invoice/{id}", ViewInvoice)
 	r.Get("/invoice/{id}/offer", ViewInvoiceOffer)
 	r.Get("/invoice/{id}/invoice", ViewInvoiceInvoice)

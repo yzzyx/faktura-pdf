@@ -1,14 +1,5 @@
 {% if invoice.IsPaid %}
 <span class="badge badge-success">Betalad</span>
-{% if invoice.RutApplicable %}
-    {% if invoice.IsRutPaid %}
-        <span class="badge badge-success">RUT betalad</span>
-    {% elif invoice.IsRutSent %}
-        <span class="badge badge-info">RUT inskickad</span>
-    {% else %}
-        <span class="badge badge-warning">RUT ej skickad</span>
-    {% endif %}
-{% endif %}
 {% elif invoice.IsInvoiced %}
 <span class="badge badge-info">Faktura skickad</span>
 {% elif invoice.IsOffered %}
