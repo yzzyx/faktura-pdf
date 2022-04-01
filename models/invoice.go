@@ -69,15 +69,85 @@ func (u VATType) String() string {
 	return v
 }
 
+type ROTRUTServiceType int
+
+const (
+	ROTServiceTypeBygg ROTRUTServiceType = iota
+	ROTServiceTypeEl
+	ROTServiceTypeGlasPlatarbete
+	ROTServiceTypeMarkDraneringsarbete
+	ROTServiceTypeMurning
+	ROTServiceTypeMalningTapetsering
+	ROTServiceTypeVVS
+
+	RUTServiceTypeStadning
+	RUTServiceTypeKladOchTextilvard
+	RUTServiceTypeSnoskottning
+	RUTServiceTypeTradgardsarbete
+	RUTServiceTypeBarnpassning
+	RUTServiceTypePersonligomsorg
+	RUTServiceTypeFlyttjanster
+	RUTServiceTypeITTjanster
+	RUTServiceTypeReparationAvVitvaror
+	RUTServiceTypeMoblering
+	RUTServiceTypeTillsynAvBostad
+	RUTServiceTypeTransportTillForsaljning
+	RUTServiceTypeTvattVidTvattinrattning
+)
+
+var ROTServices = map[ROTRUTServiceType]string{
+	ROTServiceTypeBygg:                 "Bygg",
+	ROTServiceTypeEl:                   "El",
+	ROTServiceTypeGlasPlatarbete:       "Glas och plåt",
+	ROTServiceTypeMarkDraneringsarbete: "Mark- och dräneringsarbete",
+	ROTServiceTypeMurning:              "Murning",
+	ROTServiceTypeMalningTapetsering:   "Tapetsering",
+	ROTServiceTypeVVS:                  "VVS",
+}
+
+var RUTServices = map[ROTRUTServiceType]string{
+	RUTServiceTypeStadning:                 "Städning",
+	RUTServiceTypeKladOchTextilvard:        "Kläd- och textilvård",
+	RUTServiceTypeSnoskottning:             "Snöskottning",
+	RUTServiceTypeTradgardsarbete:          "Trädgårdsarbete",
+	RUTServiceTypeBarnpassning:             "Barnpassning",
+	RUTServiceTypePersonligomsorg:          "Personling omsorg",
+	RUTServiceTypeFlyttjanster:             "Flyttjänster",
+	RUTServiceTypeITTjanster:               "IT-tjänster",
+	RUTServiceTypeReparationAvVitvaror:     "Reparation av vitvaror",
+	RUTServiceTypeMoblering:                "Möblering",
+	RUTServiceTypeTillsynAvBostad:          "Tillsyn av bostad",
+	RUTServiceTypeTransportTillForsaljning: "Transport till försäljning",
+	RUTServiceTypeTvattVidTvattinrattning:  "Tvätt vid tvättinrättning",
+}
+
+func (s ROTRUTServiceType) String() string {
+	if v, ok := ROTServices[s]; ok {
+		return v
+	}
+	return RUTServices[s]
+}
+
+func (s ROTRUTServiceType) IsROT() bool {
+	_, ok := ROTServices[s]
+	return ok
+}
+
+func (s ROTRUTServiceType) IsRUT() bool {
+	_, ok := RUTServices[s]
+	return ok
+}
+
 type InvoiceRow struct {
-	ID          int
-	RowOrder    int             `json:"row_order"`
-	Description string          `json:"description"`
-	Cost        decimal.Decimal `json:"cost"`
-	Count       decimal.Decimal `json:"count"`
-	Unit        UnitType        `json:"unit"`
-	VAT         VATType         `json:"vat"`
-	IsRotRut    bool            `json:"is_rot_rut"`
+	ID                int
+	RowOrder          int                `json:"row_order"`
+	Description       string             `json:"description"`
+	Cost              decimal.Decimal    `json:"cost"`
+	Count             decimal.Decimal    `json:"count"`
+	Unit              UnitType           `json:"unit"`
+	VAT               VATType            `json:"vat"`
+	IsRotRut          bool               `json:"is_rot_rut"`
+	RotRutServiceType *ROTRUTServiceType `json:"rot_rut_service_type"`
 
 	Total decimal.Decimal
 }
@@ -122,7 +192,7 @@ WHERE invoice.id = $1`, id)
 		return inv, err
 	}
 
-	err = pgxscan.Select(ctx, dbpool, &inv.Rows, "SELECT id, row_order, description, cost, count, unit, vat, is_rot_rut, cost*count AS total FROM invoice_row WHERE invoice_id = $1 ORDER BY row_order", inv.ID)
+	err = pgxscan.Select(ctx, dbpool, &inv.Rows, "SELECT id, row_order, description, cost, count, unit, vat, is_rot_rut, rot_rut_service_type, cost*count AS total FROM invoice_row WHERE invoice_id = $1 ORDER BY row_order", inv.ID)
 	if err != nil {
 		return inv, err
 	}
@@ -218,7 +288,7 @@ INNER JOIN customer ON customer.id = invoice.customer_id`
 
 	for k := range invoices {
 		inv := invoices[k]
-		err = pgxscan.Select(ctx, dbpool, &inv.Rows, "SELECT id, row_order, description, cost, is_rot_rut FROM invoice_row WHERE invoice_id = $1 ORDER BY row_order", inv.ID)
+		err = pgxscan.Select(ctx, dbpool, &inv.Rows, "SELECT id, row_order, description, cost, is_rot_rut, rot_rut_service_type FROM invoice_row WHERE invoice_id = $1 ORDER BY row_order", inv.ID)
 		if err != nil {
 			return nil, err
 		}
@@ -228,9 +298,9 @@ INNER JOIN customer ON customer.id = invoice.customer_id`
 }
 
 func InvoiceRowAdd(ctx context.Context, invoiceID int, row InvoiceRow) error {
-	_, err := dbpool.Exec(ctx, `INSERT INTO invoice_row (invoice_id, row_order, description, cost, count, unit, vat, is_rot_rut)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-		invoiceID, row.RowOrder, row.Description, row.Cost, row.Count, row.Unit, row.VAT, row.IsRotRut)
+	_, err := dbpool.Exec(ctx, `INSERT INTO invoice_row (invoice_id, row_order, description, cost, count, unit, vat, is_rot_rut, rot_rut_service_type)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+		invoiceID, row.RowOrder, row.Description, row.Cost, row.Count, row.Unit, row.VAT, row.IsRotRut, row.RotRutServiceType)
 	if err != nil {
 		return err
 	}

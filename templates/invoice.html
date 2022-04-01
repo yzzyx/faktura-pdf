@@ -193,6 +193,37 @@
         $("#invoice-row-price-exkl").on({keyup: update_price, change: update_price});
         $("#invoice-row-vat").on({change: update_price});
 
+
+        let lastType = "";
+        let showRutRotService = function () {
+            let el = $(".show-rut-rot");
+            if ($("#invoice-row-rut-rot").is(":checked")) {
+                el.show();
+            } else {
+                el.hide();
+            }
+
+            let type = $("input[name='invoice-row-rut-rot-type']:checked").val();
+            let optRUT = $("#invoice-row-rut-rot-service-type option.rut");
+            let optROT = $("#invoice-row-rut-rot-service-type option.rot");
+            if (type === "rut") {
+                optRUT.show().addClass("active");
+                optROT.hide().removeClass("active");
+            } else {
+                optRUT.hide().removeClass("active");
+                optROT.show().addClass("active");
+            }
+
+            if (type !== lastType) {
+                lastType = type;
+                $("#invoice-row-rut-rot-service-type option.active.default").prop("selected","selected");
+            }
+        };
+
+        $("#invoice-row-rut-rot").on({change: showRutRotService});
+        $("input[name='invoice-row-rut-rot-type']").on({change: showRutRotService});
+        $('#invoice-row-modal').on('show.bs.modal', showRutRotService);
+
         let rowID = 0;
         $("#add-row").on('click', function (ev) {
             let form = $("#invoice-row-form")[0];
@@ -211,6 +242,10 @@
                 vat: parseInt($("#invoice-row-vat").val()),
                 is_rot_rut: $("#invoice-row-rut-rot").is(":checked"),
             };
+
+            if (entry.is_rot_rut) {
+                entry.rot_rut_service_type = parseInt($("#invoice-row-rut-rot-service-type").val());
+            }
             entry.total = entry.cost * entry.count;
 
 
