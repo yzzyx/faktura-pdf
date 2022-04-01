@@ -1,6 +1,7 @@
 BEGIN;
 CREATE TABLE rut_requests (
     id SERIAL PRIMARY KEY,
+    type int NOT NULL DEFAULT 0,
     invoice_id int NOT NULL,
     status int NOT NULL DEFAULT 0,
     date_sent timestamp with time zone,

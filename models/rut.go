@@ -30,8 +30,25 @@ func (r RUTStatus) String() string {
 	return rutStatusString[r]
 }
 
+type RUTType int
+
+const (
+	RUTTypeRUT RUTType = 0
+	RUTTypeROT RUTType = 1
+)
+
+var rutTypeString = map[RUTType]string{
+	RUTTypeRUT: "RUT",
+	RUTTypeROT: "ROT",
+}
+
+func (r RUTType) String() string {
+	return rutTypeString[r]
+}
+
 type RUT struct {
 	ID       int
+	Type     RUTType
 	Invoice  Invoice
 	Status   RUTStatus
 	DateSent *time.Time
@@ -57,8 +74,8 @@ WHERE id = $1`, rut.ID,
 		return rut.ID, err
 	}
 
-	query := `INSERT INTO rot_rut (invoice_id, status) VALUES($1, $2) RETURNING id`
-	err := dbpool.QueryRow(ctx, query, rut.Invoice.ID, rut.Status).Scan(&rut.ID)
+	query := `INSERT INTO rot_rut (invoice_id, status, type) VALUES($1, $2, $3) RETURNING id`
+	err := dbpool.QueryRow(ctx, query, rut.Invoice.ID, rut.Status, rut.Type).Scan(&rut.ID)
 	if err != nil {
 		return 0, err
 	}
@@ -69,6 +86,7 @@ func RUTList(ctx context.Context, f RUTFilter) ([]RUT, error) {
 	var rutRequests []RUT
 	query := `SELECT
 rut_requests.id,
+rut_requests.type,
 rut_requests.status,
 rut_requests.date_sent,
 rut_requests.date_paid,
