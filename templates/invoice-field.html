@@ -3,12 +3,16 @@
         <strong>{{name}}:</strong>
     </div>
     <div class="col-6">
-        {% if invoice.ID > 0 %}
+        {% if viewOnly %}
             <span class="current-value">{{ val }}</span>
-            <input name="{{field|lower}}" disabled class="new-value form-control form-control-sm form-inline" type="text" style="display: none;" value="{{ val }}">
-            <a href="#" class="edit text-secondary small">editera</a>
         {% else %}
-            <input name="{{field|lower}}" class="new-value form-control form-control-sm form-inline" type="text" value="{{ val }}">
+            {% if invoice.ID > 0 %}
+                <span class="current-value">{{ val }}</span>
+                <input name="{{field|lower}}" disabled class="new-value form-control form-control-sm form-inline" type="text" style="display: none;" value="{{ val }}">
+                <a href="#" class="edit text-secondary small">editera</a>
+            {% else %}
+                <input name="{{field|lower}}" class="new-value form-control form-control-sm form-inline" type="text" value="{{ val }}">
+            {% endif %}
         {% endif %}
     </div>
 </div>

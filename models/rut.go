@@ -82,6 +82,29 @@ WHERE id = $1`, rut.ID,
 	return rut.ID, nil
 }
 
+func RUTGet(ctx context.Context, id int) (RUT, error) {
+	var rutRequest RUT
+
+	query := `SELECT
+rut_requests.id,
+rut_requests.type,
+rut_requests.status,
+rut_requests.date_sent,
+rut_requests.date_paid,
+rut_requests.invoice_id AS "invoice.id"
+FROM rut_requests
+WHERE id = $1
+`
+
+	err := pgxscan.Get(ctx, dbpool, &rutRequest, query, id)
+	if err != nil {
+		return rutRequest, err
+	}
+
+	rutRequest.Invoice, err = InvoiceGet(ctx, rutRequest.Invoice.ID)
+	return rutRequest, err
+}
+
 func RUTList(ctx context.Context, f RUTFilter) ([]RUT, error) {
 	var rutRequests []RUT
 	query := `SELECT

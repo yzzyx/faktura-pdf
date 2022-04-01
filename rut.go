@@ -2,8 +2,10 @@ package main
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/flosch/pongo2"
+	"github.com/go-chi/chi/v5"
 	"github.com/yzzyx/faktura-pdf/models"
 )
 
@@ -41,4 +43,22 @@ func ViewRutList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	Render("rut/list.html", w, r, data)
+}
+
+func ViewRutRequest(w http.ResponseWriter, r *http.Request) {
+
+	ctx := r.Context()
+	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
+
+	rutRequest, err := models.RUTGet(ctx, id)
+	if err != nil {
+		RenderError(w, r, err)
+		return
+	}
+
+	data := pongo2.Context{
+		"rut": rutRequest,
+	}
+
+	Render("rut/view.html", w, r, data)
 }
