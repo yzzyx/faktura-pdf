@@ -61,6 +61,12 @@ func ViewInvoice(w http.ResponseWriter, r *http.Request) {
 		"invoice":        invoice,
 		"today":          time.Now(),
 		"defaultDueDate": time.Now().AddDate(0, 1, 0),
+
+		// Used to create list of ROT/RUT services in invoice row modal
+		"rutServices":       models.RUTServices,
+		"rotServices":       models.ROTServices,
+		"defaultRUTService": models.RUTServiceTypeTradgardsarbete,
+		"defaultROTService": models.ROTServiceTypeBygg,
 	}
 
 	if invoice.DateDue != nil {
