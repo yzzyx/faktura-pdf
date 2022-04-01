@@ -1,0 +1,11 @@
+{% if rut.Status == 0 %}
+<span class="badge badge-warning">Väntar på att skickas in</span>
+{% elif rut.Status == 1 %}
+<span class="badge badge-primary">Inskickad</span>
+{% elif rut.Status == 2 %}
+<span class="badge badge-success">Betalad</span>
+{% elif rut.Status == 3 %}
+<span class="badge badge-error">Avslagen</span>
+{% else %}
+<span class="badge badge-secondary">okänt status {{rut.Status}}</span>
+{% endif %}

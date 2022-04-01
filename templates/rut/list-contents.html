@@ -5,7 +5,7 @@
     <td>{{ rut.Invoice.Customer.Email}}</td>
     <td>{{ rut.DateSent|date }}</td>
     <td>
-        {{ rut.Status.String }}
+        {% include "rut/status.html" %}
     </td>
 </tr>
 {% empty %}
