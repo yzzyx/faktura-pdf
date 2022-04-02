@@ -1,11 +1,13 @@
 package main
 
 import (
+	"context"
 	"net/http"
 	"strconv"
 
 	"github.com/flosch/pongo2"
 	"github.com/go-chi/chi/v5"
+	"github.com/shopspring/decimal"
 	"github.com/yzzyx/faktura-pdf/models"
 )
 
@@ -56,8 +58,29 @@ func ViewRutRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	multiplier := decimal.NewFromFloat(0.5)
+	if rutRequest.Type == models.RUTTypeROT {
+		multiplier = decimal.NewFromFloat(0.3)
+	}
+
+	maxAmount := decimal.NewFromInt(0)
+	filteredRows := []models.InvoiceRow{}
+	for _, r := range rutRequest.Invoice.Rows {
+		if !r.IsRotRut || r.RotRutServiceType == nil {
+			continue
+		}
+
+		if (rutRequest.Type == models.RUTTypeRUT && r.RotRutServiceType.IsRUT()) ||
+			(rutRequest.Type == models.RUTTypeROT && r.RotRutServiceType.IsROT()) {
+			maxAmount = maxAmount.Add(r.Total.Mul(multiplier))
+			filteredRows = append(filteredRows, r)
+		}
+	}
+
 	data := pongo2.Context{
-		"rut": rutRequest,
+		"rut":          rutRequest,
+		"maxAmount":    maxAmount,
+		"filteredRows": filteredRows,
 	}
 
 	Render("rut/view.html", w, r, data)
