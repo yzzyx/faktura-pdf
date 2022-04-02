@@ -16,4 +16,5 @@ SELECT id, 1 FROM invoice WHERE is_rut_sent AND not is_rut_paid;
 
 ALTER TABLE invoice DROP COLUMN is_rut_sent;
 ALTER TABLE invoice DROP COLUMN is_rut_paid;
+ALTER TABLE invoice_row ADD COLUMN rot_rut_hours int;
 COMMIT;

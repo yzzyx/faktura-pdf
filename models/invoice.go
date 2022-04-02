@@ -137,16 +137,20 @@ func (s ROTRUTServiceType) IsRUT() bool {
 }
 
 type InvoiceRow struct {
-	ID                int
-	RowOrder          int                `json:"row_order"`
-	Description       string             `json:"description"`
-	Cost              decimal.Decimal    `json:"cost"`
-	Count             decimal.Decimal    `json:"count"`
-	Unit              UnitType           `json:"unit"`
-	VAT               VATType            `json:"vat"`
+	ID          int
+	RowOrder    int             `json:"row_order"`
+	Description string          `json:"description"`
+	Cost        decimal.Decimal `json:"cost"`
+	Count       decimal.Decimal `json:"count"`
+	Unit        UnitType        `json:"unit"`
+	VAT         VATType         `json:"vat"`
+
+	// Fields used for ROT/RUT
 	IsRotRut          bool               `json:"is_rot_rut"`
 	RotRutServiceType *ROTRUTServiceType `json:"rot_rut_service_type"`
+	RotRutHours       *int               `json:"rot_rut_hours"` // used when a row has a fixed price
 
+	// Calculated fields
 	Total decimal.Decimal
 }
 
@@ -188,7 +192,7 @@ WHERE invoice.id = $1`, id)
 		return inv, err
 	}
 
-	err = pgxscan.Select(ctx, dbpool, &inv.Rows, "SELECT id, row_order, description, cost, count, unit, vat, is_rot_rut, rot_rut_service_type, cost*count AS total FROM invoice_row WHERE invoice_id = $1 ORDER BY row_order", inv.ID)
+	err = pgxscan.Select(ctx, dbpool, &inv.Rows, "SELECT id, row_order, description, cost, count, unit, vat, is_rot_rut, rot_rut_service_type, rot_rut_hours, cost*count AS total FROM invoice_row WHERE invoice_id = $1 ORDER BY row_order", inv.ID)
 	if err != nil {
 		return inv, err
 	}
@@ -278,13 +282,44 @@ INNER JOIN customer ON customer.id = invoice.customer_id`
 
 	for k := range invoices {
 		inv := invoices[k]
-		err = pgxscan.Select(ctx, dbpool, &inv.Rows, "SELECT id, row_order, description, cost, is_rot_rut, rot_rut_service_type FROM invoice_row WHERE invoice_id = $1 ORDER BY row_order", inv.ID)
+		err = pgxscan.Select(ctx, dbpool, &inv.Rows, "SELECT id, row_order, description, cost, is_rot_rut, rot_rut_service_type, rot_rut_hours FROM invoice_row WHERE invoice_id = $1 ORDER BY row_order", inv.ID)
 		if err != nil {
 			return nil, err
 		}
 
 	}
 	return invoices, nil
+}
+
+func InvoiceRowUpdate(ctx context.Context, row InvoiceRow) error {
+	query := `
+	UPDATE invoice_row SET row_order = $2,
+		description = $3,
+		cost = $4,
+		count = $5,
+		unit = $6,
+		vat = $7,
+		is_rot_rut = $8,
+		rot_rut_service_type = $9,
+		rot_rut_hours = $10
+	WHERE id = $1
+`
+	_, err := dbpool.Exec(ctx, query,
+		row.ID,
+		row.RowOrder,
+		row.Description,
+		row.Cost,
+		row.Count,
+		row.Unit,
+		row.VAT,
+		row.IsRotRut,
+		row.RotRutServiceType,
+		row.RotRutHours)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func InvoiceRowAdd(ctx context.Context, invoiceID int, row InvoiceRow) error {
