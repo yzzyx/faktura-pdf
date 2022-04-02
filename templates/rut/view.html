@@ -121,26 +121,4 @@
 <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#invoice-row-modal">Markera som betalad av skatteverket</button>
 <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#invoice-row-modal">Markera som avslagen av skatteverket</button>
 {% endif %}
-
-
-{% include "invoice-row-modal.html" %}
-{% include "invoice-date-modal.html" %}
-{% endblock %}
-
-{% block javascript %}
-<script src="/static/js/jquery-ui-1.12.1/jquery-ui.min.js"></script>
-<script src="/static/js/new.js"></script>
-<script lang="js">
-    $(function () {
-        $(".datepicker").datepicker({
-            dateFormat: "yy-mm-dd",
-            firstDay: 1,
-            dayNames: [ "Söndag", "Måndag", "Tisdag", "Onsdag", "Torsdag", "Fredag", "Lördag" ],
-            dayNamesMin: [ "Sö", "Må", "Ti", "On", "To", "Fr", "Lö" ],
-            dayNamesShort: [ "Sön", "Mån", "Tis", "Ons", "Tor", "Fre", "Lör" ],
-            monthNames: [ "Januari", "Februari", "Mars", "April", "Maj", "Juni", "Juli", "Augusti", "September", "Oktober", "November", "December" ],
-            monthNamesShort: [ "Jan", "Feb", "Mar", "Apr", "Maj", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dec" ]
-        });
-    });
-</script>
 {% endblock %}
