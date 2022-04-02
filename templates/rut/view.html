@@ -130,7 +130,7 @@
         <button type="submit" class="btn btn-primary">Spara uppgifter</button>
 
         {% if canExport %}
-            <button type="button" class="btn btn-primary">Skapa underlag till skatteverket</button>
+            <a href="{% url 'rut-export' id=rut.ID %}" type="button" class="btn btn-primary">Skapa underlag till skatteverket</a>
         {% endif %}
         <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#invoice-row-modal">Markera som inskickad till skatteverket</button>
     {% elif rut.Status == 1 %}
