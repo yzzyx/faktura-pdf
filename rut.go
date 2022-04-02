@@ -85,3 +85,40 @@ func ViewRutRequest(w http.ResponseWriter, r *http.Request) {
 
 	Render("rut/view.html", w, r, data)
 }
+
+func createROTRUTFromInvoice(ctx context.Context, invoice models.Invoice) error {
+	typeRows := map[models.RUTType][]models.InvoiceRow{}
+
+	for _, r := range invoice.Rows {
+		if !r.IsRotRut || r.RotRutServiceType == nil {
+			continue
+		}
+
+		if r.RotRutServiceType.IsRUT() {
+			typeRows[models.RUTTypeRUT] = append(typeRows[models.RUTTypeRUT], r)
+		} else {
+			typeRows[models.RUTTypeROT] = append(typeRows[models.RUTTypeROT], r)
+		}
+	}
+
+	for typ, _ := range typeRows {
+		lst, err := models.RUTList(ctx, models.RUTFilter{InvoiceID: invoice.ID, Type: &typ})
+		if err != nil {
+			return err
+		}
+
+		// Only create a RUT-request if we don't already have one
+		if len(lst) == 0 {
+			rut := models.RUT{
+				Invoice: invoice,
+				Type:    typ,
+			}
+
+			_, err := models.RUTSave(ctx, rut)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
