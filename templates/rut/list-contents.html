@@ -1,7 +1,7 @@
 {% for rut in rutRequests %}
 <tr>
-    <td><a href="/rut/{{rut.ID}}">{{ rut.Invoice.Number }}</a></td>
-    <td><a href="/rut/{{rut.ID}}">{{ rut.Invoice.Name }}</a></td>
+    <td><a href="{% url 'rut-view' id=rut.ID %}">{{ rut.Invoice.Number }}</a></td>
+    <td><a href="{% url 'rut-view' id=rut.ID %}">{{ rut.Invoice.Name }}</a></td>
     <td>{{ rut.Invoice.Customer.Email}}</td>
     <td>{{ rut.DateSent|date }}</td>
     <td>

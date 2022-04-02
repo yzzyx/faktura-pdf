@@ -54,7 +54,7 @@ func (v *View) HandleGet() error {
 		v.SetData("daysLeft", daysLeft)
 	}
 
-	return v.Render("invoice.html")
+	return v.Render("invoice/view.html")
 }
 
 // HandlePost saves/updates an invoice

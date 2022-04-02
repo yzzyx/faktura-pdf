@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 
 {% block css %}
-<link rel="stylesheet" href="/static/vendor/font-awesome-4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="{% static 'vendor/font-awesome-4.7.0/css/font-awesome.min.css' %}">
 {% endblock %}
 
 {% block content %}
-<table id="invoice-list" class="table table-striped sortable" data-target="#invoice-list tbody" data-url="/">
+<table id="invoice-list" class="table table-striped sortable" data-target="#invoice-list tbody" data-url="{% url 'invoice-list' %}">
     <thead>
         <tr>
             <th data-column="number">Nummer</th>
@@ -18,11 +18,11 @@
         </tr>
     </thead>
     <tbody>
-        {% include "invoice-list-contents.html" %}
+        {% include "invoice/list-contents.html" %}
     </tbody>
 </table>
 
-<a href="/invoice/-1" class="btn btn-success">Skapa ny faktura</a>
+<a href="{% url 'invoice-view' id=-1 %}" class="btn btn-success">Skapa ny faktura</a>
 {% endblock %}
 
 {% block javascript %}

@@ -7,7 +7,7 @@
     <td>{{ inv.TotalSum|money }}</td>
     <td>{{ inv.Customer.Email}}</td>
     <td>
-        {% include "invoice-flags.html" with invoice=inv %}
+        {% include "invoice/flags.html" with invoice=inv %}
     </td>
 </tr>
 {% endfor %}

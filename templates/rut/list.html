@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block css %}
-<link rel="stylesheet" href="/static/vendor/font-awesome-4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="{% static 'vendor/font-awesome-4.7.0/css/font-awesome.min.css' %}">
 {% endblock %}
 
 
@@ -10,13 +10,13 @@
 
 <ul class="nav nav-tabs">
     <li class="nav-item">
-        <a class="nav-link {% if not filterPaid %}active{% endif %}" href="/rut">Pågående ärenden</a>
+        <a class="nav-link {% if not filterPaid %}active{% endif %}" href="{% url 'rut-list' %}">Pågående ärenden</a>
     </li>
     <li class="nav-item">
-        <a class="nav-link {% if filterPaid %}active{% endif %}" href="/rut?paid=1">Tidigare ärenden</a>
+        <a class="nav-link {% if filterPaid %}active{% endif %}" href="{% url 'rut-list' %}?paid=1">Tidigare ärenden</a>
     </li>
 </ul>
-<table id="rut-list" class="table table-striped sortable" data-target="#rut-list tbody" data-url="/rut">
+<table id="rut-list" class="table table-striped sortable" data-target="#rut-list tbody" data-url="{% url 'rut-list' %}">
     <thead>
         <tr>
             <th data-column="number">Fakturanummer</th>
@@ -33,6 +33,6 @@
 {% endblock %}
 
 {% block javascript %}
-<script src="/static/js/search.js"></script>
-<script src="/static/js/sort.js"></script>
+<script src="{% static 'js/search.js' %}"></script>
+<script src="{% static 'js/sort.js' %}"></script>
 {% endblock %}

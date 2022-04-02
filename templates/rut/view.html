@@ -1,10 +1,5 @@
 {% extends "base.html" %}
 
-{% block css %}
-<link rel="stylesheet" href="/static/js/jquery-ui-1.12.1/jquery-ui.min.css">
-<link rel="stylesheet" href="/static/js/jquery-ui-1.12.1/jquery-ui.theme.min.css">
-{% endblock %}
-
 {% block content %}
 <h1>{{rut.Type.String}}-ärende för faktura {{rut.Invoice.Number}}</h1>
 {% include "rut/status.html" %}
@@ -32,7 +27,7 @@
             </div>
         </div>
 
-        {% include "invoice-field-date.html" with name="Faktura betalad" field="" val=rut.Invoice.DatePaid viewOnly=true %}
+        {% include "invoice/field-date.html" with name="Faktura betalad" field="" val=rut.Invoice.DatePaid viewOnly=true %}
         {% if rut.Status > 1 %}
             <div class="row">
                 <div class="col-4"><strong>{{rut.Type.String}}-ärende inskickat</strong></div>
@@ -48,9 +43,9 @@
     </div>
     <div class="col-6">
         <h4>Kund</h4>
-        {% include "invoice-field.html" with name="Namn" val=rut.Invoice.Customer.Name viewOnly=true %}
-        {% include "invoice-field.html" with name="E-post" val=rut.Invoice.Customer.Email viewOnly=true %}
-        {% include "invoice-field.html" with name="Personnummer" val=rut.Invoice.Customer.PNR viewOnly=true %}
+        {% include "invoice/field.html" with name="Namn" val=rut.Invoice.Customer.Name viewOnly=true %}
+        {% include "invoice/field.html" with name="E-post" val=rut.Invoice.Customer.Email viewOnly=true %}
+        {% include "invoice/field.html" with name="Personnummer" val=rut.Invoice.Customer.PNR viewOnly=true %}
     </div>
 </div>
 

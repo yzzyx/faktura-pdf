@@ -1,7 +1,7 @@
 <div class="modal fade" id="invoice-date-modal" tabindex="-1" aria-labelledby="invoice-date-modal-title" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <form method="POST" action="/invoice/{{invoice.ID}}/flag">
+            <form method="POST" action="{% url 'invoice-set-flag' id=invoice.ID %}">
                 <input type="hidden" name="flag" value="paid">
                 <div class="modal-header">
                     <h5 class="modal-title" id="invoice-date-modal-title">Registrera betalning</h5>

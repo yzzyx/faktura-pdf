@@ -1,18 +1,18 @@
 {% extends "base.html" %}
 
 {% block css %}
-<link rel="stylesheet" href="/static/js/jquery-ui-1.12.1/jquery-ui.min.css">
-<link rel="stylesheet" href="/static/js/jquery-ui-1.12.1/jquery-ui.theme.min.css">
+<link rel="stylesheet" href="{% static 'js/jquery-ui-1.12.1/jquery-ui.min.css' %}">
+<link rel="stylesheet" href="{% static 'js/jquery-ui-1.12.1/jquery-ui.theme.min.css' %}">
 {% endblock %}
 
 {% block content %}
 <h1>Faktura {{invoice.Number}}</h1>
-{% include "invoice-flags.html" %}
+{% include "invoice/flags.html" %}
 
 <form method="POST">
     <div class="row mt-2">
         <div class="col-8">
-            {% include "invoice-field.html" with name="Namn" field="name" val=invoice.Name %}
+            {% include "invoice/field.html" with name="Namn" field="name" val=invoice.Name %}
             <div class="row">
                 <div class="col-2">
                     <strong>Skapad:</strong>
@@ -22,25 +22,25 @@
                 </div>
             </div>
             {% if invoice.ID > 0 %}
-                {% include "invoice-field-date.html" with name="Fakturadatum" field="date_invoiced" val=invoice.DateInvoiced default=today viewOnly=invoice.IsPaid %}
-                {% include "invoice-field-date.html" with name="Förfallodatum" field="date_due" val=invoice.DateDue default=defaultDueDate includeDaysLeft=true viewOnly=invoice.IsPaid %}
+                {% include "invoice/field-date.html" with name="Fakturadatum" field="date_invoiced" val=invoice.DateInvoiced default=today viewOnly=invoice.IsPaid %}
+                {% include "invoice/field-date.html" with name="Förfallodatum" field="date_due" val=invoice.DateDue default=defaultDueDate includeDaysLeft=true viewOnly=invoice.IsPaid %}
 
                 {% if invoice.IsPaid %}
-                    {% include "invoice-field-date.html" with name="Betalad" field="date_due" val=invoice.DatePaid viewOnly=true %}
+                    {% include "invoice/field-date.html" with name="Betalad" field="date_due" val=invoice.DatePaid viewOnly=true %}
                 {% endif %}
             {% endif %}
 
-            {% include "invoice-field-textarea.html" with name="Ytterligare information" field="additional_info" val=invoice.AdditionalInfo %}
-            {% include "invoice-field-bool.html" with name="ROT/RUT avdragsgill" field="rut_applicable" val=invoice.RutApplicable default=true %}
+            {% include "invoice/field-textarea.html" with name="Ytterligare information" field="additional_info" val=invoice.AdditionalInfo %}
+            {% include "invoice/field-bool.html" with name="ROT/RUT avdragsgill" field="rut_applicable" val=invoice.RutApplicable default=true %}
 
             <h4>Kund</h4>
-            {% include "invoice-field.html" with name="Namn" field="customer.name" val=invoice.Customer.Name %}
-            {% include "invoice-field.html" with name="E-post" field="customer.email" val=invoice.Customer.Email %}
-            {% include "invoice-field.html" with name="Personnummer" field="customer.pnr" val=invoice.Customer.PNR %}
-            {% include "invoice-field.html" with name="Adress 1" field="customer.address1" val=invoice.Customer.Address1 %}
-            {% include "invoice-field.html" with name="Adress 2" field="customer.address2" val=invoice.Customer.Address2 %}
-            {% include "invoice-field.html" with name="Postkod" field="customer.postcode" val=invoice.Customer.Postcode %}
-            {% include "invoice-field.html" with name="Stad" field="customer.city" val=invoice.Customer.City %}
+            {% include "invoice/field.html" with name="Namn" field="customer.name" val=invoice.Customer.Name %}
+            {% include "invoice/field.html" with name="E-post" field="customer.email" val=invoice.Customer.Email %}
+            {% include "invoice/field.html" with name="Personnummer" field="customer.pnr" val=invoice.Customer.PNR %}
+            {% include "invoice/field.html" with name="Adress 1" field="customer.address1" val=invoice.Customer.Address1 %}
+            {% include "invoice/field.html" with name="Adress 2" field="customer.address2" val=invoice.Customer.Address2 %}
+            {% include "invoice/field.html" with name="Postkod" field="customer.postcode" val=invoice.Customer.Postcode %}
+            {% include "invoice/field.html" with name="Stad" field="customer.city" val=invoice.Customer.City %}
         </div>
 
         {% if invoice.ID > 0 %}
@@ -51,8 +51,8 @@
                     Offert
                 </button>
                 <ul class="dropdown-menu dropdown-menu-right">
-                    <li><a class="dropdown-item" href="/invoice/{{invoice.ID}}/offer">Ladda hem offert</a></li>
-                    <li><a class="dropdown-item" href="/invoice/{{invoice.ID}}/flag?flag=offered">Markera offert som skickad</a></li>
+                    <li><a class="dropdown-item" href="{% url 'invoice-view-offer' id=invoice.ID %}">Ladda hem offert</a></li>
+                    <li><a class="dropdown-item" href="{% url 'invoice-set-flag' id=invoice.ID %}?flag=offered">Markera offert som skickad</a></li>
                 </ul>
             </span>
             {% endif %}
@@ -62,13 +62,13 @@
                     Faktura
                 </button>
                 <ul class="dropdown-menu dropdown-menu-right">
-                    <li><a class="dropdown-item" href="/invoice/{{invoice.ID}}/invoice">Ladda hem faktura</a></li>
+                    <li><a class="dropdown-item" href="{% url 'invoice-view-invoice' id=invoice.ID %}">Ladda hem faktura</a></li>
                     {% if not invoice.IsInvoiced %}
-                        <li><a class="dropdown-item" href="/invoice/{{invoice.ID}}/flag?flag=invoiced">Markera faktura som skickad</a></li>
+                        <li><a class="dropdown-item" href="{% url 'invoice-set-flag' id=invoice.ID %}?flag=invoiced">Markera faktura som skickad</a></li>
                     {% elif not invoice.IsPaid%}
                         <li><a class="dropdown-item" data-toggle="modal" data-target="#invoice-date-modal">Markera faktura som betalad</a></li>
                     {% else %}
-                        <li><a class="dropdown-item" href="/invoice/{{invoice.ID}}/flag?flag=paid&revoke=true">Markera som obetald</a></li>
+                        <li><a class="dropdown-item" href="{% url 'invoice-set-flag' id=invoice.ID %}?flag=paid&revoke=true">Markera som obetald</a></li>
                     {% endif %}
                 </ul>
             </span>
@@ -113,13 +113,13 @@
 
 </form>
 
-{% include "invoice-row-modal.html" %}
-{% include "invoice-date-modal.html" %}
+{% include "invoice/row-modal.html" %}
+{% include "invoice/date-modal.html" %}
 {% endblock %}
 
 {% block javascript %}
-<script src="/static/js/jquery-ui-1.12.1/jquery-ui.min.js"></script>
-<script src="/static/js/new.js"></script>
+<script src="{% static 'js/jquery-ui-1.12.1/jquery-ui.min.js' %}"></script>
+<script src="{% static 'js/new.js' %}"></script>
 <script lang="js">
     $(function () {
         $(".datepicker").datepicker({

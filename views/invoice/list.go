@@ -28,7 +28,7 @@ func (v *List) HandleGet() error {
 	v.SetData("invoices", invoices)
 
 	if v.FormValueBool("content") {
-		return v.Render("invoice-list-contents.html")
+		return v.Render("invoice/list-contents.html")
 	}
-	return v.Render("index.html")
+	return v.Render("invoice/list.html")
 }
