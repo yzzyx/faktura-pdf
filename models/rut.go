@@ -59,6 +59,8 @@ type RUTFilter struct {
 	FilterStatus []RUTStatus
 	OrderBy      string
 	Direction    string
+	InvoiceID    int
+	Type         *RUTType
 }
 
 func RUTSave(ctx context.Context, rut RUT) (int, error) {
@@ -139,12 +141,26 @@ INNER JOIN customer ON customer.id = invoice.customer_id
 		f.Direction = "ASC"
 	}
 
+	filterStrings := []string{}
+
 	if len(f.FilterStatus) > 0 {
 		var fs []string
 		for _, v := range f.FilterStatus {
 			fs = append(fs, strconv.Itoa(int(v)))
 		}
-		query += fmt.Sprintf(`WHERE rut_requests.status IN (%s)`, strings.Join(fs, ","))
+		filterStrings = append(filterStrings, fmt.Sprintf(`rut_requests.status IN (%s)`, strings.Join(fs, ",")))
+	}
+
+	if f.InvoiceID > 0 {
+		filterStrings = append(filterStrings, fmt.Sprintf("rut_requests.invoice_id = %d", f.InvoiceID))
+	}
+
+	if f.Type != nil {
+		filterStrings = append(filterStrings, fmt.Sprintf("rut_requests.type = %d", *f.Type))
+	}
+
+	if len(filterStrings) > 0 {
+		query += " WHERE " + strings.Join(filterStrings, " AND ")
 	}
 
 	query += fmt.Sprintf(" ORDER BY %s %s", orderBy, f.Direction)
