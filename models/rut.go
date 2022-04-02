@@ -63,7 +63,7 @@ type RUTFilter struct {
 
 func RUTSave(ctx context.Context, rut RUT) (int, error) {
 	if rut.ID > 0 {
-		_, err := dbpool.Exec(ctx, `UPDATE rot_rut SET 
+		_, err := dbpool.Exec(ctx, `UPDATE rut_requests SET 
 status = $2,
 date_sent = $3,
 date_paid = $4
@@ -74,7 +74,7 @@ WHERE id = $1`, rut.ID,
 		return rut.ID, err
 	}
 
-	query := `INSERT INTO rot_rut (invoice_id, status, type) VALUES($1, $2, $3) RETURNING id`
+	query := `INSERT INTO rut_requests (invoice_id, status, type) VALUES($1, $2, $3) RETURNING id`
 	err := dbpool.QueryRow(ctx, query, rut.Invoice.ID, rut.Status, rut.Type).Scan(&rut.ID)
 	if err != nil {
 		return 0, err
