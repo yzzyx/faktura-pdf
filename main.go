@@ -11,7 +11,6 @@ import (
 	"os/signal"
 	"path/filepath"
 
-	"github.com/flosch/pongo2"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/yzzyx/faktura-pdf/models"
@@ -60,32 +59,15 @@ func main() {
 		return
 	}
 
-	err = pongo2.ReplaceFilter("date", Date)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "error: %+v\n", err)
-		return
-	}
-	err = pongo2.RegisterFilter("money", Money)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "error: %+v\n", err)
-		return
-	}
-
-	TemplateSetup()
-
 	r.Get("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, filepath.Join(currentDir, "static/img/favicon.ico"))
 	})
 
-	r.Get("/", ViewInvoiceList)
-	r.Get("/rut", ViewRutList)
-	r.Get("/rut/{id}", ViewRutRequest)
-	r.Get("/invoice/{id}", ViewInvoice)
-	r.Get("/invoice/{id}/offer", ViewInvoiceOffer)
-	r.Get("/invoice/{id}/invoice", ViewInvoiceInvoice)
-	r.Get("/invoice/{id}/flag", SetInvoiceFlag)
-	r.Post("/invoice/{id}/flag", SetInvoiceFlag)
-	r.Post("/invoice/{id}", SaveInvoice)
+	err = RegisterViews("", r)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Could not register views: %+v\n", err)
+		return
+	}
 
 	serveAddress := ":3000"
 	fmt.Printf("Listening on %s\n", serveAddress)
