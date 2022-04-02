@@ -151,6 +151,7 @@ func SetInvoiceFlag(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	var createRUT bool
 	switch flag {
 	case "invoiced":
 		invoice.IsInvoiced = val
@@ -160,6 +161,7 @@ func SetInvoiceFlag(w http.ResponseWriter, r *http.Request) {
 	case "paid":
 		invoice.IsPaid = val
 		invoice.DatePaid = &date
+		createRUT = invoice.RutApplicable && val
 	default:
 		RenderError(w, r, errors.New("invalid flag"))
 		return
@@ -169,6 +171,14 @@ func SetInvoiceFlag(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		RenderError(w, r, err)
 		return
+	}
+
+	if createRUT {
+		err = createROTRUTFromInvoice(ctx, invoice)
+		if err != nil {
+			RenderError(w, r, err)
+			return
+		}
 	}
 
 	w.Header().Set("Location", path.Join("/invoice", strconv.Itoa(id)))
