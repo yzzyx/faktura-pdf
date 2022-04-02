@@ -47,12 +47,13 @@ func (r RUTType) String() string {
 }
 
 type RUT struct {
-	ID       int
-	Type     RUTType
-	Invoice  Invoice
-	Status   RUTStatus
-	DateSent *time.Time
-	DatePaid *time.Time
+	ID           int
+	Type         RUTType
+	Invoice      Invoice
+	Status       RUTStatus
+	RequestedSum *int
+	DateSent     *time.Time
+	DatePaid     *time.Time
 }
 
 type RUTFilter struct {
@@ -68,11 +69,26 @@ func RUTSave(ctx context.Context, rut RUT) (int, error) {
 		_, err := dbpool.Exec(ctx, `UPDATE rut_requests SET 
 status = $2,
 date_sent = $3,
-date_paid = $4
+date_paid = $4,
+requested_sum = $5
 WHERE id = $1`, rut.ID,
 			rut.Status,
 			rut.DateSent,
-			rut.DatePaid)
+			rut.DatePaid,
+			rut.RequestedSum)
+
+		// If rows are supplied, and rot_rut_hours are set, we update those as well
+		for _, row := range rut.Invoice.Rows {
+			if row.RotRutHours == nil {
+				continue
+			}
+
+			err = InvoiceRowUpdate(ctx, row)
+			if err != nil {
+				return rut.ID, err
+			}
+		}
+
 		return rut.ID, err
 	}
 
@@ -80,18 +96,6 @@ WHERE id = $1`, rut.ID,
 	err := dbpool.QueryRow(ctx, query, rut.Invoice.ID, rut.Status, rut.Type).Scan(&rut.ID)
 	if err != nil {
 		return 0, err
-	}
-
-	// If rows are supplied, and rot_rut_hours are set, we update those as well
-	for _, row := range rut.Invoice.Rows {
-		if row.RotRutHours == nil {
-			continue
-		}
-
-		err = InvoiceRowUpdate(ctx, row)
-		if err != nil {
-			return rut.ID, err
-		}
 	}
 
 	return rut.ID, nil
@@ -106,7 +110,8 @@ rut_requests.type,
 rut_requests.status,
 rut_requests.date_sent,
 rut_requests.date_paid,
-rut_requests.invoice_id AS "invoice.id"
+rut_requests.invoice_id AS "invoice.id",
+rut_requests.requested_sum
 FROM rut_requests
 WHERE id = $1
 `
@@ -128,6 +133,7 @@ rut_requests.type,
 rut_requests.status,
 rut_requests.date_sent,
 rut_requests.date_paid,
+rut_requests.requested_sum,
 invoice.id AS "invoice.id",
 invoice.number AS "invoice.number",
 invoice.name AS "invoice.name",

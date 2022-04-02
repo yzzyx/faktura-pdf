@@ -5,7 +5,8 @@ CREATE TABLE rut_requests (
     invoice_id int NOT NULL,
     status int NOT NULL DEFAULT 0,
     date_sent timestamp with time zone,
-    date_paid timestamp with time zone
+    date_paid timestamp with time zone,
+    requested_sum int
 );
 
 INSERT INTO rut_requests (invoice_id, status)

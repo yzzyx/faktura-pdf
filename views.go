@@ -74,7 +74,7 @@ func RegisterViews(baseURL string, r chi.Router) error {
 		//r.Use(TransactionMiddleware)
 		r.Get("/", viewBuilder.Wrap(invoice.NewList()))
 		r.Get("/rut", viewBuilder.Wrap(rut.NewList()))
-		r.Get("/rut/{id}", viewBuilder.Wrap(rut.NewView()))
+		r.HandleFunc("/rut/{id}", viewBuilder.Wrap(rut.NewView()))
 		r.HandleFunc("/invoice/{id}", viewBuilder.Wrap(invoice.NewView()))
 		r.Get("/invoice/{id}/offer", viewBuilder.Wrap(invoice.NewOfferPDF()))
 		r.Get("/invoice/{id}/invoice", viewBuilder.Wrap(invoice.NewInvoicePDF()))
