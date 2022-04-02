@@ -81,6 +81,19 @@ WHERE id = $1`, rut.ID,
 	if err != nil {
 		return 0, err
 	}
+
+	// If rows are supplied, and rot_rut_hours are set, we update those as well
+	for _, row := range rut.Invoice.Rows {
+		if row.RotRutHours == nil {
+			continue
+		}
+
+		err = InvoiceRowUpdate(ctx, row)
+		if err != nil {
+			return rut.ID, err
+		}
+	}
+
 	return rut.ID, nil
 }
 
