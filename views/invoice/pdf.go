@@ -93,7 +93,7 @@ func generatePDF(ctx context.Context, invoice models.Invoice, templateFile strin
 
 		for _, row := range invoice.Rows {
 			s := strings.ReplaceAll(rowStr, "<description>", latexEscape(row.Description))
-			s = strings.ReplaceAll(s, "<cost>", row.Cost.StringFixedBank(2))
+			s = strings.ReplaceAll(s, "<price>", row.Cost.StringFixedBank(2))
 			s = strings.ReplaceAll(s, "<count>", row.Count.Truncate(2).String())
 			s = strings.ReplaceAll(s, "<unit>", latexEscape(row.Unit.String()))
 			s = strings.ReplaceAll(s, "<vat>", latexEscape(row.VAT.String()))
