@@ -144,7 +144,11 @@ func (v *View) HandlePost() error {
 			return err
 		}
 
-		err = models.InvoiceRowAdd(v.Ctx, invoice.ID, row)
+		if row.ID > 0 {
+			err = models.InvoiceRowUpdate(v.Ctx, row)
+		} else {
+			err = models.InvoiceRowAdd(v.Ctx, invoice.ID, row)
+		}
 		if err != nil {
 			return err
 		}

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/flosch/pongo2"
@@ -48,4 +49,16 @@ func Money(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error)
 	}
 
 	return pongo2.AsValue(moneyVal), nil
+}
+
+// JSON converts the filtered value to a JSON string representation
+func JSON(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
+
+	v := in.Interface()
+	output, err := json.Marshal(v)
+	if err != nil {
+		return nil, &pongo2.Error{Sender: "filter:json", OrigError: err}
+	}
+
+	return pongo2.AsValue(string(output)), nil
 }

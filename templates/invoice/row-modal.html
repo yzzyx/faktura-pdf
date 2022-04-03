@@ -2,13 +2,15 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="invoice-row-modal-title">Lägg till rad</h5>
+                <h5 class="modal-title invoice-row-add" id="invoice-row-modal-title">Lägg till rad</h5>
+                <h5 class="modal-title invoice-row-update" id="invoice-row-modal-title">Uppdatera rad</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
                 <form id="invoice-row-form">
+                    <input type="hidden" id="invoice-row-id" value="0">
                     <div class="row">
                         <div class="form-group col-12">
                             <label class="form-label">Beskrivning</label>
@@ -18,7 +20,9 @@
                             </div>
                         </div>
                         <div class="form-group col-6">
-                            <label class="form-label">Pris per enhet (inkl moms)</label>
+                            <label class="form-label">Pris per enhet (inkl moms)
+                                <span class="badge badge-pill badge-primary" data-toggle="tooltip" title="Detta är den totala summan, inklusive moms samt ev. RUT/ROT-avdrag">?</span>
+                            </label>
                             <input type="text" class="form-control invoice-row-price" id="invoice-row-price-incl" data-vat-incl="true" data-price-target="#invoice-row-price-exkl" placeholder="" value="0">
                         </div>
                         <div class="form-group col-6">
@@ -41,10 +45,10 @@
                         <div class="form-group col-6">
                             <label class="form-label">Moms-sats</label>
                             <select class="form-control" id="invoice-row-vat" data-price-target=".invoice-row-price">
-                                <option value="0.25" selected>25 %</option>
-                                <option value="0.12">12 %</option>
-                                <option value="0.8">6 %</option>
-                                <option value="0">0 %</option>
+                                <option value="0" selected>25 %</option>
+                                <option value="1">12 %</option>
+                                <option value="2">6 %</option>
+                                <option value="3">0 %</option>
                             </select>
                         </div>
                     </div>
@@ -58,12 +62,12 @@
                         <div class="form-group col-6 show-rut-rot" style="display: none;">
                             <div class="form-check">
                                 <label class="form-check-label">
-                                <input type="radio" class="form-check-input" name="invoice-row-rut-rot-type" value="rut" checked autocomplete="off">
+                                <input id="invoice-row-rut-rot-type-rut" type="radio" class="form-check-input" name="invoice-row-rut-rot-type" value="rut" checked autocomplete="off">
                                 RUT</label>
                             </div>
                             <div class="form-check">
                                 <label class="form-check-label">
-                                <input type="radio" class="form-check-input" name="invoice-row-rut-rot-type" value="rot" autocomplete="off">
+                                <input id="invoice-row-rut-rot-type-rot" type="radio" class="form-check-input" name="invoice-row-rut-rot-type" value="rot" autocomplete="off">
                                 ROT</label>
                             </div>
                         </div>
@@ -82,8 +86,9 @@
                 </form>
             </div>
             <div class="modal-footer">
+                <button type="button" class="btn btn-danger mr-auto invoice-row-update" id="delete-row">Ta bort rad</button>
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" id="add-row">Save changes</button>
+                <button type="button" class="btn btn-primary" id="add-row">Ok</button>
             </div>
         </div>
     </div>

@@ -37,6 +37,10 @@ func RegisterViews(baseURL string, r chi.Router) error {
 	if err != nil {
 		return err
 	}
+	err = pongo2.RegisterFilter("json", JSON)
+	if err != nil {
+		return err
+	}
 
 	err = static.RegisterTag(static.Config{URL: path.Join(baseURL, "/static"), Path: "static"})
 	if err != nil {
