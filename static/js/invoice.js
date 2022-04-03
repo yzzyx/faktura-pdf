@@ -11,9 +11,11 @@ $(function () {
     });
 
     $(".edit").on('click', function (ev) {
-        $(this).prevAll(".current-value").hide();
-        $(this).prevAll(".new-value").removeAttr('disabled').show();
-        $(this).hide();
+        let c = $(this).closest(".card");
+        $(".card-display", c).hide();
+        $(".card-edit", c).show();
+        $(".card-edit .new-value", c).removeAttr('disabled');
+        $("#save-btn").show();
     });
 
     $("#invoice-show-add-row").on('click', function (ev) {
@@ -59,6 +61,7 @@ $(function () {
         let el = newEl("input", {name: "delete_row[]", type: "hidden", value: id});
         $("#invoice_rows tbody tr[data-row=" + id +"]").replaceWith(el);
         $('#invoice-row-modal').modal('hide');
+        $("#save-btn").show();
     });
 
     let vatAmounts = {
@@ -183,6 +186,7 @@ $(function () {
             $("#invoice_rows tbody").append(el);
         }
         $("#invoice-row-modal").modal('hide');
+        $("#save-btn").show();
         return false;
     });
 });

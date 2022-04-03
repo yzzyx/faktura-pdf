@@ -1,98 +1,114 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>{{rut.Type.String}}-ärende för faktura {{rut.Invoice.Number}}</h1>
-{% include "rut/status.html" %}
+<div class="card mt-2">
+    <div class="card-body">
+        <h5 class="card-title">{{rut.Type.String}}-ärende för faktura {{rut.Invoice.Number}} - {{rut.Invoice.Name}}</h5>
+        <div class="card-subtitle">{% include "rut/status.html" %}</div>
 
-{% if not rut.Invoice.RutApplicable %}
-<div class="alert alert-warning" role="alert">
-    Fakturan som är kopplad till ärendet är inte markerad som avdragsgill för RUT/ROT
-</div>
-{% endif %}
-{% if not rut.Invoice.IsPaid %}
-<div class="alert alert-warning" role="alert">
-    Fakturan som är kopplad till ärendet är inte markerad som betalad - fakturan måste vara betalad innan
-    ärendet skickas till skatteverket
-</div>
-{% endif %}
-
-<div class="row">
-    <div class="col-6">
-        <div class="row">
-            <div class="col-2">
-                <strong>Faktura:</strong>
-            </div>
-            <div class="col-6">
-                {{ rut.Invoice.Name }}
-            </div>
+        {% if not rut.Invoice.RutApplicable %}
+        <div class="alert alert-warning" role="alert">
+            Fakturan som är kopplad till ärendet är inte markerad som avdragsgill för RUT/ROT
         </div>
+        {% endif %}
+        {% if not rut.Invoice.IsPaid %}
+        <div class="alert alert-warning" role="alert">
+            Fakturan som är kopplad till ärendet är inte markerad som betalad - fakturan måste vara betalad innan
+            ärendet skickas till skatteverket
+        </div>
+        {% endif %}
 
-        {% include "invoice/field-date.html" with name="Faktura betalad" field="" val=rut.Invoice.DatePaid viewOnly=true %}
+        <div><small>Faktura betalad {{ rut.Invoice.DatePaid|date }}</small></div>
         {% if rut.Status > 1 %}
-            <div class="row">
-                <div class="col-4"><strong>{{rut.Type.String}}-ärende inskickat</strong></div>
-                <div class="col-6">{{rut.DateSent|date:"2006-01-02"}}</div>
-            </div>
+        <div>
+            <small>
+                {{rut.Type.String}}-ärende inskickat {{rut.DateSent|date:"2006-01-02"}}
+            </small>
+        </div>
         {% endif %}
         {% if rut.Status == 2 %}
-            <div class="row">
-                <div class="col-4"><strong>RUT/ROT-ärende betalat</strong></div>
-                <div class="col-6">{{rut.DatePaid|date:"2006-01-02"}}</div>
-            </div>
+        <div>
+            <small>
+                {{rut.Type.String}}-ärende betalat {{rut.DatePaid|date:"2006-01-02"}}
+            </small>
+        </div>
         {% endif %}
     </div>
-    <div class="col-6">
-        <h4>Kund</h4>
-        {% include "invoice/field.html" with name="Namn" val=rut.Invoice.Customer.Name viewOnly=true %}
-        {% include "invoice/field.html" with name="E-post" val=rut.Invoice.Customer.Email viewOnly=true %}
-        {% include "invoice/field.html" with name="Personnummer" val=rut.Invoice.Customer.PNR viewOnly=true %}
+</div>
+<div class="card mt-2">
+    <div class="card-body">
+        <h5 class="card-title">Kund</h5>
+        <div class="card-display">
+            <small>
+                {{rut.Invoice.Customer.Name}}
+                {{rut.Invoice.Customer.Email}}
+            </small>
+        </div>
+        <div class="card-display">
+            <small>
+                {{rut.Invoice.Customer.PNR}}
+            </small>
+        </div>
+
+        <div class="card-display">
+            <small>
+                {{rut.Invoice.Customer.Address1}}
+                {{rut.Invoice.Customer.Address2}}
+                {{rut.Invoice.Customer.Postcode}}
+                {{rut.Invoice.Customer.City}}
+            </small>
+        </div>
     </div>
 </div>
 
 <form method="POST">
-    <h4>Fakturarader att begära ersättning för</h4>
-    <table id="invoice_rows" class="table table-striped table-bordered">
-        <thead>
-        <tr>
-            <th>Beskrivning</th>
-            <th class="text-right">Kostnad per enhet</th>
-            <th class="text-right">Antal</th>
-            <th class="text-right">Enhet</th>
-            <th class="text-right">Total kostnad</th>
-            <th class="text-right">Varav moms</th>
-            <th class="text-left">Typ av arbete</th>
-            <th class="text-left">Antal timmar
-                <span class="badge badge-pill badge-primary" data-toggle="tooltip" title="Antal arbetade timmar måste anges i ansökan. Om enheten inte redan är timmar måste detta fält fyllas i här">?</span>
-            </th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for r in filteredRows %}
-        <tr data-row="{{r.ID}}">
-            <td>{{ r.Description }}</td>
-            <td class="text-right">{{ r.Cost|money }}</td>
-            <td class="text-right">{{ r.Count }}</td>
-            <td class="text-right">{{ r.Unit.String }}</td>
-            <td class="text-right">{{ r.Total|money }}</td>
-            <td class="text-right">{{ r.VAT.String }}</td>
-            <td class="text-left">{{ r.RotRutServiceType.String }}</td>
-            <td class="text-left">
-                {% if r.Unit == 2 %}
-                    {{ r.Count }} h
-                {% else %}
-                    <input type="number" class="form-inline" name="hours[{{r.ID}}]" min="0" {% if r.RotRutHours %}value="{{r.RotRutHours}}"{% endif %}>
-                {% endif %}
-            </td>
-        </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+    <div class="card mt-2">
+        <div class="card-body">
+            <h5 class="card-title">Fakturarader att begära ersättning för</h5>
+            <table id="invoice_rows" class="table table-hover">
+                <thead>
+                <tr>
+                    <th>Beskrivning</th>
+                    <th class="text-right">Kostnad per enhet</th>
+                    <th class="text-right">Antal</th>
+                    <th class="text-right">Enhet</th>
+                    <th class="text-right">Total kostnad</th>
+                    <th class="text-right">Varav moms</th>
+                    <th class="text-left">Typ av arbete</th>
+                    <th class="text-left">Antal timmar
+                        <span class="badge badge-pill badge-primary" data-toggle="tooltip" title="Antal arbetade timmar måste anges i ansökan. Om enheten inte redan är timmar måste detta fält fyllas i här">?</span>
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for r in filteredRows %}
+                <tr data-row="{{r.ID}}">
+                    <td>{{ r.Description }}</td>
+                    <td class="text-right">{{ r.Cost|money }}</td>
+                    <td class="text-right">{{ r.Count }}</td>
+                    <td class="text-right">{{ r.Unit.String }}</td>
+                    <td class="text-right">{{ r.Total|money }}</td>
+                    <td class="text-right">{{ r.VAT.String }}</td>
+                    <td class="text-left">{{ r.RotRutServiceType.String }}</td>
+                    <td class="text-left">
+                        {% if r.Unit == 2 %}
+                            {{ r.Count }} h
+                        {% else %}
+                            <input type="number" class="form-inline" name="hours[{{r.ID}}]" min="0" {% if r.RotRutHours %}value="{{r.RotRutHours}}"{% endif %}>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 
     {% if rut.Status == 0 %}
-        <div class="row">
-            <div class="col-lg-4 col-md-6">
+        <div class="card mt-2 mb-2">
+            <div class="card-body pb-0">
+                <h5 class="card-title">Summa att begära från skatteverket</h5>
                 <div class="form-group">
-                    <label for="field-sum">Summa att begära från skatteverket</label>
                     <input name="request-sum" type="number" class="form-control" id="field-sum" aria-describedby="field-sum-help" value="{% if hasRequestedSum %}{{rut.RequestedSum}}{% else %}{{maxAmount}}{% endif %}" autocomplete="off">
                     <small id="field-sum-help" class="form-text text-muted">Maximal summa att begära är {{maxAmount}} kr {% if rut.Type == 0 %}(50% för RUT){% else %}(30% för ROT){% endif %}.</small>
                 </div>
@@ -116,7 +132,6 @@
         {% if canExport %}
             <button type="button" class="btn btn-primary">Skapa underlag till skatteverket</button>
         {% endif %}
-
         <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#invoice-row-modal">Markera som inskickad till skatteverket</button>
     {% elif rut.Status == 1 %}
         <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#invoice-row-modal">Markera som betalad av skatteverket</button>

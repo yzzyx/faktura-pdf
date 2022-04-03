@@ -13,15 +13,25 @@
 <body class="lpc">
 <div class="wrapper wrapper-boxed">
     <div class="main">
-        <nav class="navbar navbar-expand navbar-dark bg-success">
+        <nav class="navbar navbar-expand-md navbar-dark bg-dark">
             <a class="navbar-brand" href="/">Faktura-PDF</a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item active">
+                        <a class="nav-link" href="{% url 'invoice-list' %}">Fakturor</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'rut-list' %}">ROT/RUT-ärenden</a>
+                    </li>
+                </ul>
+            </div>
         </nav>
 
         <main class="content">
-            <div class="container-fluid">
+            <div class="container">
                 {% block content %}
                 {% endblock content %}
             </div>

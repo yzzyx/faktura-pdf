@@ -1,29 +1,4 @@
-<div class="row">
-    <div class="col-2">
-        <strong>{{name}}:</strong>
-    </div>
-    <div class="col-6">
-        <span class="current-value">
-        {% if val %}
-            {{ val|date }}
-            {% if includeDaysLeft %}
-            <small>
-            {% if daysLeft > 0 %}
-              ({{daysLeft}} dagar kvar)
-            {% elif daysLeft == 0 %}
-              (betalas senast idag)
-            {% else %}
-               <span class="error">(betalning {{-daysLeft}} försenad)</span>
-            {% endif %}
-            </small>
-            {% endif %}
-        {% else %}
-            -
-        {% endif %}
-        </span>
-        {% if not viewOnly %}
-        <input disabled style="display: none;" type="text" name="{{field|lower}}" class="new-value datepicker form-control form-inline" value="{% if val %}{{val|date:'2006-01-02'}}{% else %}{{default|date:'2006-01-02'}}{% endif %}">
-        <a href="#" class="edit text-secondary small">editera</a>
-        {% endif %}
-    </div>
+<div class="form-group">
+    <label>{{name}}</label>
+    <input disabled type="text" name="{{field|lower}}" class="new-value datepicker form-control " value="{% if val %}{{val|date:'2006-01-02'}}{% else %}{{default|date:'2006-01-02'}}{% endif %}">
 </div>

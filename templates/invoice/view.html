@@ -4,112 +4,153 @@
 <link rel="stylesheet" href="{% static 'js/jquery-ui-1.12.1/jquery-ui.min.css' %}">
 <link rel="stylesheet" href="{% static 'js/jquery-ui-1.12.1/jquery-ui.theme.min.css' %}">
 <link rel="stylesheet" href="{% static 'vendor/font-awesome-4.7.0/css/font-awesome.min.css' %}">
+<style>
+    {% if invoice.ID > 0 %}
+        .card-edit {display: none;}
+        #save-btn {display: none;}
+    {% else %}
+        .card-display {display: none;}
+    {% endif %}
+</style>
 {% endblock %}
 
 {% block content %}
-<h1>Faktura {{invoice.Number}}</h1>
-{% include "invoice/flags.html" %}
-
 <form method="POST">
-    <div class="row mt-2">
-        <div class="col-8">
-            {% include "invoice/field.html" with name="Namn" field="name" val=invoice.Name %}
-            <div class="row">
-                <div class="col-2">
-                    <strong>Skapad:</strong>
-                </div>
-                <div class="col-6">
-                    {{ invoice.DateCreated|date }}
-                </div>
-            </div>
-            {% if invoice.ID > 0 %}
-                {% include "invoice/field-date.html" with name="Fakturadatum" field="date_invoiced" val=invoice.DateInvoiced default=today viewOnly=invoice.IsPaid %}
-                {% include "invoice/field-date.html" with name="Förfallodatum" field="date_due" val=invoice.DateDue default=defaultDueDate includeDaysLeft=true viewOnly=invoice.IsPaid %}
+    <div class="card mt-2">
+        <div class="card-body">
 
-                {% if invoice.IsPaid %}
-                    {% include "invoice/field-date.html" with name="Betalad" field="date_due" val=invoice.DatePaid viewOnly=true %}
+            {% if invoice.ID > 0 and invoice.IsPaid %}
+                <span class="dropdown float-right">
+                    <i class="fa fa-cog dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false"></i>
+                    <ul class="dropdown-menu dropdown-menu-right">
+                        <li><a class="dropdown-item" href="{% url 'invoice-view-invoice' id=invoice.ID %}">Ladda hem faktura</a></li>
+                        <li><a class="dropdown-item" href="{% url 'invoice-set-flag' id=invoice.ID %}?flag=paid&revoke=true">Markera som obetald</a></li>
+                    </ul>
+                </span>
+            {% endif %}
+
+
+            <h5 class="card-title">Faktura {{invoice.Number}} - {{invoice.Name}} <a href="#" class="edit card-display text-secondary small">editera</a></h5>
+            <div class="card-subtitle">
+                {% include "invoice/flags.html" %}
+                {% if invoice.ID > 0 %}
+                    {% if invoice.IsPaid %}
+                        <small>betalad {{invoice.DatePaid|date}}</small>
+                    {% else %}
+                        <small class="col-6 card-display">Fakturadatum {{invoice.DateInvoiced|date}}</small>
+                        <small class="col-6 card-display">Förfallodatum {{invoice.DateDue|date}}</small>
+                    {% endif %}
+                {% endif %}
+            </div>
+
+            <div class="card-display mt-1">
+                {% if invoice.AdditionalInfo %}
+                    <h6 class="mb-0">Ytterligare information</h6>
+                    <p class="card-text mb-0">{{invoice.AdditionalInfo}}</p>
+                {% endif %}
+                {% if invoice.RutApplicable %}
+                    <small><i class="fa fa-check text-success"></i> ROT/RUT avdragsgill</small>
+                {% endif %}
+            </div>
+
+            <div class="card-edit"> <!--style="display: none;"> -->
+                {% include "invoice/field.html" with name="Fakturanamn" field="name" val=invoice.Name %}
+                {% if invoice.ID > 0 and not invoice.IsPaid %}
+                    {% include "invoice/field-date.html" with name="Fakturadatum" field="date_invoiced" val=invoice.DateInvoiced default=today %}
+                    {% include "invoice/field-date.html" with name="Förfallodatum" field="date_due" val=invoice.DateDue default=defaultDueDate %}
+                {% endif %}
+                {% include "invoice/field-textarea.html" with name="Ytterligare information" field="additional_info" val=invoice.AdditionalInfo %}
+                {% include "invoice/field-bool.html" with name="ROT/RUT avdragsgill" field="rut_applicable" val=invoice.RutApplicable default=true %}
+            </div>
+        </div>
+    </div>
+
+    <div class="card mt-2">
+        <div class="card-body">
+            <h5 class="card-title">Kund <a href="#" class="edit card-display text-secondary small">editera</a></h5>
+            <div class="card-display">
+                <small>
+                    {{invoice.Customer.Name}}
+                    {{invoice.Customer.Email}}
+                </small>
+            </div>
+            <div class="card-display">
+                <small>
+                    {{invoice.Customer.Address1}}
+                    {{invoice.Customer.Address2}}
+                    {{invoice.Customer.Postcode}}
+                    {{invoice.Customer.City}}
+                </small>
+            </div>
+
+            {% if invoice.RutApplicable %}
+                {% if not invoice.Customer.PNR %}
+                    <div class="alert alert-warning">Personnummer ej angivet, men fakturan är markerad som ROT/RUT avdragsgill</div>
+                {% else %}
+                    <small class="card-display"><i class="fa fa-check text-success"></i> personnummer angivet</small>
                 {% endif %}
             {% endif %}
 
-            {% include "invoice/field-textarea.html" with name="Ytterligare information" field="additional_info" val=invoice.AdditionalInfo %}
-            {% include "invoice/field-bool.html" with name="ROT/RUT avdragsgill" field="rut_applicable" val=invoice.RutApplicable default=true %}
-
-            <h4>Kund</h4>
-            {% include "invoice/field.html" with name="Namn" field="customer.name" val=invoice.Customer.Name %}
-            {% include "invoice/field.html" with name="E-post" field="customer.email" val=invoice.Customer.Email %}
-            {% include "invoice/field.html" with name="Personnummer" field="customer.pnr" val=invoice.Customer.PNR %}
-            {% include "invoice/field.html" with name="Adress 1" field="customer.address1" val=invoice.Customer.Address1 %}
-            {% include "invoice/field.html" with name="Adress 2" field="customer.address2" val=invoice.Customer.Address2 %}
-            {% include "invoice/field.html" with name="Postkod" field="customer.postcode" val=invoice.Customer.Postcode %}
-            {% include "invoice/field.html" with name="Stad" field="customer.city" val=invoice.Customer.City %}
+            <div class="card-edit">
+                {% include "invoice/field.html" with name="Namn" field="customer.name" val=invoice.Customer.Name %}
+                {% include "invoice/field.html" with name="E-post" field="customer.email" val=invoice.Customer.Email %}
+                {% include "invoice/field.html" with name="Personnummer" field="customer.pnr" val=invoice.Customer.PNR %}
+                {% include "invoice/field.html" with name="Adress 1" field="customer.address1" val=invoice.Customer.Address1 %}
+                {% include "invoice/field.html" with name="Adress 2" field="customer.address2" val=invoice.Customer.Address2 %}
+                {% include "invoice/field.html" with name="Postkod" field="customer.postcode" val=invoice.Customer.Postcode %}
+                {% include "invoice/field.html" with name="Stad" field="customer.city" val=invoice.Customer.City %}
+            </div>
         </div>
-
-        {% if invoice.ID > 0 %}
-        <div class="col-4">
-            {% if not invoice.IsOffered and not invoice.IsInvoiced and not invoice.IsPaid %}
-            <span class="dropdown">
-                <button class="btn btn-sm btn-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false">
-                    Offert
-                </button>
-                <ul class="dropdown-menu dropdown-menu-right">
-                    <li><a class="dropdown-item" href="{% url 'invoice-view-offer' id=invoice.ID %}">Ladda hem offert</a></li>
-                    <li><a class="dropdown-item" href="{% url 'invoice-set-flag' id=invoice.ID %}?flag=offered">Markera offert som skickad</a></li>
-                </ul>
-            </span>
-            {% endif %}
-
-            <span class="dropdown">
-                <button class="btn btn-sm btn-primary dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false">
-                    Faktura
-                </button>
-                <ul class="dropdown-menu dropdown-menu-right">
-                    <li><a class="dropdown-item" href="{% url 'invoice-view-invoice' id=invoice.ID %}">Ladda hem faktura</a></li>
-                    {% if not invoice.IsInvoiced %}
-                        <li><a class="dropdown-item" href="{% url 'invoice-set-flag' id=invoice.ID %}?flag=invoiced">Markera faktura som skickad</a></li>
-                    {% elif not invoice.IsPaid%}
-                        <li><a class="dropdown-item" data-toggle="modal" data-target="#invoice-date-modal">Markera faktura som betalad</a></li>
-                    {% else %}
-                        <li><a class="dropdown-item" href="{% url 'invoice-set-flag' id=invoice.ID %}?flag=paid&revoke=true">Markera som obetald</a></li>
-                    {% endif %}
-                </ul>
-            </span>
-        </div>
-        {% endif %}
     </div>
 
-    <h4>Fakturarader</h4>
-    <table id="invoice_rows" class="table">
-    <thead>
-        <tr>
-            <th>Beskrivning</th>
-            <th class="text-right">Pris</th>
-            <th class="text-right">Antal</th>
-            <th class="text-right">Totalt inkl moms</th>
-            <th class="text-right">Varav moms</th>
-            <th class="text-center">ROT/RUT</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for r in invoice.Rows %}
-        <tr data-row="{{r.ID}}" data-json="{{r|json}}">
-            <td>{{ r.Description }}</td>
-            <td class="text-right">{{ r.Cost|money }}</td>
-            <td class="text-right">{{ r.Count }} {% if r.Unit != 0 %}{{ r.Unit.String }}{% endif %}</td>
-            <td class="text-right">{{ r.Total|money }}</td>
-            <td class="text-right">{{ r.VAT.String }}</td>
-            <td class="text-center">{% if r.IsRotRut %}<i class="fa fa-check"></i>{% endif %}</td>
-            <td class="text-center">
-                <i class="fa fa-chevron-right"></i>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+    <div class="card mt-2 mb-2">
+        <div class="card-body">
+            <h5 class="card-title">Fakturarader</h5>
+            <table id="invoice_rows" class="table table-hover">
+                <thead>
+                <tr>
+                    <th>Beskrivning</th>
+                    <th class="text-right">Pris</th>
+                    <th class="text-right">Antal</th>
+                    <th class="text-right">Totalt inkl moms</th>
+                    <th class="text-right">Varav moms</th>
+                    <th class="text-center">ROT/RUT</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for r in invoice.Rows %}
+                <tr data-row="{{r.ID}}" data-json="{{r|json}}">
+                    <td>{{ r.Description }}</td>
+                    <td class="text-right">{{ r.Cost|money }}</td>
+                    <td class="text-right">{{ r.Count }} {% if r.Unit != 0 %}{{ r.Unit.String }}{% endif %}</td>
+                    <td class="text-right">{{ r.Total|money }}</td>
+                    <td class="text-right">{{ r.VAT.String }}</td>
+                    <td class="text-center">{% if r.IsRotRut %}<i class="fa fa-check"></i>{% endif %}</td>
+                    <td class="text-center">
+                        <i class="fa fa-chevron-right"></i>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            <button id="invoice-show-add-row" type="button" class="btn btn-sm btn-primary">Lägg till fakturarad</button>
+        </div>
+    </div>
 
-<button id="invoice-show-add-row" type="button" class="btn btn-primary">Lägg till rad</button>
-<button type="submit" class="btn btn-success">Spara</button>
+    <button id="save-btn" type="submit" class="btn btn-sm btn-success">{% if invoice.ID > 0 %}Spara ändringar{% else %}Skapa faktura{% endif %}</button>
 
+    {% if invoice.ID > 0 %}
+        {% if not invoice.IsOffered and not invoice.IsInvoiced and not invoice.IsPaid %}
+            <a class="btn btn-sm btn-primary" href="{% url 'invoice-view-offer' id=invoice.ID %}">Ladda hem offert</a>
+            <a class="btn btn-sm btn-primary" href="{% url 'invoice-set-flag' id=invoice.ID %}?flag=offered">Markera offert som skickad</a>
+        {% elif not invoice.IsInvoiced %}
+            <a class="btn btn-sm btn-primary" href="{% url 'invoice-view-invoice' id=invoice.ID %}">Ladda hem faktura</a>
+            <a class="btn btn-sm btn-primary" href="{% url 'invoice-set-flag' id=invoice.ID %}?flag=invoiced">Markera faktura som skickad</a>
+        {% elif not invoice.IsPaid%}
+            <a class="btn btn-sm btn-primary" data-toggle="modal" data-target="#invoice-date-modal">Markera faktura som betalad</a>
+        {% endif %}
+    {% endif %}
 </form>
 
 {% include "invoice/row-modal.html" %}
