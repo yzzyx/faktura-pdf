@@ -78,22 +78,29 @@ oddbike}}
 \hline
 \end{tabular*}
 
-\begin{tabularx}{\textwidth}{Xrrrrrc}
+\begin{tabularx}{\textwidth}{Xrrrrrrrc}
 \rowcolor{Gray}
 \changefont \textbf{Beskrivning} &
 \multicolumn{1}{l}{\changefont \textbf{À pris (inkl. moms)}} &
+\multicolumn{1}{l}{\changefont \textbf{À pris (inkl. RUT)}} &
 \multicolumn{1}{c}{\changefont \textbf{Antal}} &
 \multicolumn{1}{c}{\changefont \textbf{Enhet}} &
 \multicolumn{1}{l}{\changefont \textbf{Totalt}} &
 \multicolumn{1}{c}{\changefont \textbf{Moms}} &
+\multicolumn{1}{c}{\changefont \textbf{Moms}} &
 \changefont \textbf{RUT}\\
 \hline
-    <row><description> & <price> & <count> & <unit> & <rowtotal> & <vat> & <isRotRut>\\
+    <row><description> & <price> & <priceInclRUT> & <count> & <unit> & <rowtotal> & <vat> & <vatAmount> & <isRotRut>\\
     </row>
     & & & & & & \\
 \hline
     \multicolumn{5}{r}{\textbf{Att betala}} & \multicolumn{2}{r}{<total>} \\
-    \multicolumn{5}{r}{\textbf{Varav moms (25 \%)}} & \multicolumn{2}{r}{<totalvat>} \\
+\multicolumn{5}{r}{\textbf{Varav moms (25 \%)}} & \multicolumn{2}{r}{<totalVat25>} \\
+\multicolumn{5}{r}{\textbf{Varav moms (12 \%)}} & \multicolumn{2}{r}{<totalVat12>} \\
+\multicolumn{5}{r}{\textbf{Varav moms (6 \%)}} & \multicolumn{2}{r}{<totalVat6>} \\
+\multicolumn{5}{r}{\textbf{Exkl moms}} & \multicolumn{2}{r}{<totalExcl>} \\
+\multicolumn{5}{r}{\textbf{Total rabatt RUT}} & \multicolumn{2}{r}{<totalRUT>} \\
+\multicolumn{5}{r}{\textbf{Total rabatt ROT}} & \multicolumn{2}{r}{<totalROT>} \\
 \hline
 \end{tabularx}
 

@@ -56,6 +56,54 @@ func generatePDF(ctx context.Context, invoice models.Invoice, templateFile strin
 		dueDate = *invoice.DateDue
 	}
 
+	startRow := strings.Index(template, "<row>")
+	endRow := strings.Index(template, "</row>")
+
+	totalVAT := map[models.VATType]decimal.Decimal{}
+	totalExcl := decimal.Decimal{}
+	totalROTRUT := map[models.RUTType]decimal.Decimal{}
+
+	if startRow > -1 && endRow > -1 {
+		rowStr := template[startRow+5 : endRow]
+		rowData := ""
+
+		for _, row := range invoice.Rows {
+			priceExcl := row.Cost.Div(decimal.NewFromInt(1).Add(row.VAT.Amount()))
+			vatAmount := row.Cost.Sub(priceExcl)
+			totalVAT[row.VAT] = totalVAT[row.VAT].Add(vatAmount)
+			totalExcl = totalExcl.Add(priceExcl)
+
+			priceInclRUT := row.Cost
+			if row.IsRotRut && row.RotRutServiceType != nil {
+				if row.RotRutServiceType.IsROT() {
+					priceInclRUT = row.Cost.Mul(decimal.NewFromFloat(0.7))
+					totalROTRUT[models.RUTTypeROT] = totalROTRUT[models.RUTTypeROT].Add(row.Cost.Mul(decimal.NewFromFloat(0.3)))
+				} else {
+					priceInclRUT = row.Cost.Mul(decimal.NewFromFloat(0.5))
+					totalROTRUT[models.RUTTypeRUT] = totalROTRUT[models.RUTTypeRUT].Add(priceInclRUT)
+				}
+			}
+
+			s := strings.ReplaceAll(rowStr, "<description>", latexEscape(row.Description))
+			s = strings.ReplaceAll(s, "<price>", row.Cost.StringFixedBank(2))
+			s = strings.ReplaceAll(s, "<priceExcl>", priceExcl.StringFixedBank(2))
+			s = strings.ReplaceAll(s, "<priceInclRUT>", priceInclRUT.StringFixedBank(2))
+			s = strings.ReplaceAll(s, "<count>", row.Count.Truncate(2).String())
+			s = strings.ReplaceAll(s, "<unit>", latexEscape(row.Unit.String()))
+			s = strings.ReplaceAll(s, "<vat>", latexEscape(row.VAT.String()))
+			s = strings.ReplaceAll(s, "<vatAmount>", vatAmount.StringFixedBank(2))
+			s = strings.ReplaceAll(s, "<rowtotal>", row.Total.StringFixedBank(2))
+
+			rotRut := ""
+			if row.IsRotRut {
+				rotRut = "ja"
+			}
+			s = strings.ReplaceAll(s, "<isRotRut>", rotRut)
+			rowData += s
+		}
+		template = template[0:startRow] + rowData + template[endRow+6:]
+	}
+
 	replaceMap := map[string]string{
 		"customername":     invoice.Customer.Name,
 		"customeremail":    invoice.Customer.Email,
@@ -67,7 +115,12 @@ func generatePDF(ctx context.Context, invoice models.Invoice, templateFile strin
 		"duedate":          dueDate.Format("2006-01-02"),
 		"invoicenumber":    fmt.Sprintf("%d", invoice.Number),
 		"total":            invoice.TotalSum.StringFixedBank(2),
-		"totalvat":         invoice.TotalSum.Mul(decimal.NewFromFloat(0.25)).StringFixedBank(2),
+		"totalexcl":        totalExcl.StringFixedBank(2),
+		"totalvat25":       totalVAT[models.VATType(0)].StringFixedBank(2),
+		"totalvat12":       totalVAT[models.VATType(1)].StringFixedBank(2),
+		"totalvat6":        totalVAT[models.VATType(2)].StringFixedBank(2),
+		"totalrut":         totalROTRUT[models.RUTTypeRUT].StringFixedBank(2),
+		"totalrot":         totalROTRUT[models.RUTTypeROT].StringFixedBank(2),
 		"additionalinfo":   invoice.AdditionalInfo,
 	}
 
@@ -83,31 +136,6 @@ func generatePDF(ctx context.Context, invoice models.Invoice, templateFile strin
 		}
 	}
 	template = updatedTemplate + template[prevPos:]
-
-	startRow := strings.Index(template, "<row>")
-	endRow := strings.Index(template, "</row>")
-
-	if startRow > -1 && endRow > -1 {
-		rowStr := template[startRow+5 : endRow]
-		rowData := ""
-
-		for _, row := range invoice.Rows {
-			s := strings.ReplaceAll(rowStr, "<description>", latexEscape(row.Description))
-			s = strings.ReplaceAll(s, "<price>", row.Cost.StringFixedBank(2))
-			s = strings.ReplaceAll(s, "<count>", row.Count.Truncate(2).String())
-			s = strings.ReplaceAll(s, "<unit>", latexEscape(row.Unit.String()))
-			s = strings.ReplaceAll(s, "<vat>", latexEscape(row.VAT.String()))
-			s = strings.ReplaceAll(s, "<rowtotal>", row.Total.StringFixedBank(2))
-
-			rotRut := ""
-			if row.IsRotRut {
-				rotRut = "ja"
-			}
-			s = strings.ReplaceAll(s, "<isRotRut>", rotRut)
-			rowData += s
-		}
-		template = template[0:startRow] + rowData + template[endRow+6:]
-	}
 
 	tmpdir, err := ioutil.TempDir("", "faktura-pdf-*")
 	if err != nil {

@@ -57,6 +57,13 @@ var vatTypeString = map[int]string{
 	3: "0 %",
 }
 
+var vatTypeAmount = map[VATType]decimal.Decimal{
+	0: decimal.NewFromFloat(0.25),
+	1: decimal.NewFromFloat(0.12),
+	2: decimal.NewFromFloat(0.6),
+	3: decimal.NewFromFloat(0),
+}
+
 func (u VATType) Validate() bool {
 	_, ok := vatTypeString[int(u)]
 	return ok
@@ -64,6 +71,11 @@ func (u VATType) Validate() bool {
 
 func (u VATType) String() string {
 	v := vatTypeString[int(u)]
+	return v
+}
+
+func (u VATType) Amount() decimal.Decimal {
+	v := vatTypeAmount[u]
 	return v
 }
 
