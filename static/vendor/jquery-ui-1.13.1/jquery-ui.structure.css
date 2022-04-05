@@ -1,5 +1,5 @@
 /*!
- * jQuery UI CSS Framework 1.12.1
+ * jQuery UI CSS Framework 1.13.1
  * http://jqueryui.com
  *
  * Copyright jQuery Foundation and other contributors
@@ -8,6 +8,10 @@
  *
  * http://api.jqueryui.com/category/theming/
  */
+.ui-sortable-handle {
+	-ms-touch-action: none;
+	touch-action: none;
+}
 /* Layout helpers
 ----------------------------------*/
 .ui-helper-hidden {
@@ -49,7 +53,7 @@
 	left: 0;
 	position: absolute;
 	opacity: 0;
-	filter:Alpha(Opacity=0); /* support: IE8 */
+	-ms-filter: "alpha(opacity=0)"; /* support: IE8 */
 }
 
 .ui-front {

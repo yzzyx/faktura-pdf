@@ -10,6 +10,30 @@ $(function () {
         monthNamesShort: [ "Jan", "Feb", "Mar", "Apr", "Maj", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dec" ]
     });
 
+    $("#invoice_rows tbody").sortable({
+        "axis": "y",
+        "cancel": ".edit",
+        "stop": function (){
+            let x = document.querySelectorAll("#invoice_rows tbody tr");
+            let roworder = [];
+            for (let idx = 0; idx < x.length; idx++) {
+                let id = parseInt(x[idx].dataset["row"]);
+
+                // For rows that we still haven't created, we need to set the row index directly
+                if (isNaN(id)) {
+                    let input = $("input[name='row[]']", x[idx]);
+                    let row = JSON.parse(input.val());
+                    row.row_order = idx;
+                    input.val(JSON.stringify(row));
+                    id = 0; // placeholder for the new id
+                }
+                roworder.push(id);
+            }
+            $("input[name=roworder]").val(JSON.stringify(roworder));
+            $("#save-btn").show();
+        }
+    });
+
     $(".edit").on('click', function (ev) {
         let c = $(this).closest(".card");
         $(".card-display", c).hide();
@@ -26,8 +50,8 @@ $(function () {
         $('#invoice-row-modal').modal('show');
     });
 
-    $("#invoice_rows").on('click', "tbody tr", function (ev) {
-        let tr = $(this);
+    $("#invoice_rows").on('click', "tbody tr .edit", function (ev) {
+        let tr = $(this).closest("tr");
         let v = tr.data("json");
         if (!v) {
             v = JSON.parse($("input[name='row[]']").val());
@@ -142,6 +166,7 @@ $(function () {
             unit: parseInt($("#invoice-row-unit").val()),
             vat: parseInt($("#invoice-row-vat").val()),
             is_rot_rut: $("#invoice-row-rut-rot").is(":checked"),
+            row_order: document.querySelectorAll("#invoice_rows tbody tr").length,
         };
 
         let id = $("#invoice-row-id").val()

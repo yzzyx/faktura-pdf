@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 
 {% block css %}
-<link rel="stylesheet" href="{% static 'js/jquery-ui-1.12.1/jquery-ui.min.css' %}">
-<link rel="stylesheet" href="{% static 'js/jquery-ui-1.12.1/jquery-ui.theme.min.css' %}">
+<link rel="stylesheet" href="{% static 'vendor/jquery-ui-1.13.1/jquery-ui.min.css' %}">
+<link rel="stylesheet" href="{% static 'vendor/jquery-ui-1.13.1/jquery-ui.theme.min.css' %}">
 <link rel="stylesheet" href="{% static 'vendor/font-awesome-4.7.0/css/font-awesome.min.css' %}">
 <style>
     {% if invoice.ID > 0 %}
@@ -103,6 +103,7 @@
         </div>
     </div>
 
+    <input type="hidden" name="roworder" value="">
     <div class="card mt-2 mb-2">
         <div class="card-body">
             <h5 class="card-title">Fakturarader</h5>
@@ -127,7 +128,7 @@
                     <td class="text-right">{{ r.Total|money }}</td>
                     <td class="text-right">{{ r.VAT.String }}</td>
                     <td class="text-center">{% if r.IsRotRut %}<i class="fa fa-check"></i>{% endif %}</td>
-                    <td class="text-center">
+                    <td class="text-center edit">
                         <i class="fa fa-chevron-right"></i>
                     </td>
                 </tr>
@@ -158,7 +159,7 @@
 {% endblock %}
 
 {% block javascript %}
-<script src="{% static 'js/jquery-ui-1.12.1/jquery-ui.min.js' %}"></script>
+<script src="{% static 'vendor/jquery-ui-1.13.1/jquery-ui.min.js' %}"></script>
 <script src="{% static 'js/new.js' %}"></script>
 <script src="{% static 'js/invoice.js' %}"></script>
 {% endblock %}

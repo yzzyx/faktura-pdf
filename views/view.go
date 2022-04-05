@@ -158,7 +158,7 @@ func (v *View) Render(templateName string) error {
 		templateSet = v.builder.TemplateSets["base"]
 	}
 
-	tmp, err = templateSet.FromCache(templateName)
+	tmp, err = templateSet.FromFile(templateName)
 	if err != nil {
 		return err
 	}

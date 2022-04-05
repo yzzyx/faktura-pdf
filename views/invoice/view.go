@@ -136,6 +136,28 @@ func (v *View) HandlePost() error {
 		}
 	}
 
+	updatedRows := map[int]*models.InvoiceRow{}
+	rowOrderText := v.FormValueString("roworder")
+	if rowOrderText != "" {
+		rowOrder := []int{}
+		err = json.Unmarshal([]byte(rowOrderText), &rowOrder)
+		if err != nil {
+			return err
+		}
+
+		for k, id := range rowOrder {
+			for rowIdx := range invoice.Rows {
+				r := &invoice.Rows[rowIdx]
+				if r.ID != id || r.RowOrder == k {
+					continue
+				}
+
+				r.RowOrder = k
+				updatedRows[r.ID] = r
+			}
+		}
+	}
+
 	// Check for new rows
 	for _, rowData := range v.FormValueStringSlice("row[]") {
 		var row models.InvoiceRow
@@ -145,7 +167,11 @@ func (v *View) HandlePost() error {
 		}
 
 		if row.ID > 0 {
-			err = models.InvoiceRowUpdate(v.Ctx, row)
+			// This row has also been moved
+			if v, ok := updatedRows[row.ID]; ok {
+				row.RowOrder = v.RowOrder
+			}
+			updatedRows[row.ID] = &row
 		} else {
 			err = models.InvoiceRowAdd(v.Ctx, invoice.ID, row)
 		}
@@ -161,7 +187,15 @@ func (v *View) HandlePost() error {
 			return err
 		}
 
+		delete(updatedRows, rowNumber)
 		err = models.InvoiceRowRemove(v.Ctx, invoice.ID, rowNumber)
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, row := range updatedRows {
+		err = models.InvoiceRowUpdate(v.Ctx, *row)
 		if err != nil {
 			return err
 		}
