@@ -172,6 +172,51 @@ type InvoiceFilter struct {
 	Direction   string
 }
 
+type InvoiceTotals struct {
+	Incl     decimal.Decimal // Including VAT
+	Excl     decimal.Decimal // Excluding VAT
+	VAT25    decimal.Decimal // 25% VAT
+	VAT12    decimal.Decimal // 12% VAT
+	VAT6     decimal.Decimal // 6% VAT
+	Customer decimal.Decimal // Amount customer pays
+	ROTRUT   decimal.Decimal // Amount of ROT/RUT
+}
+
+func (i *Invoice) Totals() (totals InvoiceTotals) {
+	for _, row := range i.Rows {
+		priceInclRUT := row.Cost
+		if row.IsRotRut && row.RotRutServiceType != nil {
+			if row.RotRutServiceType.IsROT() {
+				priceInclRUT = row.Cost.Mul(decimal.NewFromFloat(0.7))
+				totals.ROTRUT = totals.ROTRUT.Add(row.Cost.Mul(decimal.NewFromFloat(0.3)).Mul(row.Count))
+			} else {
+				priceInclRUT = row.Cost.Mul(decimal.NewFromFloat(0.5))
+				totals.ROTRUT = totals.ROTRUT.Add(priceInclRUT.Mul(row.Count))
+			}
+		}
+
+		totals.Customer = totals.Customer.Add(priceInclRUT.Mul(row.Count))
+		totals.Incl = totals.Incl.Add(row.Total)
+
+		priceExcl := row.Cost.Div(decimal.NewFromInt(1).Add(row.VAT.Amount()))
+		rowTotalExcl := priceExcl.Mul(row.Count)
+		vatAmount := row.Total.Sub(rowTotalExcl)
+
+		switch row.VAT {
+		case 0:
+			totals.VAT25 = totals.VAT25.Add(vatAmount)
+		case 1:
+			totals.VAT12 = totals.VAT12.Add(vatAmount)
+		case 2:
+			totals.VAT6 = totals.VAT6.Add(vatAmount)
+		}
+
+		totals.Excl = totals.Excl.Add(rowTotalExcl)
+	}
+
+	return totals
+}
+
 func InvoiceGet(ctx context.Context, id int) (Invoice, error) {
 	var inv Invoice
 	err := pgxscan.Get(ctx, dbpool, &inv, `

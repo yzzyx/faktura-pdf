@@ -54,7 +54,7 @@ $(function () {
         let tr = $(this).closest("tr");
         let v = tr.data("json");
         if (!v) {
-            v = JSON.parse($("input[name='row[]']").val());
+            v = JSON.parse($("input[name='row[]']", tr).val());
         }
 
         $(".invoice-row-update").show();
@@ -93,6 +93,58 @@ $(function () {
         1: 0.12,
         2: 0.06,
         3: 0
+    }
+
+    function update_totals(ev) {
+        let totalIncl = 0;
+        let totalCustomer = 0;
+        let totalVAT25 = 0;
+        let totalVAT12 = 0;
+        let totalVAT6 = 0;
+        let totalROTRUT = 0;
+
+        let rows = $("#invoice_rows tbody tr");
+        for (let idx = 0; idx < rows.length; idx++) {
+            let tr = $(rows[idx]);
+            let v = tr.data("json");
+            if (!v) {
+                v = JSON.parse($("input[name='row[]']", tr).val());
+            }
+
+            let rowTotal = v.cost * v.count;
+            let priceInclRUT = v.cost;
+
+            if (v.is_rot_rut && v.rot_rut_service_type < 7) { // ROT
+                priceInclRUT = v.cost * 0.7;
+                totalROTRUT = totalROTRUT + (v.cost * 0.3 * v.count)
+            } else if (v.is_rot_rut && v.rot_rut_service_type > 6) { // RUT
+                priceInclRUT = v.cost * 0.5;
+                totalROTRUT = totalROTRUT + (v.cost * 0.5 * v.count)
+            }
+
+            totalIncl = totalIncl + rowTotal;
+            totalCustomer = totalCustomer + priceInclRUT * v.count;
+
+            let vatAmount = rowTotal - rowTotal/(1+vatAmounts[v.vat]);
+            switch (v.vat) {
+                case 0:
+                    totalVAT25 = totalVAT25 + vatAmount
+                    break;
+                case 1:
+                    totalVAT12 = totalVAT12 + vatAmount
+                    break;
+                case 2:
+                    totalVAT6 = totalVAT6 + vatAmount
+                    break;
+            }
+        }
+
+        $("#total-incl .sum").text(totalIncl.toFixed(2)).parent().toggle(totalIncl>0);
+        $("#total-vat-25 .sum").text(totalVAT25.toFixed(2)).parent().toggle(totalVAT25>0);
+        $("#total-vat-12 .sum").text(totalVAT12.toFixed(2)).parent().toggle(totalVAT12>0);
+        $("#total-vat-6 .sum").text(totalVAT6.toFixed(2)).parent().toggle(totalVAT6>0);
+        $("#total-rot-rut .sum").text(totalROTRUT.toFixed(2)).parent().toggle(totalROTRUT>0);
+        $("#total-customer .sum").text(totalCustomer.toFixed(2)).parent().toggle(totalCustomer>0);
     }
 
     let update_price = function (ev) {
@@ -212,6 +264,7 @@ $(function () {
         }
         $("#invoice-row-modal").modal('hide');
         $("#save-btn").show();
+        update_totals();
         return false;
     });
 });

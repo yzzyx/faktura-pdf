@@ -40,6 +40,7 @@ func (v *View) HandleGet() error {
 	}
 
 	v.SetData("invoice", invoice)
+	v.SetData("totals", invoice.Totals())
 	v.SetData("today", time.Now())
 	v.SetData("defaultDueDate", time.Now().AddDate(0, 1, 0))
 

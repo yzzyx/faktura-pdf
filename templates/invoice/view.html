@@ -135,7 +135,19 @@
                 {% endfor %}
                 </tbody>
             </table>
-            <button id="invoice-show-add-row" type="button" class="btn btn-sm btn-primary">Lägg till fakturarad</button>
+            <div class="row">
+                <div class="col-2 align-top">
+                    <button id="invoice-show-add-row" type="button" class="btn btn-sm btn-primary">Lägg till fakturarad</button>
+                </div>
+                <div class="col-10 text-right">
+                    <div id="total-incl" class="small" {% if totals.Incl.IsZero %}style="display: none;"{% endif %}>Totalt inkl moms: <span class="sum">{{totals.Incl|money}}</span></div>
+                    <div id="total-vat-25" class="small" {% if totals.VAT25.IsZero %}style="display: none;"{% endif %}>Moms (25 %): <span class="sum">{{totals.VAT25|money}}</span></div>
+                    <div id="total-vat-12" class="small" {% if totals.VAT12.IsZero %}style="display: none;"{% endif %}>Moms (12 %): <span class="sum">{{totals.VAT12|money}}</span></div>
+                    <div id="total-vat-6" class="small" {% if totals.VAT6.IsZero %}style="display: none;"{% endif %}>Moms (6 %): <span class="sum">{{totals.VAT6|money}}</span></div>
+                    <div id="total-rot-rut" class="small" {% if totals.ROTRUT.IsZero %}style="display: none;"{% endif %}>ROT / RUT: <span class="sum">{{totals.ROTRUT|money}}</span></div>
+                    <div id="total-customer" class="small" {% if totals.Customer.IsZero %}style="display: none;"{% endif %}>Kunden betalar: <span class="sum">{{totals.Customer|money}}</span></div>
+                </div>
+            </div>
         </div>
     </div>
 
