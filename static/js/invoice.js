@@ -252,7 +252,7 @@ $(function () {
                 newEl("td", {classList: "text-right", children: [ newEl("span", {textContent: entry.total.toFixed(2)}), ]}),
                 newEl("td", {classList: "text-right", children: [ newEl("span", {textContent: vat[entry.vat]}), ]}),
                 newEl("td", {classList: "text-center", children: [ entry.is_rot_rut ? newEl("i", {classList: "fa fa-check"}) : "", ]}),
-                newEl("td", {classList: "text-center", children: [ newEl("i", {classList: "fa fa-chevron-right"}), ]})
+                newEl("td", {classList: "text-center", children: [ newEl("i", {classList: "fa fa-chevron-right edit"}), ]})
             ]
         });
 
