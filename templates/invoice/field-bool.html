@@ -1,7 +1,7 @@
 <div class="form-check">
     <label class="form-check-label">
-        <input disabled name="{{field|lower}}_set" class="new-value" type="hidden" value="true">
-        <input disabled name="{{field|lower}}" class="new-value form-check-input" type="checkbox" value="true" autocomplete="off"{%if default %} checked{% endif %}>
+        <input {% if invoice.ID > 0 %}disabled{% endif %} name="{{field|lower}}_set" class="new-value" type="hidden" value="true">
+        <input {% if invoice.ID > 0 %}disabled{% endif %} name="{{field|lower}}" class="new-value form-check-input" type="checkbox" value="true" autocomplete="off"{%if default %} checked{% endif %}>
         {{name}}
     </label>
 </div>

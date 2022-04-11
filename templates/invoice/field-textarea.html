@@ -1,4 +1,4 @@
 <div class="form-group">
     <label>{{name}}</label>
-    <textarea disabled name="{{field|lower}}" class="new-value form-control form-control-sm form-inline">{{ val }}</textarea>
+    <textarea {% if invoice.ID > 0 %}disabled{% endif %} name="{{field|lower}}" class="new-value form-control form-control-sm form-inline">{{ val }}</textarea>
 </div>
