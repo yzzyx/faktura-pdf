@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
+	"time"
 
 	"github.com/shopspring/decimal"
 	"github.com/yzzyx/faktura-pdf/models"
@@ -59,6 +61,7 @@ func (v *Export) HandleGet() error {
 				},
 			},
 		}
+		rutBegaran.SetXMLNS()
 
 		arende := &rutBegaran.Arenden[0]
 		ua := arende.UtfortArbete
@@ -107,7 +110,9 @@ func (v *Export) HandleGet() error {
 			case models.RUTServiceTypeTillsynAvBostad:
 				ua.TillsynAvBostad.AntalTimmar += hours
 			case models.RUTServiceTypeTransportTillForsaljning:
+				return errors.New("export av transport till försäljning ej implementerat")
 			case models.RUTServiceTypeTvattVidTvattinrattning:
+				return errors.New("export av tvätt vid tvättinrättning ej implementerat")
 			}
 		}
 
@@ -118,14 +123,25 @@ func (v *Export) HandleGet() error {
 		return errors.New("export av ROT-ärenden ej implementerad")
 	}
 
-	begaran := rotrut.Begaran{
-		NamnPaBegaran:  rotrut.NamnPaBegaranTYPE(fmt.Sprintf("%s-%d-%d", rutRequest.Type, rutRequest.Invoice.Number, rutRequest.ID)),
-		HushallBegaran: rutBegaran,
-	}
+	now := time.Now()
+	begaran := rotrut.NewBegaran(fmt.Sprintf("%s-%d", rutRequest.Type, rutRequest.Invoice.Number))
+	begaran.HushallBegaran = rutBegaran
 
 	output, err := xml.MarshalIndent(begaran, "", "  ")
 	if err != nil {
 		return err
 	}
+
+	name := fmt.Sprintf("RUT-%d-%s.xml", rutRequest.Invoice.Number, now.Format("2006-01-02"))
+	name = strings.ReplaceAll(name, " ", "_")
+
+	headers := v.ResponseHeaders()
+	headers.Set("Content-Type", "application/xml")
+	headers.Set("Content-Disposition", "attachment; filename="+name)
+	err = v.RenderBytes([]byte(xml.Header))
+	if err != nil {
+		return err
+	}
+
 	return v.RenderBytes(output)
 }
