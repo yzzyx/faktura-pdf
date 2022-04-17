@@ -11,19 +11,13 @@ import (
 type ArendeUtfortArbeteRotTYPE struct {
 	XMLName xml.Name
 
-	Bygg *TimmarMaterialTYPE `xml:"Bygg"`
-
-	El *TimmarMaterialTYPE `xml:"El"`
-
-	GlasPlatarbete *TimmarMaterialTYPE `xml:"GlasPlatarbete"`
-
+	Bygg                *TimmarMaterialTYPE `xml:"Bygg"`
+	El                  *TimmarMaterialTYPE `xml:"El"`
+	GlasPlatarbete      *TimmarMaterialTYPE `xml:"GlasPlatarbete"`
 	MarkDraneringarbete *TimmarMaterialTYPE `xml:"MarkDraneringarbete"`
-
-	Murning *TimmarMaterialTYPE `xml:"Murning"`
-
-	MalningTapetsering *TimmarMaterialTYPE `xml:"MalningTapetsering"`
-
-	Vvs *TimmarMaterialTYPE `xml:"Vvs"`
+	Murning             *TimmarMaterialTYPE `xml:"Murning"`
+	MalningTapetsering  *TimmarMaterialTYPE `xml:"MalningTapetsering"`
+	Vvs                 *TimmarMaterialTYPE `xml:"Vvs"`
 
 	InnerXml string `xml:",innerxml"`
 }
@@ -31,51 +25,19 @@ type ArendeUtfortArbeteRotTYPE struct {
 type ArendeUtfortArbeteRutTYPE struct {
 	XMLName xml.Name
 
-	Stadning *TimmarMaterialTYPE `xml:"Stadning"`
-
-	KladOchTextilvard *TimmarMaterialTYPE `xml:"KladOchTextilvard"`
-
-	Snoskottning *TimmarMaterialTYPE `xml:"Snoskottning"`
-
-	Tradgardsarbete *TimmarMaterialTYPE `xml:"Tradgardsarbete"`
-
-	Barnpassning *TimmarMaterialTYPE `xml:"Barnpassning"`
-
-	Personligomsorg *TimmarMaterialTYPE `xml:"Personligomsorg"`
-
-	Flyttjanster *TimmarMaterialTYPE `xml:"Flyttjanster"`
-
-	ItTjanster *TimmarMaterialTYPE `xml:"ItTjanster"`
-
-	ReparationAvVitvaror *TimmarMaterialTYPE `xml:"ReparationAvVitvaror"`
-
-	Moblering *TimmarMaterialTYPE `xml:"Moblering"`
-
-	TillsynAvBostad *TimmarMaterialTYPE `xml:"TillsynAvBostad"`
-
+	Stadning                 *TimmarMaterialTYPE `xml:"Stadning"`
+	KladOchTextilvard        *TimmarMaterialTYPE `xml:"KladOchTextilvard"`
+	Snoskottning             *TimmarMaterialTYPE `xml:"Snoskottning"`
+	Tradgardsarbete          *TimmarMaterialTYPE `xml:"Tradgardsarbete"`
+	Barnpassning             *TimmarMaterialTYPE `xml:"Barnpassning"`
+	Personligomsorg          *TimmarMaterialTYPE `xml:"Personligomsorg"`
+	Flyttjanster             *TimmarMaterialTYPE `xml:"Flyttjanster"`
+	ItTjanster               *TimmarMaterialTYPE `xml:"ItTjanster"`
+	ReparationAvVitvaror     *TimmarMaterialTYPE `xml:"ReparationAvVitvaror"`
+	Moblering                *TimmarMaterialTYPE `xml:"Moblering"`
+	TillsynAvBostad          *TimmarMaterialTYPE `xml:"TillsynAvBostad"`
 	TransportTillForsaljning *SchablonarbeteTYPE `xml:"TransportTillForsaljning"`
-
-	TvattVidTvattinrattning *SchablonarbeteTYPE `xml:"TvattVidTvattinrattning"`
-
-	InnerXml string `xml:",innerxml"`
-}
-
-type ArendeTYPE struct {
-	XMLName xml.Name
-
-	Kopare PeOrgNrTYPE `xml:"Kopare"`
-
-	BetalningsDatum DatumTYPE `xml:"BetalningsDatum"`
-
-	PrisForArbete string `xml:"PrisForArbete"`
-
-	BetaltBelopp BeloppTYPE `xml:"BetaltBelopp"`
-
-	BegartBelopp BeloppTYPE `xml:"BegartBelopp"`
-
-	FakturaNr *FakturaNrTYPE `xml:"FakturaNr"`
-
-	Ovrigkostnad *OvrigKostnadTYPE `xml:"Ovrigkostnad"`
+	TvattVidTvattinrattning  *SchablonarbeteTYPE `xml:"TvattVidTvattinrattning"`
 
 	InnerXml string `xml:",innerxml"`
 }
@@ -83,27 +45,17 @@ type ArendeTYPE struct {
 type RotArendeTYPE struct {
 	XMLName xml.Name
 
-	Fastighetsbeteckning *FastighetsbeteckningTYPE `xml:"Fastighetsbeteckning"`
-
-	LagenhetsNr *LagenhetsNrTYPE `xml:"LagenhetsNr"`
-
-	BrfOrgNr *BrfOrgNrTYPE `xml:"BrfOrgNr"`
-
-	UtfortArbete *ArendeUtfortArbeteRotTYPE `xml:"UtfortArbete"`
-
-	Kopare PeOrgNrTYPE `xml:"Kopare"`
-
-	BetalningsDatum DatumTYPE `xml:"BetalningsDatum"`
-
-	PrisForArbete string `xml:"PrisForArbete"`
-
-	BetaltBelopp BeloppTYPE `xml:"BetaltBelopp"`
-
-	BegartBelopp BeloppTYPE `xml:"BegartBelopp"`
-
-	FakturaNr *FakturaNrTYPE `xml:"FakturaNr"`
-
-	Ovrigkostnad *OvrigKostnadTYPE `xml:"Ovrigkostnad"`
+	Fastighetsbeteckning *FastighetsbeteckningTYPE  `xml:"Fastighetsbeteckning"`
+	LagenhetsNr          *LagenhetsNrTYPE           `xml:"LagenhetsNr"`
+	BrfOrgNr             *BrfOrgNrTYPE              `xml:"BrfOrgNr"`
+	UtfortArbete         *ArendeUtfortArbeteRotTYPE `xml:"UtfortArbete"`
+	Kopare               PeOrgNrTYPE                `xml:"Kopare"`
+	BetalningsDatum      DatumTYPE                  `xml:"BetalningsDatum"`
+	PrisForArbete        string                     `xml:"PrisForArbete"`
+	BetaltBelopp         BeloppTYPE                 `xml:"BetaltBelopp"`
+	BegartBelopp         BeloppTYPE                 `xml:"BegartBelopp"`
+	FakturaNr            *FakturaNrTYPE             `xml:"FakturaNr"`
+	Ovrigkostnad         *OvrigKostnadTYPE          `xml:"Ovrigkostnad"`
 
 	InnerXml string `xml:",innerxml"`
 }
@@ -111,31 +63,28 @@ type RotArendeTYPE struct {
 type HushallArendeTYPE struct {
 	XMLName xml.Name
 
-	UtfortArbete *ArendeUtfortArbeteRutTYPE `xml:"UtfortArbete"`
-
-	Kopare PeOrgNrTYPE `xml:"Kopare"`
-
-	BetalningsDatum DatumTYPE `xml:"BetalningsDatum"`
-
-	PrisForArbete string `xml:"PrisForArbete"`
-
-	BetaltBelopp BeloppTYPE `xml:"BetaltBelopp"`
-
-	BegartBelopp BeloppTYPE `xml:"BegartBelopp"`
-
-	FakturaNr FakturaNrTYPE `xml:"FakturaNr"`
-
-	Ovrigkostnad OvrigKostnadTYPE `xml:"Ovrigkostnad"`
+	Kopare          PeOrgNrTYPE                `xml:"Kopare"`
+	BetalningsDatum DatumTYPE                  `xml:"BetalningsDatum"`
+	PrisForArbete   string                     `xml:"PrisForArbete"`
+	BetaltBelopp    BeloppTYPE                 `xml:"BetaltBelopp"`
+	BegartBelopp    BeloppTYPE                 `xml:"BegartBelopp"`
+	FakturaNr       FakturaNrTYPE              `xml:"FakturaNr"`
+	Ovrigkostnad    OvrigKostnadTYPE           `xml:"Ovrigkostnad"`
+	UtfortArbete    *ArendeUtfortArbeteRutTYPE `xml:"UtfortArbete"`
 
 	InnerXml string `xml:",innerxml"`
 }
 
 type HushallBegaranTYPE struct {
 	XMLName xml.Name
-
 	Arenden []HushallArendeTYPE `xml:",any"`
 
+	XMLNs    string `xml:"xmlns,attr"`
 	InnerXml string `xml:",innerxml"`
+}
+
+func (t *HushallBegaranTYPE) SetXMLNS() {
+	t.XMLNs = "http://xmls.skatteverket.se/se/skatteverket/ht/komponent/begaran/6.0"
 }
 
 type RotBegaranTYPE struct {
@@ -149,8 +98,7 @@ type RotBegaranTYPE struct {
 type TimmarMaterialTYPE struct {
 	XMLName xml.Name
 
-	AntalTimmar AntalTimmarTYPE `xml:"AntalTimmar"`
-
+	AntalTimmar     AntalTimmarTYPE     `xml:"AntalTimmar"`
 	Materialkostnad MaterialkostnadTYPE `xml:"Materialkostnad"`
 
 	InnerXml string `xml:",innerxml"`
@@ -164,10 +112,12 @@ type SchablonarbeteTYPE struct {
 	InnerXml string `xml:",innerxml"`
 }
 
+type NamnPaBegaranTYPE struct {
+	Namn  string `xml:",chardata"`
+	XMLNs string `xml:"xmlns,attr"`
+}
+
 // XSD SimpleType declarations
-
-type NamnPaBegaranTYPE string
-
 type FakturaNrTYPE string
 
 type BrfOrgNrTYPE string

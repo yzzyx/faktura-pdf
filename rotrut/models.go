@@ -8,13 +8,21 @@ import (
 
 // Element
 type Begaran struct {
-	XMLName xml.Name `xml:"Begaran"`
-
-	NamnPaBegaran NamnPaBegaranTYPE `xml:"NamnPaBegaran"`
-
-	RotBegaran *RotBegaranTYPE `xml:"RotBegaran"`
-
+	XMLName        xml.Name            `xml:"Begaran"`
+	NamnPaBegaran  NamnPaBegaranTYPE   `xml:"NamnPaBegaran"`
+	RotBegaran     *RotBegaranTYPE     `xml:"RotBegaran"`
 	HushallBegaran *HushallBegaranTYPE `xml:"HushallBegaran"`
+	XMLNs          string              `xml:"xmlns,attr"`
+}
+
+func NewBegaran(namn string) *Begaran {
+	return &Begaran{
+		XMLNs: "http://xmls.skatteverket.se/se/skatteverket/ht/begaran/6.0",
+		NamnPaBegaran: NamnPaBegaranTYPE{
+			Namn:  namn,
+			XMLNs: "http://xmls.skatteverket.se/se/skatteverket/ht/komponent/begaran/6.0",
+		},
+	}
 }
 
 // XSD ComplexType declarations
