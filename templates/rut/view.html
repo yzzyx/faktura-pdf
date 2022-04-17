@@ -137,5 +137,14 @@
         <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#invoice-row-modal">Markera som betalad av skatteverket</button>
         <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#invoice-row-modal">Markera som avslagen av skatteverket</button>
     {% endif %}
+
+    {% if canExport %}
+        <br>
+        <small>
+            Underlag skickas in via skatteverkets hemsida -
+            <a href="https://sso.skatteverket.se/ht/ht_web_extranat/secure/valjFilBegaran.do">https://sso.skatteverket.se/ht/ht_web_extranat/secure/valjFilBegaran.do</a>.
+            Det är också möjligt att lämna in ansökan manuellt
+        </small>
+    {% endif %}
 </form>
 {% endblock %}
