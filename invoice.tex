@@ -49,15 +49,15 @@
 \fontsize{48}{0}\selectfont
 \hspace{-0.6em}
 \textbf{
-oddbike}}
+Faktura nr <invoiceNumber>
+}}
 
 \vspace{2em}
 \begin{minipage}[t]{0.45\textwidth}
-{\huge
-    Faktura nr <invoiceNumber>}\\
-{\large
-    Bankgiro 5807-3339 \\
-    Summa att betala <total>\\
+{\huge Betalningsinfo}\\
+{\Large\color{OliveGreen}
+Bankgiro 5807-3339 \\
+Summa att betala <totalInclRUT>\\
 }
     \vspace{2em}
 \end{minipage}
@@ -66,7 +66,6 @@ oddbike}}
 <customerName>\\
 <customerEmail>\\
 <customerAddress1>\\
-<customerAddress2>\\
 <customerPostcode>~<customerCity>\\
 \end{minipage}
 
@@ -78,39 +77,33 @@ oddbike}}
 \hline
 \end{tabular*}
 
-\begin{tabularx}{\textwidth}{Xrrrrrrrc}
+\begin{tabularx}{\textwidth}{Xrrrrrc}
 \rowcolor{Gray}
 \changefont \textbf{Beskrivning} &
-\multicolumn{1}{l}{\changefont \textbf{À pris (inkl. moms)}} &
-\multicolumn{1}{l}{\changefont \textbf{À pris (inkl. RUT)}} &
+\multicolumn{1}{l}{\changefont \textbf{à pris (inkl. moms)}} &
 \multicolumn{1}{c}{\changefont \textbf{Antal}} &
 \multicolumn{1}{c}{\changefont \textbf{Enhet}} &
 \multicolumn{1}{l}{\changefont \textbf{Totalt}} &
 \multicolumn{1}{c}{\changefont \textbf{Moms}} &
-\multicolumn{1}{c}{\changefont \textbf{Moms}} &
 \changefont \textbf{RUT}\\
 \hline
-    <row><description> & <price> & <priceInclRUT> & <count> & <unit> & <rowtotal> & <vat> & <vatAmount> & <isRotRut>\\
+    <row><description> & <price> & <count> & <unit> & <rowtotal> & <vat> & <isRotRut>\\
     </row>
     & & & & & & \\
 \hline
     \multicolumn{5}{r}{\textbf{Att betala}} & \multicolumn{2}{r}{<total>} \\
 \multicolumn{5}{r}{\textbf{Varav moms (25 \%)}} & \multicolumn{2}{r}{<totalVat25>} \\
-\multicolumn{5}{r}{\textbf{Varav moms (12 \%)}} & \multicolumn{2}{r}{<totalVat12>} \\
-\multicolumn{5}{r}{\textbf{Varav moms (6 \%)}} & \multicolumn{2}{r}{<totalVat6>} \\
-\multicolumn{5}{r}{\textbf{Exkl moms}} & \multicolumn{2}{r}{<totalExcl>} \\
-\multicolumn{5}{r}{\textbf{Total rabatt RUT}} & \multicolumn{2}{r}{<totalRUT>} \\
-\multicolumn{5}{r}{\textbf{Total rabatt ROT}} & \multicolumn{2}{r}{<totalROT>} \\
 \hline
 \end{tabularx}
 
 \renewcommand\arraystretch{1}
 
 \vspace{2em}
-Samtliga priser är angivna inklusive moms och efter godkänt RUT-avdrag. Framkörning/Maskinkostnad går dock ej under RUT.
-Skulle avdraget ej godkännas av anledningar som kan härledas beställaren faktureras denne motsvarande del. \\
+<additionalInfo> \\
 
-Betalning sker till bankgiro, märk betalningen med fakturanummer och ditt namn. \\
+Samtliga priser är angivna inklusive moms och efter godkänt RUT-avdrag. Framkörning/Maskinkostnad går dock ej under RUT. Skulle avdraget ej godkännas av anledningar som kan härledas beställaren faktureras denne motsvarande del. \\
+
+Betalning sker till bankgiro, märk betalningen med fakturanummer. \\
 ~\\
 
 Mvh, Elias
