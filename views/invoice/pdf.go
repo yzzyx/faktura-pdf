@@ -13,7 +13,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/shopspring/decimal"
 	"github.com/yzzyx/faktura-pdf/models"
 )
 
@@ -59,40 +58,22 @@ func generatePDF(ctx context.Context, invoice models.Invoice, templateFile strin
 	startRow := strings.Index(template, "<row>")
 	endRow := strings.Index(template, "</row>")
 
-	totalVAT := map[models.VATType]decimal.Decimal{}
-	totalExcl := decimal.Decimal{}
-	totalROTRUT := map[models.RUTType]decimal.Decimal{}
+	totals := models.InvoiceTotals{}
 
 	if startRow > -1 && endRow > -1 {
 		rowStr := template[startRow+5 : endRow]
 		rowData := ""
 
 		for _, row := range invoice.Rows {
-			priceExcl := row.Cost.Div(decimal.NewFromInt(1).Add(row.VAT.Amount()))
-			vatAmount := row.Cost.Sub(priceExcl)
-			totalVAT[row.VAT] = totalVAT[row.VAT].Add(vatAmount)
-			totalExcl = totalExcl.Add(priceExcl)
-
-			priceInclRUT := row.Cost
-			if row.IsRotRut && row.RotRutServiceType != nil {
-				if row.RotRutServiceType.IsROT() {
-					priceInclRUT = row.Cost.Mul(decimal.NewFromFloat(0.7))
-					totalROTRUT[models.RUTTypeROT] = totalROTRUT[models.RUTTypeROT].Add(row.Cost.Mul(decimal.NewFromFloat(0.3)))
-				} else {
-					priceInclRUT = row.Cost.Mul(decimal.NewFromFloat(0.5))
-					totalROTRUT[models.RUTTypeRUT] = totalROTRUT[models.RUTTypeRUT].Add(priceInclRUT)
-				}
-			}
+			rowTotals := row.Totals(true, true)
+			totals = totals.Add(rowTotals)
 
 			s := strings.ReplaceAll(rowStr, "<description>", latexEscape(row.Description))
-			s = strings.ReplaceAll(s, "<price>", row.Cost.StringFixedBank(2))
-			s = strings.ReplaceAll(s, "<priceExcl>", priceExcl.StringFixedBank(2))
-			s = strings.ReplaceAll(s, "<priceInclRUT>", priceInclRUT.StringFixedBank(2))
+			s = strings.ReplaceAll(s, "<price>", rowTotals.PPU.StringFixedBank(2))
 			s = strings.ReplaceAll(s, "<count>", row.Count.Truncate(2).String())
 			s = strings.ReplaceAll(s, "<unit>", latexEscape(row.Unit.String()))
 			s = strings.ReplaceAll(s, "<vat>", latexEscape(row.VAT.String()))
-			s = strings.ReplaceAll(s, "<vatAmount>", vatAmount.StringFixedBank(2))
-			s = strings.ReplaceAll(s, "<rowtotal>", row.Total.StringFixedBank(2))
+			s = strings.ReplaceAll(s, "<rowtotal>", rowTotals.Total.StringFixedBank(2))
 
 			rotRut := ""
 			if row.IsRotRut {
@@ -114,13 +95,14 @@ func generatePDF(ctx context.Context, invoice models.Invoice, templateFile strin
 		"invoicedate":      invoicedate.Format("2006-01-02"),
 		"duedate":          dueDate.Format("2006-01-02"),
 		"invoicenumber":    fmt.Sprintf("%d", invoice.Number),
-		"total":            invoice.TotalSum.StringFixedBank(2),
-		"totalexcl":        totalExcl.StringFixedBank(2),
-		"totalvat25":       totalVAT[models.VATType(0)].StringFixedBank(2),
-		"totalvat12":       totalVAT[models.VATType(1)].StringFixedBank(2),
-		"totalvat6":        totalVAT[models.VATType(2)].StringFixedBank(2),
-		"totalrut":         totalROTRUT[models.RUTTypeRUT].StringFixedBank(2),
-		"totalrot":         totalROTRUT[models.RUTTypeROT].StringFixedBank(2),
+		"total":            totals.Total.StringFixedBank(2),
+		"totalexcl":        totals.Excl.StringFixedBank(2),
+		"totalinclrut":     totals.Incl.Sub(totals.ROTRUT).StringFixedBank(2),
+		"totalvat25":       totals.VAT25.StringFixedBank(2),
+		"totalvat12":       totals.VAT12.StringFixedBank(2),
+		"totalvat6":        totals.VAT6.StringFixedBank(2),
+		"totalrut":         totals.ROTRUT.StringFixedBank(2),
+		"totalrot":         totals.ROTRUT.StringFixedBank(2),
 		"additionalinfo":   invoice.AdditionalInfo,
 	}
 

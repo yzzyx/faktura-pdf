@@ -173,6 +173,7 @@ type InvoiceFilter struct {
 }
 
 type InvoiceTotals struct {
+	Total    decimal.Decimal // Including or Excluding VAT and ROT/RUT, depending on flag
 	Incl     decimal.Decimal // Including VAT
 	Excl     decimal.Decimal // Excluding VAT
 	VAT25    decimal.Decimal // 25% VAT
@@ -180,38 +181,79 @@ type InvoiceTotals struct {
 	VAT6     decimal.Decimal // 6% VAT
 	Customer decimal.Decimal // Amount customer pays
 	ROTRUT   decimal.Decimal // Amount of ROT/RUT
+
+	// For single rows
+	PPU           decimal.Decimal // Price-Per-Unit including or excluding VAT and ROT/RUT, depending on flag
+	PPUIncl       decimal.Decimal // Price-Per-Unit Including VAT
+	PPUExcl       decimal.Decimal // Price-Per-Unit excluding VAT
+	ROTRUTPerUnit decimal.Decimal // ROT/RUT per unit
 }
 
-func (i *Invoice) Totals() (totals InvoiceTotals) {
+func (totals InvoiceTotals) Add(rowTotals InvoiceTotals) (combined InvoiceTotals) {
+	combined.Total = totals.Total.Add(rowTotals.Total)
+	combined.Incl = totals.Incl.Add(rowTotals.Incl)
+	combined.Excl = totals.Excl.Add(rowTotals.Excl)
+	combined.VAT25 = totals.VAT25.Add(rowTotals.VAT25)
+	combined.VAT12 = totals.VAT12.Add(rowTotals.VAT12)
+	combined.VAT6 = totals.VAT6.Add(rowTotals.VAT6)
+	combined.Customer = totals.Customer.Add(rowTotals.Customer)
+	combined.ROTRUT = totals.ROTRUT.Add(rowTotals.ROTRUT)
+	return combined
+}
+
+func (i *Invoice) Totals(IncludeVAT, IncludeROTRUT bool) (totals InvoiceTotals) {
 	for _, row := range i.Rows {
-		priceInclRUT := row.Cost
-		if row.IsRotRut && row.RotRutServiceType != nil {
-			if row.RotRutServiceType.IsROT() {
-				priceInclRUT = row.Cost.Mul(decimal.NewFromFloat(0.7))
-				totals.ROTRUT = totals.ROTRUT.Add(row.Cost.Mul(decimal.NewFromFloat(0.3)).Mul(row.Count))
-			} else {
-				priceInclRUT = row.Cost.Mul(decimal.NewFromFloat(0.5))
-				totals.ROTRUT = totals.ROTRUT.Add(priceInclRUT.Mul(row.Count))
-			}
+		rowTotals := row.Totals(IncludeVAT, IncludeROTRUT)
+		totals = totals.Add(rowTotals)
+	}
+
+	return totals
+}
+
+func (row *InvoiceRow) Totals(IncludeVAT bool, IncludeROTRUT bool) (totals InvoiceTotals) {
+	priceInclRUT := row.Cost
+	totals.PPUIncl = row.Cost
+
+	if row.IsRotRut && row.RotRutServiceType != nil {
+		if row.RotRutServiceType.IsROT() {
+			priceInclRUT = row.Cost.Mul(decimal.NewFromFloat(0.7))
+			totals.ROTRUT = totals.ROTRUT.Add(row.Cost.Mul(decimal.NewFromFloat(0.3)).Mul(row.Count))
+		} else {
+			priceInclRUT = row.Cost.Mul(decimal.NewFromFloat(0.5))
+			totals.ROTRUT = totals.ROTRUT.Add(priceInclRUT.Mul(row.Count))
 		}
+		totals.ROTRUTPerUnit = row.Cost.Mul(row.Count).Sub(priceInclRUT)
+	}
 
-		totals.Customer = totals.Customer.Add(priceInclRUT.Mul(row.Count))
-		totals.Incl = totals.Incl.Add(row.Total)
+	totals.Customer = totals.Customer.Add(priceInclRUT.Mul(row.Count))
+	totals.Incl = totals.Incl.Add(row.Total)
 
-		priceExcl := row.Cost.Div(decimal.NewFromInt(1).Add(row.VAT.Amount()))
-		rowTotalExcl := priceExcl.Mul(row.Count)
-		vatAmount := row.Total.Sub(rowTotalExcl)
+	priceExcl := row.Cost.Div(decimal.NewFromInt(1).Add(row.VAT.Amount()))
+	totals.Excl = priceExcl.Mul(row.Count)
+	totals.PPUExcl = priceExcl
+	vatAmount := totals.Incl.Sub(totals.Excl)
 
-		switch row.VAT {
-		case 0:
-			totals.VAT25 = totals.VAT25.Add(vatAmount)
-		case 1:
-			totals.VAT12 = totals.VAT12.Add(vatAmount)
-		case 2:
-			totals.VAT6 = totals.VAT6.Add(vatAmount)
+	if IncludeVAT {
+		totals.Total = totals.Incl
+		totals.PPU = totals.PPUIncl
+
+		if IncludeROTRUT {
+			totals.Total = totals.Customer
+			totals.PPU = priceInclRUT
+			vatAmount = priceInclRUT.Sub(priceInclRUT.Div(decimal.NewFromInt(1).Add(row.VAT.Amount())))
 		}
+	} else {
+		totals.Total = totals.Excl
+		totals.PPU = totals.PPUExcl
+	}
 
-		totals.Excl = totals.Excl.Add(rowTotalExcl)
+	switch row.VAT {
+	case 0:
+		totals.VAT25 = vatAmount
+	case 1:
+		totals.VAT12 = vatAmount
+	case 2:
+		totals.VAT6 = vatAmount
 	}
 
 	return totals
