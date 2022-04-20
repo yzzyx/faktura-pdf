@@ -18,13 +18,22 @@ func NewList() *List {
 // HandleGet displays a list of invoices
 func (v *List) HandleGet() error {
 	f := models.InvoiceFilter{}
+
 	f.OrderBy = v.FormValueString("orderby")
 	f.Direction = v.FormValueString("dir")
-	invoices, err := models.InvoiceListActive(v.Ctx, f)
+
+	filterPaid := false
+	if v.FormValueBool("paid") {
+		f.ListPaid = true
+		filterPaid = true
+	}
+
+	invoices, err := models.InvoiceList(v.Ctx, f)
 	if err != nil {
 		return err
 	}
 
+	v.SetData("filterPaid", filterPaid)
 	v.SetData("invoices", invoices)
 
 	if v.FormValueBool("content") {

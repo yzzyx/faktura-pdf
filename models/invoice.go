@@ -167,9 +167,9 @@ type InvoiceRow struct {
 }
 
 type InvoiceFilter struct {
-	IncludePaid bool
-	OrderBy     string
-	Direction   string
+	ListPaid  bool
+	OrderBy   string
+	Direction string
 }
 
 type InvoiceTotals struct {
@@ -292,7 +292,7 @@ WHERE id = $1`, invoice.ID,
 	return invoice.ID, nil
 }
 
-func InvoiceListActive(ctx context.Context, f InvoiceFilter) ([]Invoice, error) {
+func InvoiceList(ctx context.Context, f InvoiceFilter) ([]Invoice, error) {
 	var invoices []Invoice
 	query := `SELECT
 invoice.id,
@@ -331,6 +331,15 @@ INNER JOIN customer ON customer.id = invoice.customer_id`
 		f.Direction = "ASC"
 	}
 
+	filterStrings := []string{}
+
+	if f.ListPaid {
+		filterStrings = append(filterStrings, "is_paid")
+	} else {
+		filterStrings = append(filterStrings, "not is_paid")
+	}
+
+	query += " WHERE " + strings.Join(filterStrings, " AND ")
 	query += fmt.Sprintf(" ORDER BY %s %s", orderBy, f.Direction)
 	err := pgxscan.Select(ctx, dbpool, &invoices, query)
 	if err != nil {

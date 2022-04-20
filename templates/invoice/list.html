@@ -7,6 +7,14 @@
 {% block content %}
 <h4 class="mt-1 mb-2">Fakturor</h4>
 
+<ul class="nav nav-tabs">
+    <li class="nav-item">
+        <a class="nav-link {% if not filterPaid %}active{% endif %}" href="{% url 'invoice-list' %}">Pågående ärenden</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% if filterPaid %}active{% endif %}" href="{% url 'invoice-list' %}?paid=1">Tidigare ärenden</a>
+    </li>
+</ul>
 <table id="invoice-list" class="table table-striped sortable" data-target="#invoice-list tbody" data-url="{% url 'invoice-list' %}">
     <thead>
         <tr>
