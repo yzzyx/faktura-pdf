@@ -72,6 +72,7 @@
                 <small>
                     {{invoice.Customer.Name}}
                     {{invoice.Customer.Email}}
+                    {{invoice.Customer.Telephone}}
                 </small>
             </div>
             <div class="card-display">
@@ -94,6 +95,7 @@
             <div class="card-edit">
                 {% include "invoice/field.html" with name="Namn" field="customer.name" val=invoice.Customer.Name %}
                 {% include "invoice/field.html" with name="E-post" field="customer.email" val=invoice.Customer.Email %}
+                {% include "invoice/field.html" with name="Telefonnummer" field="customer.telephone" val=invoice.Customer.Telephone %}
                 {% include "invoice/field.html" with name="Personnummer" field="customer.pnr" val=invoice.Customer.PNR %}
                 {% include "invoice/field.html" with name="Adress 1" field="customer.address1" val=invoice.Customer.Address1 %}
                 {% include "invoice/field.html" with name="Adress 2" field="customer.address2" val=invoice.Customer.Address2 %}

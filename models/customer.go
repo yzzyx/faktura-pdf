@@ -6,14 +6,15 @@ import (
 )
 
 type Customer struct {
-	ID       int
-	Name     string
-	Email    string
-	Address1 string
-	Address2 string
-	Postcode string
-	City     string
-	PNR      string
+	ID        int
+	Name      string
+	Email     string
+	Address1  string
+	Address2  string
+	Postcode  string
+	City      string
+	PNR       string
+	Telephone string
 }
 
 func CustomerSave(ctx context.Context, customer Customer) (int, error) {
@@ -26,7 +27,8 @@ address1 = $4,
 address2 = $5,
 postcode = $6,
 city = $7,
-pnr = $8
+pnr = $8,
+telephone = $9
 WHERE id = $1`, customer.ID,
 			customer.Name,
 			customer.Email,
@@ -34,14 +36,15 @@ WHERE id = $1`, customer.ID,
 			customer.Address2,
 			customer.Postcode,
 			customer.City,
-			customer.PNR)
+			customer.PNR,
+			customer.Telephone)
 		return customer.ID, err
 	}
 
 	query := `INSERT INTO customer 
-(name, email, address1, address2, postcode, city, pnr)
+(name, email, address1, address2, postcode, city, pnr, telephone)
 VALUES
-($1, $2, $3, $4, $5, $6, $7)
+($1, $2, $3, $4, $5, $6, $7, $8)
 RETURNING id`
 
 	err := dbpool.QueryRow(ctx, query,
@@ -51,7 +54,8 @@ RETURNING id`
 		customer.Address2,
 		customer.Postcode,
 		customer.City,
-		customer.PNR).Scan(&customer.ID)
+		customer.PNR,
+		customer.Telephone).Scan(&customer.ID)
 	if err != nil {
 		fmt.Println("cannot create customer:", err)
 		fmt.Println("query:", query)

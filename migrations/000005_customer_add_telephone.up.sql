@@ -1,0 +1,3 @@
+BEGIN;
+ALTER TABLE customer ADD COLUMN telephone text DEFAULT '';
+COMMIT;

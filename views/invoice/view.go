@@ -77,16 +77,17 @@ func (v *View) HandlePost() error {
 	}
 
 	fields := map[string]interface{}{
-		"customer.name":     &invoice.Customer.Name,
-		"customer.email":    &invoice.Customer.Email,
-		"customer.address1": &invoice.Customer.Address1,
-		"customer.address2": &invoice.Customer.Address2,
-		"customer.postcode": &invoice.Customer.Postcode,
-		"customer.city":     &invoice.Customer.City,
-		"customer.pnr":      &invoice.Customer.PNR,
-		"additional_info":   &invoice.AdditionalInfo,
-		"date_due":          &invoice.DateDue,
-		"date_invoiced":     &invoice.DateInvoiced,
+		"customer.name":      &invoice.Customer.Name,
+		"customer.email":     &invoice.Customer.Email,
+		"customer.address1":  &invoice.Customer.Address1,
+		"customer.address2":  &invoice.Customer.Address2,
+		"customer.postcode":  &invoice.Customer.Postcode,
+		"customer.city":      &invoice.Customer.City,
+		"customer.pnr":       &invoice.Customer.PNR,
+		"customer.telephone": &invoice.Customer.Telephone,
+		"additional_info":    &invoice.AdditionalInfo,
+		"date_due":           &invoice.DateDue,
+		"date_invoiced":      &invoice.DateInvoiced,
 	}
 
 	for formName, field := range fields {
