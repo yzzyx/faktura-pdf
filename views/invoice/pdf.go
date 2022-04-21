@@ -131,7 +131,7 @@ func generatePDF(ctx context.Context, invoice models.Invoice, templateFile strin
 	}()
 
 	filename := fmt.Sprintf("invoice-%s-%d", time.Now().Format("2006-01-02"), invoice.Number)
-	cmd := exec.CommandContext(ctx, "pdflatex",
+	cmd := exec.CommandContext(ctx, "xelatex",
 		"-jobname", filename,
 		"-output-directory", tmpdir,
 		"-no-shell-escape",

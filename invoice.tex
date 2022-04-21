@@ -3,7 +3,7 @@
 
 \geometry{
 	paper=a4paper, % Paper size, change to letterpaper for US letter size
-	top=3cm, % Top margin
+	top=2cm, % Top margin
 	bottom=5cm, % Bottom margin
 	left=2cm, % Left margin
 	right=2cm, % Right margin
@@ -26,13 +26,30 @@
 \usepackage{longtable}
 \usepackage{fancybox}
 
-\usepackage[T1]{fontenc}
+\usepackage{fontspec}
+\setmainfont[%
+Path =  /usr/share/texlive/texmf-dist/fonts/opentype/impallari/raleway/ ,
+UprightFont = Raleway-Regular ,
+BoldFont = Raleway-Bold ,
+ItalicFont = Raleway-Regular-Italic ,
+Extension = .otf
+]{Raleway}
+
+\newfontfamily\ralewaythin[%
+Path =  /usr/share/texlive/texmf-dist/fonts/opentype/impallari/raleway/ ,
+UprightFont = Raleway-ExtraLight ,
+BoldFont = Raleway-SemiBold ,
+ItalicFont = Raleway-ExtraLight-Italic ,
+Extension = .otf
+]{Raleway}
 
 \newcommand{\changefont}{%
         \fontsize{9}{11}\selectfont
     }
 
 \definecolor{Gray}{gray}{0.9}
+\definecolor{Primary}{HTML}{519548}
+\definecolor{Secondary}{HTML}{88C425}
 
 \begin{document}
 \pagestyle{fancy}
@@ -45,22 +62,32 @@
 \setlength{\parindent}{0pt}
 \cornersize{.3}
 
-{\color{OliveGreen}
-\fontsize{48}{0}\selectfont
-\hspace{-0.6em}
-\textbf{
-Faktura nr <invoiceNumber>
-}}
+\begin{minipage}[b]{0.4\textwidth}
+\raggedright
+{\color{Primary}
+\fontsize{36}{0}\selectfont
+\textbf{Faktura}}
+\end{minipage}%
+\begin{minipage}[b]{0.6\textwidth}
+\raggedleft
+{\color{Secondary}
+\fontsize{36}{0}\selectfont
+\textbf{GEN arborist AB}}
+\end{minipage}
 
 \vspace{2em}
-\begin{minipage}[t]{0.45\textwidth}
+\begin{minipage}[t]{0.6\textwidth}
 {\huge Betalningsinfo}\\
-{\Large\color{OliveGreen}
-Bankgiro 5807-3339 \\
-Summa att betala <totalInclRUT>\\
+{\large\color{Primary}
+\begin{tabularx}{\textwidth}{@{}lr}
+Att betala & <totalInclRUT> kr \\
+Förfallodatum & <dueDate> \\
+Referensnummer / OCR & <invoiceNumber> \\
+Bankgiro & 5807-3339 \\
+\end{tabularx}
 }
-    \vspace{2em}
-\end{minipage}
+\vspace{2em}
+\end{minipage}%
 \begin{minipage}[t]{0.3\textwidth}
 {\huge Kund}\\
 <customerName>\\
@@ -71,14 +98,12 @@ Summa att betala <totalInclRUT>\\
 
 \renewcommand\arraystretch{1.5}
 \begin{tabular*}{\linewidth}{rlrl}
-\hline
     \textbf{Fakturanummer} & <invoiceNumber> & \textbf{Fakturadatum} & <invoiceDate> \\
     \textbf{Vår referens} & Elias Norberg & \textbf{Förfallodatum} & <dueDate> \\
-\hline
 \end{tabular*}
 
-\begin{tabularx}{\textwidth}{Xrrrrrc}
-\rowcolor{Gray}
+\begin{tabularx}{\linewidth}{Xrrrrrc}
+\rowcolor{Primary}
 \changefont \textbf{Beskrivning} &
 \multicolumn{1}{l}{\changefont \textbf{à pris (inkl. moms)}} &
 \multicolumn{1}{c}{\changefont \textbf{Antal}} &
@@ -90,9 +115,14 @@ Summa att betala <totalInclRUT>\\
     <row><description> & <price> & <count> & <unit> & <rowtotal> & <vat> & <isRotRut>\\
     </row>
     & & & & & & \\
+\end{tabularx}
+
+\vfill
+\begin{tabularx}{\linewidth}{Xr}
 \hline
-    \multicolumn{5}{r}{\textbf{Att betala}} & \multicolumn{2}{r}{<total>} \\
-\multicolumn{5}{r}{\textbf{Varav moms (25 \%)}} & \multicolumn{2}{r}{<totalVat25>} \\
+    \textbf{Att betala} & <total> kr \\
+    \textbf{Varav moms (25 \%)} & <totalVat25> kr \\
+%\multicolumn{5}{r}{\textbf{Varav moms (25 \%)}} & \multicolumn{2}{r}{<totalVat25>} \\
 \hline
 \end{tabularx}
 
