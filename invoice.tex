@@ -46,6 +46,9 @@ Extension = .otf
 \newcommand{\changefont}{%
         \fontsize{9}{11}\selectfont
     }
+\newcommand{\tblhdr}{%
+\fontsize{9}{11}\selectfont\color{white}
+}
 
 \definecolor{Gray}{gray}{0.9}
 \definecolor{Primary}{HTML}{519548}
@@ -54,7 +57,6 @@ Extension = .otf
 \begin{document}
 \pagestyle{fancy}
 \fancyhf{} % clear all header and footer fields
-%\fancyfoot[R]{\footnotesize Sida \thepage\ av \pageref{LastPage}}
 \renewcommand{\headrulewidth}{0pt}
 \renewcommand{\footrulewidth}{0pt}
 
@@ -76,48 +78,50 @@ Extension = .otf
 \end{minipage}
 
 \vspace{2em}
-\begin{minipage}[t]{0.6\textwidth}
-{\huge Betalningsinfo}\\
-{\large\color{Primary}
+\parbox[t]{0.45\textwidth}{
+    \textbf{Kunduppgifter} \\
+    <customerName>\\
+    <customerEmail>\\
+    <customerAddress1>\\
+    <customerPostcode>~<customerCity>\\
+}%
+\hfill
+\fbox{\parbox[t]{0.45\textwidth}{%
+\large\color{Primary}
 \begin{tabularx}{\textwidth}{@{}lr}
 Att betala & <totalInclRUT> kr \\
 Förfallodatum & <dueDate> \\
 Referensnummer / OCR & <invoiceNumber> \\
 Bankgiro & 5807-3339 \\
 \end{tabularx}
-}
-\vspace{2em}
-\end{minipage}%
-\begin{minipage}[t]{0.3\textwidth}
-{\huge Kund}\\
-<customerName>\\
-<customerEmail>\\
-<customerAddress1>\\
-<customerPostcode>~<customerCity>\\
-\end{minipage}
+}}
+
+\vspace{1em}
 
 \renewcommand\arraystretch{1.5}
-\begin{tabular*}{\linewidth}{rlrl}
+{\small
+\begin{tabularx}{\linewidth}{XlXl}
     \textbf{Fakturanummer} & <invoiceNumber> & \textbf{Fakturadatum} & <invoiceDate> \\
     \textbf{Vår referens} & Elias Norberg & \textbf{Förfallodatum} & <dueDate> \\
-\end{tabular*}
+\end{tabularx}
+}
 
 \begin{tabularx}{\linewidth}{Xrrrrrc}
 \rowcolor{Primary}
-\changefont \textbf{Beskrivning} &
-\multicolumn{1}{l}{\changefont \textbf{à pris (inkl. moms)}} &
-\multicolumn{1}{c}{\changefont \textbf{Antal}} &
-\multicolumn{1}{c}{\changefont \textbf{Enhet}} &
-\multicolumn{1}{l}{\changefont \textbf{Totalt}} &
-\multicolumn{1}{c}{\changefont \textbf{Moms}} &
-\changefont \textbf{RUT}\\
+\multicolumn{1}{l}{\tblhdr \color{white}\textbf{Beskrivning}} &
+\tblhdr \color{white}\textbf{à pris (inkl. moms)} &
+\tblhdr \color{white}\textbf{Antal} &
+\tblhdr \color{white}\textbf{Enhet} &
+\tblhdr \color{white}\textbf{Totalt} &
+\tblhdr \color{white}\textbf{Moms} &
+\tblhdr \textbf{RUT}\\
 \hline
     <row><description> & <price> & <count> & <unit> & <rowtotal> & <vat> & <isRotRut>\\
     </row>
     & & & & & & \\
 \end{tabularx}
 
-\vfill
+%\vfill
 \begin{tabularx}{\linewidth}{Xr}
 \hline
     \textbf{Att betala} & <total> kr \\
@@ -131,10 +135,12 @@ Bankgiro & 5807-3339 \\
 \vspace{2em}
 <additionalInfo> \\
 
-Samtliga priser är angivna inklusive moms och efter godkänt RUT-avdrag. Framkörning/Maskinkostnad går dock ej under RUT. Skulle avdraget ej godkännas av anledningar som kan härledas beställaren faktureras denne motsvarande del. \\
+Samtliga priser är angivna inklusive moms och efter godkänt RUT-avdrag. Framkörning och maskinkostnad går dock ej under RUT. Skulle avdraget ej godkännas av anledningar som kan härledas beställaren faktureras denne motsvarande del. \\
 
 Betalning sker till bankgiro, märk betalningen med fakturanummer. \\
 ~\\
+OBS! BG-kontot och företaget byter namn, och kan under en period ha något av namnen \\
+``Oddbike Consulting AB'' eller ''GEN Arborist AB''. Båda är korrekta betalningsmottagare.\\
 
 Mvh, Elias
 
