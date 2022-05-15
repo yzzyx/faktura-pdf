@@ -25,6 +25,8 @@
 \usepackage{ragged2e}
 \usepackage{longtable}
 \usepackage{fancybox}
+\usepackage{graphicx}
+\usepackage{tcolorbox}
 
 \usepackage{fontspec}
 \setmainfont[%
@@ -78,23 +80,29 @@ Extension = .otf
 \end{minipage}
 
 \vspace{2em}
-\parbox[t]{0.45\textwidth}{
+\parbox{0.3\textwidth}{
+\begin{tcolorbox}[height=3cm,valign=center]
     \textbf{Kunduppgifter} \\
     <customerName>\\
-    <customerEmail>\\
     <customerAddress1>\\
-    <customerPostcode>~<customerCity>\\
+    <customerPostcode>\\
+    <customerCity>\\
+\end{tcolorbox}
 }%
 \hfill
-\fbox{\parbox[t]{0.45\textwidth}{%
+\parbox{0.67\textwidth}{%
+\begin{tcolorbox}[height=3cm,valign=center]
+\parbox{0.45\textwidth}{%
 \large\color{Primary}
 \begin{tabularx}{\textwidth}{@{}lr}
-Att betala & <totalInclRUT> kr \\
-Förfallodatum & <dueDate> \\
-Referensnummer / OCR & <invoiceNumber> \\
-Bankgiro & 5807-3339 \\
+    Att betala & <totalInclRUT> kr \\
+    Förfallodatum & <dueDate> \\
+    Referensnummer / OCR & <invoiceNumber> \\
+    Bankgiro & 5807-3339 \\
 \end{tabularx}
-}}
+}\hfill\parbox{2.5cm}{\includegraphics[width=2.5cm]{<qrimage>}}
+\end{tcolorbox}
+}
 
 \vspace{1em}
 
@@ -135,14 +143,14 @@ Bankgiro & 5807-3339 \\
 \vspace{2em}
 <additionalInfo> \\
 
-Samtliga priser är angivna inklusive moms och efter godkänt RUT-avdrag. Framkörning och maskinkostnad går dock ej under RUT. Skulle avdraget ej godkännas av anledningar som kan härledas beställaren faktureras denne motsvarande del. \\
-
-Betalning sker till bankgiro, märk betalningen med fakturanummer. \\
-~\\
-OBS! BG-kontot och företaget byter namn, och kan under en period ha något av namnen \\
-``Oddbike Consulting AB'' eller ''GEN Arborist AB''. Båda är korrekta betalningsmottagare.\\
-
-Mvh, Elias
+%Samtliga priser är angivna inklusive moms och efter godkänt RUT-avdrag. Framkörning och maskinkostnad går dock ej under RUT. Skulle avdraget ej godkännas av anledningar som kan härledas beställaren faktureras denne motsvarande del. \\
+%
+%Betalning sker till bankgiro, märk betalningen med fakturanummer. \\
+%~\\
+%OBS! BG-kontot och företaget byter namn, och kan under en period ha något av namnen \\
+%``Oddbike Consulting AB'' eller ''GEN Arborist AB''. Båda är korrekta betalningsmottagare.\\
+%
+%Mvh, Elias
 
 \fancyfoot[l]{
     %\changefont
@@ -150,7 +158,7 @@ Mvh, Elias
          \multicolumn{6}{l}{Vid betalning efter förfallodagen tillkommer påminnelseavgift om 50 kr samt 10 \% dröjsmålsränta.} \\
          \hline
            \textbf{Telefon:}  & +46(0)769329328        & \textbf{Org.nr.} & 556432-6162  & \textbf{Bankgiro:} & 5807-3339 \\
-         \textbf{Hemsida:} & https://oddbike.se & \mbox{\textbf{VAT.nr.}} & SE556432616201 & \textbf{E-post:} & faktura@oddbike.se \\
+         \textbf{Hemsida:} & https://gen-arborist.se & \mbox{\textbf{VAT.nr.}} & SE556432616201 & \textbf{E-post:} & elias@gen-arborist.se \\
        \end{tabularx}
   }
 

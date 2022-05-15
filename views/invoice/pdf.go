@@ -8,8 +8,10 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -85,6 +87,42 @@ func generatePDF(ctx context.Context, invoice models.Invoice, templateFile strin
 		template = template[0:startRow] + rowData + template[endRow+6:]
 	}
 
+	tmpdir, err := ioutil.TempDir("", "faktura-pdf-*")
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		err := os.RemoveAll(tmpdir)
+		if err != nil {
+			log.Printf("could not remove temp folder: %v", err)
+		}
+	}()
+
+	qrImagePath := path.Join(tmpdir, "qrimage.png")
+	qrImage, err := os.OpenFile(qrImagePath, os.O_RDWR|os.O_CREATE, 0755)
+	if err != nil {
+		return nil, err
+	}
+	defer qrImage.Close()
+
+	qrInfo := PaymentQRInfo{
+		Version:          2,
+		Type:             1,
+		Name:             "GEN Arborist AB",
+		CompanyID:        "5564326162",
+		InvoiceReference: strconv.Itoa(invoice.Number),
+		InvoiceDate:      invoice.DateInvoiced.Format("20060102"),
+		DueDate:          invoice.DateDue.Format("20060102"),
+		DueAmount:        totals.Incl.Sub(totals.ROTRUT),
+		PaymentType:      "BG",
+		Account:          "5807-3339",
+	}
+
+	err = GenerateQR(qrInfo, qrImage)
+	if err != nil {
+		return nil, err
+	}
+
 	replaceMap := map[string]string{
 		"customername":     invoice.Customer.Name,
 		"customeremail":    invoice.Customer.Email,
@@ -104,6 +142,7 @@ func generatePDF(ctx context.Context, invoice models.Invoice, templateFile strin
 		"totalrut":         totals.ROTRUT.StringFixedBank(2),
 		"totalrot":         totals.ROTRUT.StringFixedBank(2),
 		"additionalinfo":   invoice.AdditionalInfo,
+		"qrimage":          qrImagePath,
 	}
 
 	re := regexp.MustCompile("<([^>]*)>")
@@ -118,17 +157,6 @@ func generatePDF(ctx context.Context, invoice models.Invoice, templateFile strin
 		}
 	}
 	template = updatedTemplate + template[prevPos:]
-
-	tmpdir, err := ioutil.TempDir("", "faktura-pdf-*")
-	if err != nil {
-		return nil, err
-	}
-	defer func() {
-		err := os.RemoveAll(tmpdir)
-		if err != nil {
-			log.Printf("could not remove temp folder: %v", err)
-		}
-	}()
 
 	filename := fmt.Sprintf("invoice-%s-%d", time.Now().Format("2006-01-02"), invoice.Number)
 	cmd := exec.CommandContext(ctx, "xelatex",
