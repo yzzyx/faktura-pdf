@@ -1,5 +1,10 @@
 {% extends "base.html" %}
 
+{% block css %}
+<link rel="stylesheet" href="{% static 'vendor/jquery-ui-1.13.1/jquery-ui.min.css' %}">
+<link rel="stylesheet" href="{% static 'vendor/jquery-ui-1.13.1/jquery-ui.theme.min.css' %}">
+{% endblock %}
+
 {% block content %}
 <div class="card mt-2">
     <div class="card-body">
@@ -134,8 +139,8 @@
         {% endif %}
         <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#invoice-row-modal">Markera som inskickad till skatteverket</button>
     {% elif rut.Status == 1 %}
-        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#invoice-row-modal">Markera som betalad av skatteverket</button>
-        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#invoice-row-modal">Markera som avslagen av skatteverket</button>
+        <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#rut-date-modal">Markera som betalad av skatteverket</button>
+        <a class="btn btn-sm btn-primary" href="{% url 'rut-set-flag' id=invoice.ID %}?flag=rejected">Markera som avslagen av skatteverket</a>
     {% endif %}
 
     {% if canExport %}
@@ -147,4 +152,10 @@
         </small>
     {% endif %}
 </form>
+{% include "rut/date-modal.html" %}
+{% endblock %}
+
+{% block javascript %}
+<script src="{% static 'vendor/jquery-ui-1.13.1/jquery-ui.min.js' %}"></script>
+<script src="{% static 'js/rut.js' %}"></script>
 {% endblock %}

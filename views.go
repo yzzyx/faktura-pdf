@@ -23,6 +23,7 @@ func RegisterViews(baseURL string, r chi.Router) error {
 		"rut-list":             "/rut",
 		"rut-view":             "/rut/{id}",
 		"rut-export":           "/rut/{id}/export",
+		"rut-set-flag":         "/rut/{id}/flag",
 	}
 
 	// Add base url to all routes
@@ -80,6 +81,7 @@ func RegisterViews(baseURL string, r chi.Router) error {
 		r.Get("/", viewBuilder.Wrap(invoice.NewList()))
 		r.Get("/rut", viewBuilder.Wrap(rut.NewList()))
 		r.HandleFunc("/rut/{id}", viewBuilder.Wrap(rut.NewView()))
+		r.HandleFunc("/rut/{id}/flag", viewBuilder.Wrap(rut.NewFlag()))
 		r.HandleFunc("/rut/{id}/export", viewBuilder.Wrap(rut.NewExport()))
 		r.HandleFunc("/invoice/{id}", viewBuilder.Wrap(invoice.NewView()))
 		r.Get("/invoice/{id}/offer", viewBuilder.Wrap(invoice.NewOfferPDF()))

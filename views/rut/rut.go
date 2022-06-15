@@ -3,6 +3,7 @@ package rut
 import (
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/shopspring/decimal"
 	"github.com/yzzyx/faktura-pdf/models"
@@ -50,6 +51,7 @@ func (v *View) HandleGet() error {
 	canExport := len(filteredRows) > 0 && rutRequest.Invoice.Customer.PNR != "" && rutRequest.RequestedSum != nil && *rutRequest.RequestedSum != 0
 
 	v.SetData("rut", rutRequest)
+	v.SetData("today", time.Now())
 	v.SetData("maxAmount", maxAmount)
 	v.SetData("filteredRows", filteredRows)
 	v.SetData("canExport", canExport)
