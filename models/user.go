@@ -25,6 +25,7 @@ type User struct {
 	Username string
 	Name     string
 	Email    string
+	Company  Company
 
 	password string
 }
