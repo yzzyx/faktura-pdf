@@ -1,5 +1,5 @@
 BEGIN;
-CREATE TABLE user (
+CREATE TABLE "user" (
     id int,
     username varchar(50) NOT NULL,
     password text NOT NULL,

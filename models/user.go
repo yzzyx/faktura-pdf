@@ -107,7 +107,7 @@ func (u *User) ValidatePassword(password string) (bool, error) {
 func UserSave(ctx context.Context, user User) (int, error) {
 
 	if user.ID > 0 {
-		_, err := dbpool.Exec(ctx, `UPDATE user SET 
+		_, err := dbpool.Exec(ctx, `UPDATE "user" SET 
 name = $2,
 password = $3,
 email = $4
@@ -118,7 +118,7 @@ WHERE id = $1`, user.ID,
 		return user.ID, err
 	}
 
-	query := `INSERT INTO user 
+	query := `INSERT INTO "user"
 (username, email, name, password)
 VALUES
 ($1, $2, $3, $4)
@@ -138,7 +138,7 @@ RETURNING id`
 
 func UserGet(ctx context.Context, username string) (User, error) {
 	query := `
-SELECT id, username, email, name, password FROM user
+SELECT id, username, email, name, password FROM "user"
 WHERE LOWER(username) = LOWER($1)`
 
 	var u User
