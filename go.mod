@@ -10,5 +10,7 @@ require (
 	github.com/golang-migrate/migrate/v4 v4.14.1
 	github.com/jackc/pgx/v4 v4.11.0
 	github.com/shopspring/decimal v1.2.0
+	github.com/stretchr/testify v1.5.1
 	github.com/yzzyx/zerr v1.2.0
+	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d
 )
