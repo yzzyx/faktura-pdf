@@ -27,14 +27,8 @@ ALTER TABLE customer ADD COLUMN company_id int REFERENCES company(id);
 ALTER TABLE invoice ADD COLUMN company_id int REFERENCES company(id);
 ALTER TABLE rut_requests ADD COLUMN company_id int REFERENCES company(id);
 
-CREATE TABLE user (
-    id int,
-    username varchar(50) NOT NULL,
-    password text NOT NULL,
-
-    name text NOT NULL,
-    email text NOT NULL,
-
+CREATE TABLE user_company (
+    user_id int REFERENCES user(id),
     company_id int REFERENCES company(id)
 );
 COMMIT;
