@@ -147,7 +147,7 @@ SELECT id, username, email, name, password FROM "user"
 WHERE LOWER(username) = LOWER($1)`
 
 	var u User
-	err := dbpool.QueryRow(ctx, query, username).Scan(u.ID, u.Username, u.Email, u.Name, u.password)
+	err := dbpool.QueryRow(ctx, query, username).Scan(&u.ID, &u.Username, &u.Email, &u.Name, &u.password)
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			return User{}, nil
