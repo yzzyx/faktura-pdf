@@ -100,13 +100,17 @@ func RegisterViews(baseURL string, r chi.Router) error {
 	return nil
 }
 
-func viewPreRender(v views.Viewer, r *http.Request) error {
+func viewPreRender(v views.Viewer, r *http.Request, w http.ResponseWriter) error {
 	c, err := r.Cookie("_fp_login")
 	if err == nil && c != nil {
 		s, ok := session.Validate(c.Value)
 		if ok {
 			v.SetData("session", s)
 			v.SetData("logged_in", true)
+		} else {
+			// Clear session cookie
+			http.SetCookie(w, &http.Cookie{Name: "_fp_login", MaxAge: -1})
+			// FIXME - if user is attempting to view page that required authentication, redirect to login page
 		}
 	}
 
