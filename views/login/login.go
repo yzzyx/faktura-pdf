@@ -25,6 +25,8 @@ func (v *Login) HandleGet() error {
 		sr := v.GetData("session")
 		if s, ok := sr.(session.Session); ok {
 			session.Clear(s.ID)
+			v.SetData("logged_in", false)
+			v.SetData("session", nil)
 			v.SetCookie(&http.Cookie{Name: "_fp_login", MaxAge: -1})
 		}
 	}
