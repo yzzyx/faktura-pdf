@@ -12,6 +12,7 @@ import (
 	"github.com/yzzyx/faktura-pdf/views"
 	"github.com/yzzyx/faktura-pdf/views/invoice"
 	"github.com/yzzyx/faktura-pdf/views/login"
+	"github.com/yzzyx/faktura-pdf/views/register"
 	"github.com/yzzyx/faktura-pdf/views/rut"
 	"github.com/yzzyx/faktura-pdf/views/start"
 )
@@ -20,6 +21,7 @@ func RegisterViews(baseURL string, r chi.Router) error {
 	urlMap := map[string]string{
 		"start":                "/",
 		"login":                "/login",
+		"register":             "/register",
 		"invoice-list":         "/invoice",
 		"invoice-view":         "/invoice/{id}",
 		"invoice-set-flag":     "/invoice/{id}/flag",
@@ -83,6 +85,7 @@ func RegisterViews(baseURL string, r chi.Router) error {
 	r.Route("/", func(r chi.Router) {
 		//r.Use(TransactionMiddleware)
 		r.Get("/", viewBuilder.Wrap(start.New()))
+		r.HandleFunc("/register", viewBuilder.Wrap(register.New()))
 		r.HandleFunc("/login", viewBuilder.Wrap(login.New()))
 		r.Get("/rut", viewBuilder.Wrap(rut.NewList()))
 		r.HandleFunc("/rut/{id}", viewBuilder.Wrap(rut.NewView()))
