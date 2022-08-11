@@ -1,6 +1,6 @@
 BEGIN;
 CREATE TABLE "user" (
-    id int,
+    id SERIAL PRIMARY KEY,
     username varchar(50) NOT NULL,
     password text NOT NULL,
 
