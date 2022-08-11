@@ -28,6 +28,22 @@
                     </li>
                 </ul>
             </div>
+            <ul class="navbar-nav">
+                {% if not logged_in %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'login' %}">Logga in</a>
+                    </li>
+                {% else %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-expanded="false">
+                            Inloggad som {{s.User.Username}}
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#">Inställningar</a></li>
+                            <li><a class="dropdown-item" href="{% url 'login' %}?logout=1">Logga ut</a></li>
+                        </ul>
+                    </li>
+                {% endif %}
         </nav>
 
         <main class="content">

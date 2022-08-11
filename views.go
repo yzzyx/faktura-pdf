@@ -1,21 +1,26 @@
 package main
 
 import (
+	"net/http"
 	"path"
 
 	"github.com/flosch/pongo2"
 	"github.com/go-chi/chi/v5"
+	"github.com/yzzyx/faktura-pdf/session"
 	"github.com/yzzyx/faktura-pdf/tags/static"
 	tagurl "github.com/yzzyx/faktura-pdf/tags/url"
 	"github.com/yzzyx/faktura-pdf/views"
 	"github.com/yzzyx/faktura-pdf/views/invoice"
+	"github.com/yzzyx/faktura-pdf/views/login"
 	"github.com/yzzyx/faktura-pdf/views/rut"
+	"github.com/yzzyx/faktura-pdf/views/start"
 )
 
 func RegisterViews(baseURL string, r chi.Router) error {
 	urlMap := map[string]string{
 		"start":                "/",
-		"invoice-list":         "/",
+		"login":                "/login",
+		"invoice-list":         "/invoice",
 		"invoice-view":         "/invoice/{id}",
 		"invoice-set-flag":     "/invoice/{id}/flag",
 		"invoice-view-offer":   "/invoice/{id}/offer",
@@ -54,8 +59,8 @@ func RegisterViews(baseURL string, r chi.Router) error {
 	}
 
 	viewBuilder, err := views.NewBuilder(views.BuilderConfig{
-		BaseURL: "",
-		//PreRender:              viewPreRender(datastore),
+		BaseURL:   "",
+		PreRender: viewPreRender,
 		//OnError:                viewErrorHandler,
 		ErrorTemplate:          "error.html",
 		MaxFileSizeUploadLimit: 0,
@@ -77,15 +82,30 @@ func RegisterViews(baseURL string, r chi.Router) error {
 
 	r.Route("/", func(r chi.Router) {
 		//r.Use(TransactionMiddleware)
-		r.Get("/", viewBuilder.Wrap(invoice.NewList()))
+		r.Get("/", viewBuilder.Wrap(start.New()))
+		r.HandleFunc("/login", viewBuilder.Wrap(login.New()))
 		r.Get("/rut", viewBuilder.Wrap(rut.NewList()))
 		r.HandleFunc("/rut/{id}", viewBuilder.Wrap(rut.NewView()))
 		r.HandleFunc("/rut/{id}/export", viewBuilder.Wrap(rut.NewExport()))
+		r.Get("/invoice", viewBuilder.Wrap(invoice.NewList()))
 		r.HandleFunc("/invoice/{id}", viewBuilder.Wrap(invoice.NewView()))
 		r.Get("/invoice/{id}/offer", viewBuilder.Wrap(invoice.NewOfferPDF()))
 		r.Get("/invoice/{id}/invoice", viewBuilder.Wrap(invoice.NewInvoicePDF()))
 		r.HandleFunc("/invoice/{id}/flag", viewBuilder.Wrap(invoice.NewFlag()))
 	})
+
+	return nil
+}
+
+func viewPreRender(v views.Viewer, r *http.Request) error {
+	c, err := r.Cookie("_fp_login")
+	if err == nil && c != nil {
+		s, ok := session.Validate(c.Value)
+		if ok {
+			v.SetData("session", s)
+			v.SetData("logged_in", true)
+		}
+	}
 
 	return nil
 }
