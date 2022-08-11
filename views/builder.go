@@ -28,7 +28,7 @@ type ViewBuilder struct {
 	onError func(err error)
 
 	// preRender is called for all views before the controller is called
-	preRender func(v Viewer, r *http.Request) error
+	preRender func(v Viewer, r *http.Request, w http.ResponseWriter) error
 }
 
 type BuilderConfig struct {
@@ -39,7 +39,7 @@ type BuilderConfig struct {
 	// PreRender defines a function that is called before each view
 	// This allows for automatically including session information or
 	// other additional fields that should always be available in every view
-	PreRender func(v Viewer, r *http.Request) error
+	PreRender func(v Viewer, r *http.Request, w http.ResponseWriter) error
 
 	// ErrorTemplate defines what template to use by default when an error occurs.
 	// This can be overriden by the 'HandleError'-method of 'Viewer'
@@ -146,7 +146,7 @@ func (v *ViewBuilder) Wrap(view Viewer) func(w http.ResponseWriter, r *http.Requ
 		view.SetData("currentURL", currentURL.String())
 
 		if v.preRender != nil {
-			err = v.preRender(view, r)
+			err = v.preRender(view, r, w)
 			if err != nil {
 				view.HandleError(err)
 				if v.onError != nil {
