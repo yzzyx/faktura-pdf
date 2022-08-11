@@ -29,9 +29,9 @@ type User struct {
 	password string
 }
 
-func getSalt() ([]byte, error) {
+// GenerateRandomString generates a random string of the specified length containing a-z, A-Z, 0-9
+func GenerateRandomString(length int) ([]byte, error) {
 	alphabet := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-	length := 12
 
 	rnd := make([]byte, length)
 	_, err := io.ReadFull(rand.Reader, rnd)
@@ -54,7 +54,7 @@ func (u *User) SetPassword(password string) error {
 	if len(password) == 0 {
 		passwordEntry = "pbkdf2_sha256$0$$!" // Cannot match "!"
 	} else {
-		salt, err := getSalt()
+		salt, err := GenerateRandomString(12)
 		if err != nil {
 			return err
 		}
@@ -71,6 +71,11 @@ func (u *User) SetPassword(password string) error {
 }
 
 func (u *User) ValidatePassword(password string) (bool, error) {
+	// Non-existing users can never have valid passwords
+	if u.ID == 0 {
+		return false, nil
+	}
+
 	parts := strings.Split(u.password, "$")
 	if len(parts) != 4 {
 		return false, ErrInvalidHash
