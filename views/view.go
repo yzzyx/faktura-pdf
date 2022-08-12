@@ -14,6 +14,7 @@ import (
 
 	"github.com/flosch/pongo2"
 	"github.com/go-chi/chi/v5"
+	"github.com/yzzyx/faktura-pdf/session"
 )
 
 // Errors used to show specific error pages
@@ -65,14 +66,16 @@ type Viewer interface {
 	Data() pongo2.Context
 
 	SetContext(vc ViewContext)
+	SetSession(s session.Session)
 }
 
 // View defines a view
 type View struct {
-	w    http.ResponseWriter
-	r    *http.Request
-	data pongo2.Context
-	Ctx  context.Context
+	w       http.ResponseWriter
+	r       *http.Request
+	data    pongo2.Context
+	Ctx     context.Context
+	Session session.Session
 
 	builder *ViewBuilder
 }
@@ -137,6 +140,10 @@ func (v *View) SetContext(vc ViewContext) {
 	v.builder = vc.Builder
 
 	v.data = make(pongo2.Context)
+}
+
+func (v *View) SetSession(s session.Session) {
+	v.Session = s
 }
 
 // RenderBytes renders raw data to response

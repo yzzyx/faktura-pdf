@@ -10,6 +10,7 @@ import (
 	"github.com/yzzyx/faktura-pdf/tags/static"
 	tagurl "github.com/yzzyx/faktura-pdf/tags/url"
 	"github.com/yzzyx/faktura-pdf/views"
+	"github.com/yzzyx/faktura-pdf/views/company"
 	"github.com/yzzyx/faktura-pdf/views/invoice"
 	"github.com/yzzyx/faktura-pdf/views/login"
 	"github.com/yzzyx/faktura-pdf/views/register"
@@ -22,6 +23,7 @@ func RegisterViews(baseURL string, r chi.Router) error {
 		"start":                "/",
 		"login":                "/login",
 		"register":             "/register",
+		"company-view":         "/company/{id}",
 		"invoice-list":         "/invoice",
 		"invoice-view":         "/invoice/{id}",
 		"invoice-set-flag":     "/invoice/{id}/flag",
@@ -87,6 +89,7 @@ func RegisterViews(baseURL string, r chi.Router) error {
 		r.Get("/", viewBuilder.Wrap(start.New()))
 		r.HandleFunc("/register", viewBuilder.Wrap(register.New()))
 		r.HandleFunc("/login", viewBuilder.Wrap(login.New()))
+		r.HandleFunc("/company/{id}", viewBuilder.Wrap(company.NewView()))
 		r.Get("/rut", viewBuilder.Wrap(rut.NewList()))
 		r.HandleFunc("/rut/{id}", viewBuilder.Wrap(rut.NewView()))
 		r.HandleFunc("/rut/{id}/export", viewBuilder.Wrap(rut.NewExport()))
@@ -105,6 +108,7 @@ func viewPreRender(v views.Viewer, r *http.Request, w http.ResponseWriter) error
 	if err == nil && c != nil {
 		s, ok := session.Validate(c.Value)
 		if ok {
+			v.SetSession(s)
 			v.SetData("session", s)
 			v.SetData("logged_in", true)
 		} else {

@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'vendor/jquery-ui-1.13.1/jquery-ui.min.css' %}">
+<link rel="stylesheet" href="{% static 'vendor/jquery-ui-1.13.1/jquery-ui.theme.min.css' %}">
+<link rel="stylesheet" href="{% static 'vendor/font-awesome-4.7.0/css/font-awesome.min.css' %}">
+<style>
+    {% if invoice.ID > 0 %}
+        .card-edit {display: none;}
+        #save-btn {display: none;}
+    {% else %}
+        .card-display {display: none;}
+    {% endif %}
+</style>
+{% endblock %}
+
+{% block content %}
+<form method="POST">
+    <h2>
+        {% if c.ID  %}
+        Företag {{c.Name}}
+        {% else %}
+        Skapa företag
+        {% endif %}
+    </h2>
+
+    <div class="card mt-2">
+        <div class="card-body">
+            <h5 class="card-title">
+                Kontaktuppgifter <a href="#" class="edit card-display text-secondary small">editera</a>
+            </h5>
+
+            <div class="card-display">
+                <small>
+                    {{c.Name}}
+                    {{c.CompanyID}}
+                    {{c.Email}}
+                    {{c.Address1}}
+                    {{c.Address2}}
+                    {{c.Postcode}}
+                    {{c.City}}
+                    {{c.Telephone}}
+                </small>
+            </div>
+            <div class="card-edit"> <!--style="display: none;"> -->
+                {% include "invoice/field.html" with name="Företagsnamn" field="name" val=c.Name %}
+                {% include "invoice/field.html" with name="Organisationsnummer" field="companyid" val=c.CompanyID %}
+                {% include "invoice/field.html" with name="E-post" field="email" val=c.Email %}
+                {% include "invoice/field.html" with name="Address 1" field="address1" val=c.Address1 %}
+                {% include "invoice/field.html" with name="Address 2" field="address2" val=c.Address2 %}
+                {% include "invoice/field.html" with name="Postnummer" field="postcode" val=c.Postcode %}
+                {% include "invoice/field.html" with name="Ort" field="city" val=c.City %}
+                {% include "invoice/field.html" with name="Telefonnummer" field="telephone" val=c.Telephone %}
+            </div>
+        </div>
+    </div>
+
+    <div class="card mt-2">
+        <div class="card-body">
+            <h5 class="card-title">
+                Betalningsuppgifter <a href="#" class="edit card-display text-secondary small">editera</a>
+            </h5>
+
+            <div class="card-display">
+                <small>
+                    Kontonummer: {{c.PaymentAccount}}
+                    Kontotyp: {{c.PaymentType.String}}
+                    Momsreg.nr: {{c.VATNumber}}
+                </small>
+            </div>
+            <div class="card-edit"> <!--style="display: none;"> -->
+                {% include "invoice/field.html" with name="Kontonummer" field="paymentaccount" val=c.PaymentAccount %}
+                <div class="form-group">
+                    <label>Kontotyp</label>
+                    <select {% if invoice.ID > 0 %}disabled{% endif %} name="paymenttype" class="new-value form-control form-control-sm form-inline">
+                        <option value="1" {% if c.PaymentType == 1 %}selected{% endif %}>BG</option>
+                        <option value="2" {% if c.PaymentType == 2 %}selected{% endif %}>PG</option>
+                    </select>
+                </div>
+                {% include "invoice/field.html" with name="Momsreg.nr." field="vatnumber" val=c.VATNumber %}
+            </div>
+        </div>
+    </div>
+
+    <div class="card mt-2">
+        <div class="card-body">
+            <h5 class="card-title">
+                Fakturauppgifter <a href="#" class="edit card-display text-secondary small">editera</a>
+            </h5>
+
+            <div class="card-display">
+                <small>
+                    Fakturanummer: {{c.InvoiceNumber}}
+                    Antal dagar innan fakturor förfaller: {{c.InvoiceDueDays}}
+                    Referens: {{c.InvoiceReference}}
+                    Ytterligare text: {{c.InvoiceText}}
+                </small>
+            </div>
+            <div class="card-edit"> <!--style="display: none;"> -->
+                {% include "invoice/field-number.html" with name="Fakturanummer" field="invoicenumber" val=c.InvoiceNumber %}
+                {% include "invoice/field-number.html" with name="Antal dagar innan fakturor förfaller" field="invoiceduedays" val=c.InvoiceDueDays %}
+                {% include "invoice/field.html" with name="Referens" field="invoicereference" val=c.InvoiceReference %}
+                {% include "invoice/field-textarea.html" with name="Ytterligare text" field="invoicetext" val=c.InvoiceText %}
+            </div>
+        </div>
+    </div>
+
+    <button id="save-btn" type="submit" class="btn btn-sm btn-success">{% if c.ID > 0 %}Spara ändringar{% else %}Skapa företag{% endif %}</button>
+</form>
+{% endblock %}
+
+{% block javascript %}
+<script src="{% static 'vendor/jquery-ui-1.13.1/jquery-ui.min.js' %}"></script>
+<script src="{% static 'js/new.js' %}"></script>
+<script src="{% static 'js/company.js' %}"></script>
+{% endblock %}
