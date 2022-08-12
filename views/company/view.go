@@ -124,6 +124,9 @@ func (v *View) HandlePost() error {
 		if err != nil {
 			return err
 		}
+
+		v.Session.Company = company
+		return v.RedirectRoute("start")
 	}
 
 	return v.RedirectRoute("company-view", "id", strconv.Itoa(company.ID))
