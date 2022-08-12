@@ -22,11 +22,11 @@ func New() *Login {
 func (v *Login) HandleGet() error {
 
 	if v.FormValueBool("logout") {
-		sr := v.GetData("session")
-		if s, ok := sr.(session.Session); ok {
-			session.Clear(s.ID)
+		if v.Session != nil {
+			session.Clear(v.Session.ID)
 			v.SetData("logged_in", false)
 			v.SetData("session", nil)
+			v.Session = nil
 			v.SetCookie(&http.Cookie{Name: "_fp_login", MaxAge: -1})
 		}
 	}
@@ -69,6 +69,20 @@ func (v *Login) HandlePost() error {
 		HttpOnly: true,
 	}
 	v.SetCookie(cookie)
+
+	companyList, err := models.CompanyList(v.Ctx, models.CompanyFilter{UserID: user.ID})
+	if err != nil {
+		return err
+	}
+
+	if len(companyList) == 0 {
+		// Redirect to company creation page
+		return v.RedirectRoute("company-view", "id", "-1")
+	} else if len(companyList) > 1 {
+		// Redirect to company selection page
+		return v.RedirectRoute("company-list")
+	}
+	s.Company = companyList[0]
 
 	if redirect != "" {
 		v.Redirect(redirect)
