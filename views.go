@@ -19,20 +19,40 @@ import (
 	"github.com/yzzyx/faktura-pdf/views/start"
 )
 
+const (
+	MethodALL = iota
+	MethodGET
+	MethodPOST
+)
+
+type routeInfo struct {
+	URL          string
+	Path         string
+	View         views.Viewer
+	Methods      int
+	RequireLogin bool
+}
+
+var routes = []routeInfo{
+	{URL: "start", Path: "/", View: start.New(), Methods: MethodGET, RequireLogin: false},
+	{URL: "register", Path: "/register", View: register.New(), RequireLogin: false},
+	{URL: "login", Path: "/login", View: login.New(), RequireLogin: false},
+	{URL: "company-view", Path: "/company/{id}", View: company.NewView(), RequireLogin: true},
+	{URL: "rut-list", Path: "/rut", View: rut.NewList(), Methods: MethodGET, RequireLogin: true},
+	{URL: "rut-view", Path: "/rut/{id}", View: rut.NewView(), RequireLogin: true},
+	{URL: "rut-export", Path: "/rut/{id}/export", View: rut.NewExport(), RequireLogin: true},
+	{URL: "invoice-list", Path: "/invoice", View: invoice.NewList(), Methods: MethodGET, RequireLogin: true},
+	{URL: "invoice-view", Path: "/invoice/{id}", View: invoice.NewView(), RequireLogin: true},
+	{URL: "invoice-view-offer", Path: "/invoice/{id}/offer", View: invoice.NewOfferPDF(), Methods: MethodGET, RequireLogin: true},
+	{URL: "invoice-view-invoice", Path: "/invoice/{id}/invoice", View: invoice.NewInvoicePDF(), Methods: MethodGET, RequireLogin: true},
+	{URL: "invoice-set-flag", Path: "/invoice/{id}/flag", View: invoice.NewFlag(), RequireLogin: true},
+}
+
 func RegisterViews(baseURL string, r chi.Router) error {
-	urlMap := map[string]string{
-		"start":                "/",
-		"login":                "/login",
-		"register":             "/register",
-		"company-view":         "/company/{id}",
-		"invoice-list":         "/invoice",
-		"invoice-view":         "/invoice/{id}",
-		"invoice-set-flag":     "/invoice/{id}/flag",
-		"invoice-view-offer":   "/invoice/{id}/offer",
-		"invoice-view-invoice": "/invoice/{id}/invoice",
-		"rut-list":             "/rut",
-		"rut-view":             "/rut/{id}",
-		"rut-export":           "/rut/{id}/export",
+	urlMap := map[string]string{}
+
+	for _, r := range routes {
+		urlMap[r.URL] = r.Path
 	}
 
 	// Add base url to all routes
@@ -87,24 +107,24 @@ func RegisterViews(baseURL string, r chi.Router) error {
 
 	r.Route("/", func(r chi.Router) {
 		r.Use(models.TransactionMiddleware)
-		r.Get("/", viewBuilder.Wrap(start.New()))
-		r.HandleFunc("/register", viewBuilder.Wrap(register.New()))
-		r.HandleFunc("/login", viewBuilder.Wrap(login.New()))
-		r.HandleFunc("/company/{id}", viewBuilder.Wrap(company.NewView()))
-		r.Get("/rut", viewBuilder.Wrap(rut.NewList()))
-		r.HandleFunc("/rut/{id}", viewBuilder.Wrap(rut.NewView()))
-		r.HandleFunc("/rut/{id}/export", viewBuilder.Wrap(rut.NewExport()))
-		r.Get("/invoice", viewBuilder.Wrap(invoice.NewList()))
-		r.HandleFunc("/invoice/{id}", viewBuilder.Wrap(invoice.NewView()))
-		r.Get("/invoice/{id}/offer", viewBuilder.Wrap(invoice.NewOfferPDF()))
-		r.Get("/invoice/{id}/invoice", viewBuilder.Wrap(invoice.NewInvoicePDF()))
-		r.HandleFunc("/invoice/{id}/flag", viewBuilder.Wrap(invoice.NewFlag()))
+
+		for _, route := range routes {
+			if route.Methods == MethodGET {
+				r.Get(route.Path, viewBuilder.Wrap(route.View))
+			} else if route.Methods == MethodPOST {
+				r.Post(route.Path, viewBuilder.Wrap(route.View))
+			} else if route.Methods == MethodALL {
+				r.HandleFunc(route.Path, viewBuilder.Wrap(route.View))
+			}
+		}
 	})
 
 	return nil
 }
 
 func viewPreRender(v views.Viewer, r *http.Request, w http.ResponseWriter) error {
+	hasSession := false
+
 	c, err := r.Cookie("_fp_login")
 	if err == nil && c != nil {
 		s, ok := session.Validate(c.Value)
@@ -112,10 +132,29 @@ func viewPreRender(v views.Viewer, r *http.Request, w http.ResponseWriter) error
 			v.SetSession(s)
 			v.SetData("session", s)
 			v.SetData("logged_in", true)
+			hasSession = true
 		} else {
 			// Clear session cookie
 			http.SetCookie(w, &http.Cookie{Name: "_fp_login", MaxAge: -1})
-			// FIXME - if user is attempting to view page that required authentication, redirect to login page
+		}
+	}
+
+	// Make sure that user can access page
+	for _, route := range routes {
+		if route.URL == v.GetData("currentPage").(string) {
+			if route.RequireLogin && !hasSession {
+				u, err := v.URL("login")
+				if err != nil {
+					return err
+				}
+
+				q := u.Query()
+				q.Add("r", v.GetData("currentURL").(string))
+				u.RawQuery = q.Encode()
+				http.Redirect(w, r, u.String(), http.StatusFound)
+				return views.ErrViewRedirect
+			}
+			break
 		}
 	}
 

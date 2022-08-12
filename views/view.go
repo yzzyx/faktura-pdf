@@ -64,6 +64,7 @@ type Viewer interface {
 	SetData(key string, val interface{})
 	GetData(key string) interface{}
 	Data() pongo2.Context
+	URL(viewName string, parameters ...string) (*url.URL, error)
 
 	SetContext(vc ViewContext)
 	SetSession(s session.Session)
