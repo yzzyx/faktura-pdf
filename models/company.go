@@ -62,7 +62,7 @@ func (c *Company) AddUser(ctx context.Context, u User) error {
 	tx := getContextTx(ctx)
 
 	query := `INSERT INTO company_user (user_id, company_id) VALUES ($1, $2) ON CONFLICT ON CONSTRAINT company_user_unique DO NOTHING`
-	_, err := tx.Exec(ctx, query, 99, c.ID)
+	_, err := tx.Exec(ctx, query, u.ID, c.ID)
 	if err != nil {
 		return err
 	}
@@ -112,7 +112,7 @@ FROM company
 	}
 
 	if filter.UserID > 0 {
-		joinstrings = append(joinstrings, "LEFT JOIN company_user cu ON company.id = cu.company_id AND cu.user_id = :user_id")
+		joinstrings = append(joinstrings, "INNER JOIN company_user cu ON company.id = cu.company_id AND cu.user_id = :user_id")
 	}
 
 	if len(joinstrings) > 0 {
