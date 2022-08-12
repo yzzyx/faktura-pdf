@@ -20,7 +20,7 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav">
-                    {% if logged_in %}
+                    {% if logged_in  && session.Company.ID > 0 %}
                         <li class="nav-item active">
                             <a class="nav-link" href="{% url 'invoice-list' %}">Fakturor</a>
                         </li>
@@ -36,11 +36,19 @@
                         <a class="nav-link" href="{% url 'login' %}">Logga in</a>
                     </li>
                 {% else %}
-                    <li class="nav-item dropdown">
+                <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-expanded="false">
                             Inloggad som {{session.User.Username}}
+                            {% if session.Company.ID %}
+                                / {{session.Company.Name}}
+                            {% endif %}
                         </a>
                         <ul class="dropdown-menu">
+                            {% if session.Company.ID %}
+                                <li><a class="dropdown-item" href="{% url 'company-list' %}">Byt företag</a></li>
+                                <li><a class="dropdown-item" href="{% url 'company-view' id=session.Company.ID %}">Editera företag</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                            {% endif %}
                             <li><a class="dropdown-item" href="#">Inställningar</a></li>
                             <li><a class="dropdown-item" href="{% url 'login' %}?logout=1">Logga ut</a></li>
                         </ul>
