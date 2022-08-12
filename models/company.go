@@ -2,8 +2,9 @@ package models
 
 import (
 	"context"
+	"strings"
 
-	"github.com/jackc/pgx/v4"
+	"github.com/yzzyx/faktura-pdf/sqlx"
 )
 
 type PaymentType int
@@ -35,7 +36,7 @@ type Company struct {
 	CompanyID      string
 	PaymentAccount string
 	PaymentType    PaymentType
-	VATNumber      string
+	VATNumber      string `db:"vat_number"`
 
 	InvoiceNumber    int
 	InvoiceDueDays   int
@@ -61,7 +62,12 @@ func (c *Company) RemoveUser(User) error {
 	return nil
 }
 
-func CompanyGet(ctx context.Context, id int) (Company, error) {
+type CompanyFilter struct {
+	ID     int
+	UserID int
+}
+
+func CompanyList(ctx context.Context, filter CompanyFilter) ([]Company, error) {
 	query := `
 SELECT 
     id,
@@ -72,7 +78,7 @@ SELECT
     postcode,
     city,
     telephone,
-    company_id,
+    company.company_id,
     payment_account,
     payment_type,
     vat_number,
@@ -85,35 +91,59 @@ SELECT
 
     offer_text,
     offer_template
-WHERE id = $!
+FROM company
 `
+	filterstrings := []string{}
+	joinstrings := []string{}
 
-	var c Company
-	err := dbpool.QueryRow(ctx, query, id).Scan(
-		&c.ID,
-		&c.Name,
-		&c.Email,
-		&c.Address1,
-		&c.Address2,
-		&c.Postcode,
-		&c.City,
-		&c.Telephone,
-		&c.CompanyID,
-		&c.PaymentAccount,
-		&c.PaymentType,
-		&c.VATNumber,
-		&c.InvoiceNumber,
-		&c.InvoiceDueDays,
-		&c.InvoiceText,
-		&c.InvoiceTemplate,
-		&c.OfferText,
-		&c.OfferTemplate)
-	if err != nil {
-		if err == pgx.ErrNoRows {
-			return c, nil
-		}
+	if filter.ID > 0 {
+		filterstrings = append(filterstrings, "id = :id")
 	}
-	return c, err
+
+	if filter.UserID > 0 {
+		joinstrings = append(joinstrings, "LEFT JOIN company_user cu ON company.id = cu.company_id AND cu.user_id = :user_id")
+	}
+
+	if len(joinstrings) > 0 {
+		query += strings.Join(joinstrings, "\n")
+	}
+
+	if len(filterstrings) > 0 {
+		query += " WHERE " + strings.Join(filterstrings, " AND ")
+	}
+
+	conn := sqlx.NewPgxPool(dbpool)
+	rows, err := conn.NamedQuery(ctx, query, filter)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var result []Company
+	for rows.Next() {
+		var c Company
+
+		err = rows.StructScan(&c)
+
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, c)
+	}
+
+	return result, nil
+}
+
+func CompanyGet(ctx context.Context, id int) (Company, error) {
+	l, err := CompanyList(ctx, CompanyFilter{ID: id})
+	if err != nil {
+		return Company{}, err
+	}
+
+	if len(l) == 0 {
+		return Company{}, nil
+	}
+	return l[0], err
 }
 
 func CompanySave(ctx context.Context, c Company) (int, error) {
