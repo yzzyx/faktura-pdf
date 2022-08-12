@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/georgysavva/scany/pgxscan"
 	"github.com/shopspring/decimal"
+	"github.com/yzzyx/faktura-pdf/sqlx"
 )
 
 type Invoice struct {
@@ -261,38 +261,42 @@ func (row *InvoiceRow) Totals(IncludeVAT bool, IncludeROTRUT bool) (totals Invoi
 
 func InvoiceGet(ctx context.Context, id int) (Invoice, error) {
 	var inv Invoice
-	err := pgxscan.Get(ctx, dbpool, &inv, `
-SELECT invoice.id,
-invoice.number,
-invoice.name,
-date_created,
-date_paid,
-date_invoiced,
-date_due,
-rut_applicable,
-is_offered,
-is_invoiced,
-is_paid,
-is_deleted,
-additional_info,
-customer.id AS "customer.id",
-customer.name AS "customer.name",
-customer.email AS "customer.email",
-customer.address1 AS "customer.address1",
-customer.address2 AS "customer.address2",
-customer.postcode AS "customer.postcode",
-customer.city AS "customer.city",
-customer.pnr AS "customer.pnr",
-customer.telephone AS "customer.telephone",
-COALESCE((SELECT SUM(r.cost*r.count) FROM invoice_row r WHERE r.invoice_id = invoice.id), 0) AS total_sum
-FROM invoice
-INNER JOIN customer ON customer.id = invoice.customer_id
-WHERE invoice.id = $1`, id)
+
+	query := `
+	SELECT invoice.id,
+		invoice.number,
+		invoice.name,
+		date_created,
+		date_paid,
+		date_invoiced,
+		date_due,
+		rut_applicable,
+		is_offered,
+		is_invoiced,
+		is_paid,
+		is_deleted,
+		additional_info,
+		customer.id AS "customer.id",
+		customer.name AS "customer.name",
+		customer.email AS "customer.email",
+		customer.address1 AS "customer.address1",
+		customer.address2 AS "customer.address2",
+		customer.postcode AS "customer.postcode",
+		customer.city AS "customer.city",
+		customer.pnr AS "customer.pnr",
+		customer.telephone AS "customer.telephone",
+		COALESCE((SELECT SUM(r.cost*r.count) FROM invoice_row r WHERE r.invoice_id = invoice.id), 0) AS total_sum
+	FROM invoice
+	INNER JOIN customer ON customer.id = invoice.customer_id
+	WHERE invoice.id = $1`
+
+	c := sqlx.NewPgxPool(dbpool)
+	err := c.Get(ctx, &inv, query, id)
 	if err != nil {
 		return inv, err
 	}
 
-	err = pgxscan.Select(ctx, dbpool, &inv.Rows, "SELECT id, row_order, description, cost, count, unit, vat, is_rot_rut, rot_rut_service_type, rot_rut_hours, cost*count AS total FROM invoice_row WHERE invoice_id = $1 ORDER BY row_order", inv.ID)
+	err = c.Select(ctx, &inv.Rows, "SELECT id, row_order, description, cost, count, unit, vat, is_rot_rut, rot_rut_service_type, rot_rut_hours, cost*count AS total FROM invoice_row WHERE invoice_id = $1 ORDER BY row_order", inv.ID)
 	if err != nil {
 		return inv, err
 	}
@@ -384,14 +388,15 @@ INNER JOIN customer ON customer.id = invoice.customer_id`
 
 	query += " WHERE " + strings.Join(filterStrings, " AND ")
 	query += fmt.Sprintf(" ORDER BY %s %s", orderBy, f.Direction)
-	err := pgxscan.Select(ctx, dbpool, &invoices, query)
+	c := sqlx.NewPgxPool(dbpool)
+	err := c.Select(ctx, &invoices, query)
 	if err != nil {
 		return nil, err
 	}
 
 	for k := range invoices {
 		inv := invoices[k]
-		err = pgxscan.Select(ctx, dbpool, &inv.Rows, "SELECT id, row_order, description, cost, is_rot_rut, rot_rut_service_type, rot_rut_hours FROM invoice_row WHERE invoice_id = $1 ORDER BY row_order", inv.ID)
+		err = c.Select(ctx, &inv.Rows, "SELECT id, row_order, description, cost, is_rot_rut, rot_rut_service_type, rot_rut_hours FROM invoice_row WHERE invoice_id = $1 ORDER BY row_order", inv.ID)
 		if err != nil {
 			return nil, err
 		}

@@ -10,10 +10,12 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"unicode"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/yzzyx/faktura-pdf/models"
+	"github.com/yzzyx/faktura-pdf/sqlx"
 	"github.com/yzzyx/zerr"
 )
 
@@ -43,6 +45,24 @@ func main() {
 		os.Exit(1)
 	}
 	defer models.Shutdown()
+
+	// Map from go CamelCase to sql snake_case
+	sqlx.NameMapper = func(s string) string {
+		result := ""
+		prevUpper := true
+		for _, v := range s {
+			if unicode.IsUpper(v) {
+				if !prevUpper {
+					result += "_"
+				}
+				prevUpper = true
+			} else {
+				prevUpper = false
+			}
+			result += string(unicode.ToLower(v))
+		}
+		return result
+	}
 
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
