@@ -2,6 +2,8 @@ package models
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -166,6 +168,8 @@ type InvoiceRow struct {
 }
 
 type InvoiceFilter struct {
+	ID        int
+	CompanyID int
 	ListPaid  bool
 	OrderBy   string
 	Direction string
@@ -258,47 +262,23 @@ func (row *InvoiceRow) Totals(IncludeVAT bool, IncludeROTRUT bool) (totals Invoi
 	return totals
 }
 
-func InvoiceGet(ctx context.Context, id int) (Invoice, error) {
+func InvoiceGet(ctx context.Context, filter InvoiceFilter) (Invoice, error) {
 	var inv Invoice
 
-	query := `
-	SELECT invoice.id,
-		invoice.number,
-		invoice.name,
-		date_created,
-		date_paid,
-		date_invoiced,
-		date_due,
-		rut_applicable,
-		is_offered,
-		is_invoiced,
-		is_paid,
-		is_deleted,
-		additional_info,
-		customer.id AS "customer.id",
-		customer.name AS "customer.name",
-		customer.email AS "customer.email",
-		customer.address1 AS "customer.address1",
-		customer.address2 AS "customer.address2",
-		customer.postcode AS "customer.postcode",
-		customer.city AS "customer.city",
-		customer.pnr AS "customer.pnr",
-		customer.telephone AS "customer.telephone",
-		COALESCE((SELECT SUM(r.cost*r.count) FROM invoice_row r WHERE r.invoice_id = invoice.id), 0) AS total_sum
-	FROM invoice
-	INNER JOIN customer ON customer.id = invoice.customer_id
-	WHERE invoice.id = $1`
-
-	tx := getContextTx(ctx)
-	err := tx.Get(ctx, &inv, query, id)
+	lst, err := InvoiceList(ctx, filter)
 	if err != nil {
 		return inv, err
 	}
 
-	err = tx.Select(ctx, &inv.Rows, "SELECT id, row_order, description, cost, count, unit, vat, is_rot_rut, rot_rut_service_type, rot_rut_hours, cost*count AS total FROM invoice_row WHERE invoice_id = $1 ORDER BY row_order", inv.ID)
-	if err != nil {
-		return inv, err
+	if len(lst) == 0 {
+		return inv, sql.ErrNoRows
 	}
+
+	if len(lst) > 1 {
+		return inv, errors.New("too many rows returned")
+	}
+
+	inv = lst[0]
 
 	return inv, nil
 }
@@ -343,20 +323,29 @@ WHERE id = $1`, invoice.ID,
 func InvoiceList(ctx context.Context, f InvoiceFilter) ([]Invoice, error) {
 	var invoices []Invoice
 	query := `SELECT
-invoice.id,
-invoice.number,
-invoice.name,
-customer.email AS "customer.email",
-date_created,
-date_paid,
-date_invoiced,
-date_due,
-rut_applicable,
-is_offered,
-is_invoiced,
-is_paid,
-is_deleted,
-COALESCE((SELECT SUM(r.cost) FROM invoice_row r WHERE r.invoice_id = invoice.id), 0) AS total_sum
+		invoice.id,
+		invoice.number,
+		invoice.name,
+		date_created,
+		date_paid,
+		date_invoiced,
+		date_due,
+		rut_applicable,
+		is_offered,
+		is_invoiced,
+		is_paid,
+		is_deleted,
+		additional_info,
+		customer.id AS "customer.id",
+		customer.name AS "customer.name",
+		customer.email AS "customer.email",
+		customer.address1 AS "customer.address1",
+		customer.address2 AS "customer.address2",
+		customer.postcode AS "customer.postcode",
+		customer.city AS "customer.city",
+		customer.pnr AS "customer.pnr",
+		customer.telephone AS "customer.telephone",
+		COALESCE((SELECT SUM(r.cost*r.count) FROM invoice_row r WHERE r.invoice_id = invoice.id), 0) AS total_sum
 FROM invoice
 INNER JOIN customer ON customer.id = invoice.customer_id`
 
@@ -387,13 +376,31 @@ INNER JOIN customer ON customer.id = invoice.customer_id`
 		filterStrings = append(filterStrings, "not is_paid")
 	}
 
+	if f.ID > 0 {
+		filterStrings = append(filterStrings, "invoice.id = :id")
+	}
+
+	if f.CompanyID > 0 {
+		filterStrings = append(filterStrings, "company_id = :company_id")
+	}
+
 	query += " WHERE " + strings.Join(filterStrings, " AND ")
 	query += fmt.Sprintf(" ORDER BY %s %s", orderBy, f.Direction)
 
 	tx := getContextTx(ctx)
-	err := tx.Select(ctx, &invoices, query)
+	rows, err := tx.NamedQuery(ctx, query, f)
 	if err != nil {
 		return nil, err
+	}
+
+	for rows.Next() {
+		var invoice Invoice
+		err = rows.StructScan(&invoice)
+		if err != nil {
+			return nil, err
+		}
+
+		invoices = append(invoices)
 	}
 
 	for k := range invoices {

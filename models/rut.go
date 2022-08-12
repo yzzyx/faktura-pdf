@@ -121,7 +121,7 @@ WHERE id = $1
 		return rutRequest, err
 	}
 
-	rutRequest.Invoice, err = InvoiceGet(ctx, rutRequest.Invoice.ID)
+	rutRequest.Invoice, err = InvoiceGet(ctx, InvoiceFilter{ID: rutRequest.Invoice.ID})
 	return rutRequest, err
 }
 

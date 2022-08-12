@@ -67,7 +67,7 @@ type Viewer interface {
 	URL(viewName string, parameters ...string) (*url.URL, error)
 
 	SetContext(vc ViewContext)
-	SetSession(s session.Session)
+	SetSession(s *session.Session)
 }
 
 // View defines a view
@@ -76,7 +76,7 @@ type View struct {
 	r       *http.Request
 	data    pongo2.Context
 	Ctx     context.Context
-	Session session.Session
+	Session *session.Session
 
 	builder *ViewBuilder
 }
@@ -143,7 +143,7 @@ func (v *View) SetContext(vc ViewContext) {
 	v.data = make(pongo2.Context)
 }
 
-func (v *View) SetSession(s session.Session) {
+func (v *View) SetSession(s *session.Session) {
 	v.Session = s
 }
 

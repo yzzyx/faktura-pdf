@@ -28,7 +28,7 @@ func (v *View) HandleGet() error {
 	id := v.URLParamInt("id")
 
 	if id > 0 {
-		invoice, err = models.InvoiceGet(v.Ctx, id)
+		invoice, err = models.InvoiceGet(v.Ctx, models.InvoiceFilter{ID: id, CompanyID: v.Session.Company.ID})
 		if err != nil {
 			return err
 		}
@@ -67,7 +67,7 @@ func (v *View) HandlePost() error {
 	updated := false
 
 	if id > 0 {
-		invoice, err = models.InvoiceGet(v.Ctx, id)
+		invoice, err = models.InvoiceGet(v.Ctx, models.InvoiceFilter{ID: id, CompanyID: v.Session.Company.ID})
 	} else {
 		invoice.Number, err = models.InvoiceGetNextNumber(v.Ctx)
 		updated = true
