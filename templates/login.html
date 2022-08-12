@@ -12,6 +12,9 @@
                         <div class="card-body">
                             <div class="m-sm-4">
                                 <form method="post">
+                                    {% if r %}
+                                    <input type="hidden" name="r" value="{{r}}">
+                                    {% endif %}
                                     <div class="form-group">
                                         <label>E-postadress</label>
                                         <input class="form-control form-control-lg" type="text" name="username" placeholder="Ange din e-postadress" />

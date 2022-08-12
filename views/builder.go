@@ -1,6 +1,7 @@
 package views
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"regexp"
@@ -9,6 +10,9 @@ import (
 
 	"github.com/flosch/pongo2"
 )
+
+// ErrViewRedirect is used to signal that redirect was done, and no futher processing is necessary
+var ErrViewRedirect = errors.New("view will redirect")
 
 // ViewBuilder defines a view builder
 type ViewBuilder struct {
@@ -148,6 +152,10 @@ func (v *ViewBuilder) Wrap(view Viewer) func(w http.ResponseWriter, r *http.Requ
 		if v.preRender != nil {
 			err = v.preRender(view, r, w)
 			if err != nil {
+				if errors.Is(err, ErrViewRedirect) {
+					return
+				}
+
 				view.HandleError(err)
 				if v.onError != nil {
 					v.onError(err)

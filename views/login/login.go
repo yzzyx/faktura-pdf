@@ -30,6 +30,8 @@ func (v *Login) HandleGet() error {
 			v.SetCookie(&http.Cookie{Name: "_fp_login", MaxAge: -1})
 		}
 	}
+	v.SetData("r", v.FormValueString("r"))
+
 	return v.Render("login.html")
 }
 
@@ -38,6 +40,7 @@ func (v *Login) HandlePost() error {
 
 	username := v.FormValueString("username")
 	password := v.FormValueString("password")
+	redirect := v.FormValueString("r")
 
 	user, err := models.UserGet(v.Ctx, username)
 	if err != nil {
@@ -67,5 +70,9 @@ func (v *Login) HandlePost() error {
 	}
 	v.SetCookie(cookie)
 
+	if redirect != "" {
+		v.Redirect(redirect)
+		return nil
+	}
 	return v.RedirectRoute("start")
 }
