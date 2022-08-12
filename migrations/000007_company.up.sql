@@ -1,6 +1,6 @@
 BEGIN;
 CREATE TABLE company (
-    id int,
+    id SERIAL PRIMARY KEY,
     name text NOT NULL default '',
     email text NOT NULL default '',
     address1 text NOT NULL default '',
@@ -27,8 +27,8 @@ ALTER TABLE customer ADD COLUMN company_id int REFERENCES company(id);
 ALTER TABLE invoice ADD COLUMN company_id int REFERENCES company(id);
 ALTER TABLE rut_requests ADD COLUMN company_id int REFERENCES company(id);
 
-CREATE TABLE user_company (
-    user_id int REFERENCES user(id),
+CREATE TABLE company_user (
+    user_id int REFERENCES "user"(id),
     company_id int REFERENCES company(id)
 );
 COMMIT;
