@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/shopspring/decimal"
-	"github.com/yzzyx/faktura-pdf/sqlx"
 )
 
 type Invoice struct {
@@ -290,13 +289,13 @@ func InvoiceGet(ctx context.Context, id int) (Invoice, error) {
 	INNER JOIN customer ON customer.id = invoice.customer_id
 	WHERE invoice.id = $1`
 
-	c := sqlx.NewPgxPool(dbpool)
-	err := c.Get(ctx, &inv, query, id)
+	tx := getContextTx(ctx)
+	err := tx.Get(ctx, &inv, query, id)
 	if err != nil {
 		return inv, err
 	}
 
-	err = c.Select(ctx, &inv.Rows, "SELECT id, row_order, description, cost, count, unit, vat, is_rot_rut, rot_rut_service_type, rot_rut_hours, cost*count AS total FROM invoice_row WHERE invoice_id = $1 ORDER BY row_order", inv.ID)
+	err = tx.Select(ctx, &inv.Rows, "SELECT id, row_order, description, cost, count, unit, vat, is_rot_rut, rot_rut_service_type, rot_rut_hours, cost*count AS total FROM invoice_row WHERE invoice_id = $1 ORDER BY row_order", inv.ID)
 	if err != nil {
 		return inv, err
 	}
@@ -305,8 +304,10 @@ func InvoiceGet(ctx context.Context, id int) (Invoice, error) {
 }
 
 func InvoiceSave(ctx context.Context, invoice Invoice) (int, error) {
+	tx := getContextTx(ctx)
+
 	if invoice.ID > 0 {
-		_, err := dbpool.Exec(ctx, `UPDATE invoice SET 
+		_, err := tx.Exec(ctx, `UPDATE invoice SET 
 name = $2,
 customer_id = $3,
 is_invoiced = $4,
@@ -332,7 +333,7 @@ WHERE id = $1`, invoice.ID,
 	}
 
 	query := `INSERT INTO invoice (number, name, customer_id, rut_applicable) VALUES($1, $2, $3, $4) RETURNING id`
-	err := dbpool.QueryRow(ctx, query, invoice.Number, invoice.Name, invoice.Customer.ID, invoice.RutApplicable).Scan(&invoice.ID)
+	err := tx.QueryRow(ctx, query, invoice.Number, invoice.Name, invoice.Customer.ID, invoice.RutApplicable).Scan(&invoice.ID)
 	if err != nil {
 		return 0, err
 	}
@@ -388,15 +389,16 @@ INNER JOIN customer ON customer.id = invoice.customer_id`
 
 	query += " WHERE " + strings.Join(filterStrings, " AND ")
 	query += fmt.Sprintf(" ORDER BY %s %s", orderBy, f.Direction)
-	c := sqlx.NewPgxPool(dbpool)
-	err := c.Select(ctx, &invoices, query)
+
+	tx := getContextTx(ctx)
+	err := tx.Select(ctx, &invoices, query)
 	if err != nil {
 		return nil, err
 	}
 
 	for k := range invoices {
 		inv := invoices[k]
-		err = c.Select(ctx, &inv.Rows, "SELECT id, row_order, description, cost, is_rot_rut, rot_rut_service_type, rot_rut_hours FROM invoice_row WHERE invoice_id = $1 ORDER BY row_order", inv.ID)
+		err = tx.Select(ctx, &inv.Rows, "SELECT id, row_order, description, cost, is_rot_rut, rot_rut_service_type, rot_rut_hours FROM invoice_row WHERE invoice_id = $1 ORDER BY row_order", inv.ID)
 		if err != nil {
 			return nil, err
 		}
@@ -418,7 +420,8 @@ func InvoiceRowUpdate(ctx context.Context, row InvoiceRow) error {
 		rot_rut_hours = $10
 	WHERE id = $1
 `
-	_, err := dbpool.Exec(ctx, query,
+	tx := getContextTx(ctx)
+	_, err := tx.Exec(ctx, query,
 		row.ID,
 		row.RowOrder,
 		row.Description,
@@ -437,7 +440,8 @@ func InvoiceRowUpdate(ctx context.Context, row InvoiceRow) error {
 }
 
 func InvoiceRowAdd(ctx context.Context, invoiceID int, row InvoiceRow) error {
-	_, err := dbpool.Exec(ctx, `INSERT INTO invoice_row (invoice_id, row_order, description, cost, count, unit, vat, is_rot_rut, rot_rut_service_type)
+	tx := getContextTx(ctx)
+	_, err := tx.Exec(ctx, `INSERT INTO invoice_row (invoice_id, row_order, description, cost, count, unit, vat, is_rot_rut, rot_rut_service_type)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
 		invoiceID, row.RowOrder, row.Description, row.Cost, row.Count, row.Unit, row.VAT, row.IsRotRut, row.RotRutServiceType)
 	if err != nil {
@@ -448,7 +452,8 @@ VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
 }
 
 func InvoiceRowRemove(ctx context.Context, invoiceID int, rowID int) error {
-	_, err := dbpool.Exec(ctx, `DELETE FROM invoice_row WHERE invoice_id = $1 AND  id = $2`, invoiceID, rowID)
+	tx := getContextTx(ctx)
+	_, err := tx.Exec(ctx, `DELETE FROM invoice_row WHERE invoice_id = $1 AND  id = $2`, invoiceID, rowID)
 	if err != nil {
 		return err
 	}
@@ -458,7 +463,8 @@ func InvoiceRowRemove(ctx context.Context, invoiceID int, rowID int) error {
 
 func InvoiceGetNextNumber(ctx context.Context) (int, error) {
 	var num int
-	row := dbpool.QueryRow(ctx, `
+	tx := getContextTx(ctx)
+	row := tx.QueryRow(ctx, `
 SELECT COALESCE(MAX(number), 0) + 1 FROM invoice 
 `)
 

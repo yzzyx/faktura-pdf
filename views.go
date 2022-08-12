@@ -6,6 +6,7 @@ import (
 
 	"github.com/flosch/pongo2"
 	"github.com/go-chi/chi/v5"
+	"github.com/yzzyx/faktura-pdf/models"
 	"github.com/yzzyx/faktura-pdf/session"
 	"github.com/yzzyx/faktura-pdf/tags/static"
 	tagurl "github.com/yzzyx/faktura-pdf/tags/url"
@@ -85,7 +86,7 @@ func RegisterViews(baseURL string, r chi.Router) error {
 	}
 
 	r.Route("/", func(r chi.Router) {
-		//r.Use(TransactionMiddleware)
+		r.Use(models.TransactionMiddleware)
 		r.Get("/", viewBuilder.Wrap(start.New()))
 		r.HandleFunc("/register", viewBuilder.Wrap(register.New()))
 		r.HandleFunc("/login", viewBuilder.Wrap(login.New()))

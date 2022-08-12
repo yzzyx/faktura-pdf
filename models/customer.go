@@ -18,9 +18,10 @@ type Customer struct {
 }
 
 func CustomerSave(ctx context.Context, customer Customer) (int, error) {
+	tx := getContextTx(ctx)
 
 	if customer.ID > 0 {
-		_, err := dbpool.Exec(ctx, `UPDATE customer SET 
+		_, err := tx.Exec(ctx, `UPDATE customer SET 
 name = $2,
 email = $3,
 address1 = $4,
@@ -47,7 +48,7 @@ VALUES
 ($1, $2, $3, $4, $5, $6, $7, $8)
 RETURNING id`
 
-	err := dbpool.QueryRow(ctx, query,
+	err := tx.QueryRow(ctx, query,
 		customer.Name,
 		customer.Email,
 		customer.Address1,

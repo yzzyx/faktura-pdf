@@ -6,8 +6,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/yzzyx/faktura-pdf/sqlx"
 )
 
 type RUTStatus int
@@ -65,8 +63,9 @@ type RUTFilter struct {
 }
 
 func RUTSave(ctx context.Context, rut RUT) (int, error) {
+	tx := getContextTx(ctx)
 	if rut.ID > 0 {
-		_, err := dbpool.Exec(ctx, `UPDATE rut_requests SET 
+		_, err := tx.Exec(ctx, `UPDATE rut_requests SET 
 status = $2,
 date_sent = $3,
 date_paid = $4,
@@ -93,7 +92,7 @@ WHERE id = $1`, rut.ID,
 	}
 
 	query := `INSERT INTO rut_requests (invoice_id, status, type) VALUES($1, $2, $3) RETURNING id`
-	err := dbpool.QueryRow(ctx, query, rut.Invoice.ID, rut.Status, rut.Type).Scan(&rut.ID)
+	err := tx.QueryRow(ctx, query, rut.Invoice.ID, rut.Status, rut.Type).Scan(&rut.ID)
 	if err != nil {
 		return 0, err
 	}
@@ -116,8 +115,8 @@ FROM rut_requests
 WHERE id = $1
 `
 
-	c := sqlx.NewPgxPool(dbpool)
-	err := c.Get(ctx, &rutRequest, query, id)
+	tx := getContextTx(ctx)
+	err := tx.Get(ctx, &rutRequest, query, id)
 	if err != nil {
 		return rutRequest, err
 	}
@@ -184,8 +183,9 @@ INNER JOIN customer ON customer.id = invoice.customer_id
 	}
 
 	query += fmt.Sprintf(" ORDER BY %s %s", orderBy, f.Direction)
-	c := sqlx.NewPgxPool(dbpool)
-	err := c.Select(ctx, &rutRequests, query)
+
+	tx := getContextTx(ctx)
+	err := tx.Select(ctx, &rutRequests, query)
 	if err != nil {
 		return nil, err
 	}
