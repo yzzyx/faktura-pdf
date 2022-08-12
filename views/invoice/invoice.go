@@ -23,7 +23,7 @@ func NewInvoicePDF() *InvoicePDF {
 func (v *InvoicePDF) HandleGet() error {
 	id := v.URLParamInt("id")
 
-	invoice, err := models.InvoiceGet(v.Ctx, id)
+	invoice, err := models.InvoiceGet(v.Ctx, models.InvoiceFilter{ID: id, CompanyID: v.Session.Company.ID})
 	if err != nil {
 		return err
 	}

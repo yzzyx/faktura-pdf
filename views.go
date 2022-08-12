@@ -26,26 +26,29 @@ const (
 )
 
 type routeInfo struct {
-	URL          string
-	Path         string
-	View         views.Viewer
-	Methods      int
-	RequireLogin bool
+	URL            string
+	Path           string
+	View           views.Viewer
+	Methods        int
+	RequireLogin   bool
+	RequireCompany bool
 }
 
 var routes = []routeInfo{
 	{URL: "start", Path: "/", View: start.New(), Methods: MethodGET, RequireLogin: false},
 	{URL: "register", Path: "/register", View: register.New(), RequireLogin: false},
 	{URL: "login", Path: "/login", View: login.New(), RequireLogin: false},
+	{URL: "company-list", Path: "/company", View: company.NewList(), RequireLogin: true},
 	{URL: "company-view", Path: "/company/{id}", View: company.NewView(), RequireLogin: true},
-	{URL: "rut-list", Path: "/rut", View: rut.NewList(), Methods: MethodGET, RequireLogin: true},
-	{URL: "rut-view", Path: "/rut/{id}", View: rut.NewView(), RequireLogin: true},
-	{URL: "rut-export", Path: "/rut/{id}/export", View: rut.NewExport(), RequireLogin: true},
-	{URL: "invoice-list", Path: "/invoice", View: invoice.NewList(), Methods: MethodGET, RequireLogin: true},
-	{URL: "invoice-view", Path: "/invoice/{id}", View: invoice.NewView(), RequireLogin: true},
-	{URL: "invoice-view-offer", Path: "/invoice/{id}/offer", View: invoice.NewOfferPDF(), Methods: MethodGET, RequireLogin: true},
-	{URL: "invoice-view-invoice", Path: "/invoice/{id}/invoice", View: invoice.NewInvoicePDF(), Methods: MethodGET, RequireLogin: true},
-	{URL: "invoice-set-flag", Path: "/invoice/{id}/flag", View: invoice.NewFlag(), RequireLogin: true},
+	{URL: "company-select", Path: "/company/{id}/select", View: company.NewSelect(), RequireLogin: true},
+	{URL: "rut-list", Path: "/rut", View: rut.NewList(), Methods: MethodGET, RequireLogin: true, RequireCompany: true},
+	{URL: "rut-view", Path: "/rut/{id}", View: rut.NewView(), RequireLogin: true, RequireCompany: true},
+	{URL: "rut-export", Path: "/rut/{id}/export", View: rut.NewExport(), RequireLogin: true, RequireCompany: true},
+	{URL: "invoice-list", Path: "/invoice", View: invoice.NewList(), Methods: MethodGET, RequireLogin: true, RequireCompany: true},
+	{URL: "invoice-view", Path: "/invoice/{id}", View: invoice.NewView(), RequireLogin: true, RequireCompany: true},
+	{URL: "invoice-view-offer", Path: "/invoice/{id}/offer", View: invoice.NewOfferPDF(), Methods: MethodGET, RequireLogin: true, RequireCompany: true},
+	{URL: "invoice-view-invoice", Path: "/invoice/{id}/invoice", View: invoice.NewInvoicePDF(), Methods: MethodGET, RequireLogin: true, RequireCompany: true},
+	{URL: "invoice-set-flag", Path: "/invoice/{id}/flag", View: invoice.NewFlag(), RequireLogin: true, RequireCompany: true},
 }
 
 func RegisterViews(baseURL string, r chi.Router) error {
@@ -123,16 +126,16 @@ func RegisterViews(baseURL string, r chi.Router) error {
 }
 
 func viewPreRender(v views.Viewer, r *http.Request, w http.ResponseWriter) error {
-	hasSession := false
+	var currentSession *session.Session
+	var ok bool
 
 	c, err := r.Cookie("_fp_login")
 	if err == nil && c != nil {
-		s, ok := session.Validate(c.Value)
+		currentSession, ok = session.Validate(c.Value)
 		if ok {
-			v.SetSession(s)
-			v.SetData("session", s)
+			v.SetSession(currentSession)
+			v.SetData("session", currentSession)
 			v.SetData("logged_in", true)
-			hasSession = true
 		} else {
 			// Clear session cookie
 			http.SetCookie(w, &http.Cookie{Name: "_fp_login", MaxAge: -1})
@@ -142,8 +145,22 @@ func viewPreRender(v views.Viewer, r *http.Request, w http.ResponseWriter) error
 	// Make sure that user can access page
 	for _, route := range routes {
 		if route.URL == v.GetData("currentPage").(string) {
-			if route.RequireLogin && !hasSession {
+			if route.RequireLogin && currentSession == nil {
 				u, err := v.URL("login")
+				if err != nil {
+					return err
+				}
+
+				q := u.Query()
+				q.Add("r", v.GetData("currentURL").(string))
+				u.RawQuery = q.Encode()
+				http.Redirect(w, r, u.String(), http.StatusFound)
+				return views.ErrViewRedirect
+			}
+
+			if route.RequireCompany && currentSession.Company.ID == 0 {
+				// Require that user selects a company before accessing page
+				u, err := v.URL("company-list")
 				if err != nil {
 					return err
 				}
