@@ -1,0 +1,4 @@
+<div class="form-group">
+    <label>{{name}}</label>
+    <input {% if invoice.ID > 0 %}disabled{% endif %} name="{{field|lower}}" class="new-value form-control form-control-sm form-inline" type="number" value="{{ val }}">
+</div>
