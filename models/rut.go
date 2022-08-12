@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/georgysavva/scany/pgxscan"
+	"github.com/yzzyx/faktura-pdf/sqlx"
 )
 
 type RUTStatus int
@@ -116,7 +116,8 @@ FROM rut_requests
 WHERE id = $1
 `
 
-	err := pgxscan.Get(ctx, dbpool, &rutRequest, query, id)
+	c := sqlx.NewPgxPool(dbpool)
+	err := c.Get(ctx, &rutRequest, query, id)
 	if err != nil {
 		return rutRequest, err
 	}
@@ -183,7 +184,8 @@ INNER JOIN customer ON customer.id = invoice.customer_id
 	}
 
 	query += fmt.Sprintf(" ORDER BY %s %s", orderBy, f.Direction)
-	err := pgxscan.Select(ctx, dbpool, &rutRequests, query)
+	c := sqlx.NewPgxPool(dbpool)
+	err := c.Select(ctx, &rutRequests, query)
 	if err != nil {
 		return nil, err
 	}
