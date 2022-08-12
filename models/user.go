@@ -111,9 +111,9 @@ func (u *User) ValidatePassword(password string) (bool, error) {
 }
 
 func UserSave(ctx context.Context, user User) (int, error) {
-
+	tx := getContextTx(ctx)
 	if user.ID > 0 {
-		_, err := dbpool.Exec(ctx, `UPDATE "user" SET 
+		_, err := tx.Exec(ctx, `UPDATE "user" SET 
 name = $2,
 password = $3,
 email = $4
@@ -130,7 +130,7 @@ VALUES
 ($1, $2, $3, $4)
 RETURNING id`
 
-	err := dbpool.QueryRow(ctx, query,
+	err := tx.QueryRow(ctx, query,
 		user.Username,
 		user.Email,
 		user.Name,
@@ -148,7 +148,8 @@ SELECT id, username, email, name, password FROM "user"
 WHERE LOWER(username) = LOWER($1)`
 
 	var u User
-	err := dbpool.QueryRow(ctx, query, username).Scan(&u.ID, &u.Username, &u.Email, &u.Name, &u.password)
+	tx := getContextTx(ctx)
+	err := tx.QueryRow(ctx, query, username).Scan(&u.ID, &u.Username, &u.Email, &u.Name, &u.password)
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			return User{}, nil

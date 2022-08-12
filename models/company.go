@@ -4,8 +4,6 @@ import (
 	"context"
 	"errors"
 	"strings"
-
-	"github.com/yzzyx/faktura-pdf/sqlx"
 )
 
 type PaymentType int
@@ -61,9 +59,10 @@ func (c *Company) AddUser(ctx context.Context, u User) error {
 	if u.ID == 0 {
 		return errors.New("cannot add user to company before user is created")
 	}
+	tx := getContextTx(ctx)
 
 	query := `INSERT INTO company_user (user_id, company_id) VALUES ($1, $2) ON CONFLICT ON CONSTRAINT company_user_unique DO NOTHING`
-	_, err := dbpool.Exec(ctx, query, u.ID, c.ID)
+	_, err := tx.Exec(ctx, query, 99, c.ID)
 	if err != nil {
 		return err
 	}
@@ -124,8 +123,8 @@ FROM company
 		query += " WHERE " + strings.Join(filterstrings, " AND ")
 	}
 
-	conn := sqlx.NewPgxPool(dbpool)
-	rows, err := conn.NamedQuery(ctx, query, filter)
+	tx := getContextTx(ctx)
+	rows, err := tx.NamedQuery(ctx, query, filter)
 	if err != nil {
 		return nil, err
 	}
@@ -159,8 +158,10 @@ func CompanyGet(ctx context.Context, id int) (Company, error) {
 }
 
 func CompanySave(ctx context.Context, c Company) (int, error) {
+	tx := getContextTx(ctx)
+
 	if c.ID > 0 {
-		_, err := dbpool.Exec(ctx, `UPDATE "company" SET 
+		_, err := tx.Exec(ctx, `UPDATE "company" SET 
     name = $2,
     email = $3,
     address1 = $4,
@@ -228,7 +229,7 @@ VALUES
 ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
 RETURNING id`
 
-	err := dbpool.QueryRow(ctx, query,
+	err := tx.QueryRow(ctx, query,
 		c.Name,
 		c.Email,
 		c.Address1,
