@@ -2,6 +2,7 @@ package models
 
 import (
 	"context"
+	"errors"
 	"strings"
 
 	"github.com/yzzyx/faktura-pdf/sqlx"
@@ -52,14 +53,25 @@ func (c *Company) ListUsers() ([]User, error) {
 	return []User{}, nil
 }
 
-func (c *Company) AddUser(User) error {
+func (c *Company) AddUser(ctx context.Context, u User) error {
+	if c.ID == 0 {
+		return errors.New("cannot add user to company before company is created")
+	}
 
+	if u.ID == 0 {
+		return errors.New("cannot add user to company before user is created")
+	}
+
+	query := `INSERT INTO company_user (user_id, company_id) VALUES ($1, $2) ON CONFLICT ON CONSTRAINT company_user_unique DO NOTHING`
+	_, err := dbpool.Exec(ctx, query, u.ID, c.ID)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
-func (c *Company) RemoveUser(User) error {
-
-	return nil
+func (c *Company) RemoveUser(ctx context.Context, u User) error {
+	return errors.New("not implemented")
 }
 
 type CompanyFilter struct {
