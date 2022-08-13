@@ -117,7 +117,7 @@ func (v *View) HandlePost() error {
 	}
 
 	if v.FormValueExists("rut_applicable_set") {
-		invoice.RutApplicable = v.FormValueBool("rut_applicable_set")
+		invoice.RutApplicable = v.FormValueBool("rut_applicable")
 		updated = true
 	}
 

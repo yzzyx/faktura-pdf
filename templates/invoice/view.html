@@ -60,7 +60,11 @@
                     {% include "invoice/field-date.html" with name="Förfallodatum" field="date_due" val=invoice.DateDue default=defaultDueDate %}
                 {% endif %}
                 {% include "invoice/field-textarea.html" with name="Ytterligare information" field="additional_info" val=invoice.AdditionalInfo %}
-                {% include "invoice/field-bool.html" with name="ROT/RUT avdragsgill" field="rut_applicable" val=invoice.RutApplicable default=true %}
+                {% if invoice.ID %}
+                    {% include "invoice/field-bool.html" with name="ROT/RUT avdragsgill" field="rut_applicable" val=invoice.RutApplicable %}
+                {% else %}
+                    {% include "invoice/field-bool.html" with name="ROT/RUT avdragsgill" field="rut_applicable" val=true %}
+                {% endif %}
             </div>
         </div>
     </div>
