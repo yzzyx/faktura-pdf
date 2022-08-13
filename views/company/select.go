@@ -32,6 +32,10 @@ func (v *Select) HandleGet() error {
 	}
 
 	v.Session.Company = company
+	_, err = models.SessionSave(v.Ctx, v.Session)
+	if err != nil {
+		return err
+	}
 
 	redirect := v.FormValueString("r")
 	if redirect != "" {

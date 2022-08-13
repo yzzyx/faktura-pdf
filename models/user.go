@@ -11,7 +11,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/jackc/pgx/v4"
 	"golang.org/x/crypto/pbkdf2"
 )
 
@@ -28,6 +27,11 @@ type User struct {
 	Company  Company
 
 	password string
+}
+
+type UserFilter struct {
+	ID       int
+	Username string
 }
 
 // GenerateRandomString generates a random string of the specified length containing a-z, A-Z, 0-9
@@ -142,19 +146,44 @@ RETURNING id`
 	return user.ID, err
 }
 
-func UserGet(ctx context.Context, username string) (User, error) {
+func UserGet(ctx context.Context, f UserFilter) (User, error) {
 	query := `
 SELECT id, username, email, name, password FROM "user"
-WHERE LOWER(username) = LOWER($1)`
+`
+	var filterstrings []string
+
+	if f.ID > 0 {
+		filterstrings = append(filterstrings, "id = :id")
+	}
+
+	if f.Username != "" {
+		filterstrings = append(filterstrings, "LOWER(username) = LOWER(:username)")
+	}
+
+	if len(filterstrings) == 0 {
+		return User{}, nil
+	}
 
 	var u User
 	tx := getContextTx(ctx)
-	err := tx.QueryRow(ctx, query, username).Scan(&u.ID, &u.Username, &u.Email, &u.Name, &u.password)
+	rows, err := tx.NamedQuery(ctx, query, f)
 	if err != nil {
-		if err == pgx.ErrNoRows {
-			return User{}, nil
-		}
-		return User{}, err
+		return u, err
 	}
+	defer rows.Close()
+
+	for rows.Next() {
+		tu := struct {
+			User
+			Password string
+		}{}
+		err = rows.StructScan(&tu)
+		if err != nil {
+			return u, err
+		}
+		tu.User.password = tu.Password
+		u = tu.User
+	}
+
 	return u, nil
 }

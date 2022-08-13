@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/yzzyx/faktura-pdf/models"
-	"github.com/yzzyx/faktura-pdf/session"
 	"github.com/yzzyx/faktura-pdf/views"
 )
 
@@ -22,11 +21,14 @@ func New() *Login {
 func (v *Login) HandleGet() error {
 
 	if v.FormValueBool("logout") {
-		if v.Session != nil {
-			session.Clear(v.Session.ID)
+		if v.Session.ID != "" {
+			err := models.SessionRemove(v.Ctx, v.Session.ID)
+			if err != nil {
+				return err
+			}
 			v.SetData("logged_in", false)
 			v.SetData("session", nil)
-			v.Session = nil
+			v.Session = models.Session{}
 			v.SetCookie(&http.Cookie{Name: "_fp_login", MaxAge: -1})
 		}
 	}
@@ -42,7 +44,7 @@ func (v *Login) HandlePost() error {
 	password := v.FormValueString("password")
 	redirect := v.FormValueString("r")
 
-	user, err := models.UserGet(v.Ctx, username)
+	user, err := models.UserGet(v.Ctx, models.UserFilter{Username: username})
 	if err != nil {
 		return err
 	}
@@ -57,7 +59,20 @@ func (v *Login) HandlePost() error {
 		return v.Render("login.html")
 	}
 
-	s, err := session.New(user)
+	companyList, err := models.CompanyList(v.Ctx, models.CompanyFilter{UserID: user.ID})
+	if err != nil {
+		return err
+	}
+
+	s := models.Session{
+		User: user,
+	}
+
+	if len(companyList) == 1 {
+		s.Company = companyList[0]
+	}
+
+	s.ID, err = models.SessionSave(v.Ctx, s)
 	if err != nil {
 		return err
 	}
@@ -69,11 +84,6 @@ func (v *Login) HandlePost() error {
 		HttpOnly: true,
 	}
 	v.SetCookie(cookie)
-
-	companyList, err := models.CompanyList(v.Ctx, models.CompanyFilter{UserID: user.ID})
-	if err != nil {
-		return err
-	}
 
 	if len(companyList) == 0 {
 		// Redirect to company creation page
@@ -90,7 +100,6 @@ func (v *Login) HandlePost() error {
 		v.Redirect(u.String())
 		return nil
 	}
-	s.Company = companyList[0]
 
 	if redirect != "" {
 		v.Redirect(redirect)
