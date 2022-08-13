@@ -108,14 +108,14 @@ func generatePDF(ctx context.Context, invoice models.Invoice, templateFile strin
 	qrInfo := PaymentQRInfo{
 		Version:          2,
 		Type:             1,
-		Name:             "GEN Arborist AB",
-		CompanyID:        "5564326162",
+		Name:             invoice.Company.Name,
+		CompanyID:        invoice.Company.CompanyID,
 		InvoiceReference: strconv.Itoa(invoice.Number),
-		InvoiceDate:      invoice.DateInvoiced.Format("20060102"),
-		DueDate:          invoice.DateDue.Format("20060102"),
+		InvoiceDate:      invoicedate.Format("20060102"),
+		DueDate:          dueDate.Format("20060102"),
 		DueAmount:        totals.Incl.Sub(totals.ROTRUT),
-		PaymentType:      "BG",
-		Account:          "5807-3339",
+		PaymentType:      invoice.Company.PaymentType.String(),
+		Account:          invoice.Company.PaymentAccount,
 	}
 
 	err = GenerateQR(qrInfo, qrImage)
@@ -143,6 +143,19 @@ func generatePDF(ctx context.Context, invoice models.Invoice, templateFile strin
 		"totalrot":         totals.ROTRUT.StringFixedBank(2),
 		"additionalinfo":   invoice.AdditionalInfo,
 		"qrimage":          qrImagePath,
+
+		"companyname":           invoice.Company.Name,
+		"companyemail":          invoice.Company.Email,
+		"companyaddress1":       invoice.Company.Address1,
+		"companyaddress2":       invoice.Company.Address2,
+		"companypostcode":       invoice.Company.Postcode,
+		"companycity":           invoice.Company.City,
+		"companytelephone":      invoice.Company.Telephone,
+		"companyid":             invoice.Company.CompanyID,
+		"companypaymentaccount": invoice.Company.PaymentAccount,
+		"companypaymenttype":    invoice.Company.PaymentType.String(),
+		"companyvatnumber":      invoice.Company.VATNumber,
+		"companyreference":      invoice.Company.InvoiceReference,
 	}
 
 	re := regexp.MustCompile("<([^>]*)>")
