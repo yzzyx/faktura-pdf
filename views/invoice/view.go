@@ -70,6 +70,7 @@ func (v *View) HandlePost() error {
 		invoice, err = models.InvoiceGet(v.Ctx, models.InvoiceFilter{ID: id, CompanyID: v.Session.Company.ID})
 	} else {
 		invoice.Number, err = models.InvoiceGetNextNumber(v.Ctx)
+		invoice.Company.ID = v.Session.Company.ID
 		updated = true
 	}
 	if err != nil {
