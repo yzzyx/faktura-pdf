@@ -21,9 +21,17 @@ func NewOfferPDF() *OfferPDF {
 
 // HandleGet renders a offer PDF
 func (v *OfferPDF) HandleGet() error {
-	id := v.URLParamInt("id")
+	f := models.InvoiceFilter{
+		ID:             v.URLParamInt("id"),
+		CompanyID:      v.Session.Company.ID,
+		IncludeCompany: true,
+	}
 
-	invoice, err := models.InvoiceGet(v.Ctx, models.InvoiceFilter{ID: id, CompanyID: v.Session.Company.ID})
+	if f.ID <= 0 {
+		return views.ErrBadRequest
+	}
+
+	invoice, err := models.InvoiceGet(v.Ctx, f)
 	if err != nil {
 		return err
 	}
