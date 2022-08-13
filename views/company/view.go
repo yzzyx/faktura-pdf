@@ -73,6 +73,7 @@ func (v *View) HandlePost() error {
 		"postcode":  &company.Postcode,
 		"city":      &company.City,
 		"telephone": &company.Telephone,
+		"homepage":  &company.Homepage,
 
 		"paymentaccount": &company.PaymentAccount,
 		"paymenttype":    &company.PaymentType,

@@ -12,6 +12,7 @@ CREATE TABLE company (
     payment_account text NOT NULL default '',
     payment_type int NOT NULL default 1,
     vat_number text NOT NULL default '',
+    homepage text NOT NULL default '',
 
     invoice_number int NOT NULL default 1,
     invoice_due_days int NOT NULL default 30,
