@@ -2,7 +2,8 @@ package models
 
 import (
 	"context"
-	"fmt"
+
+	"github.com/yzzyx/zerr"
 )
 
 type Customer struct {
@@ -21,7 +22,7 @@ func CustomerSave(ctx context.Context, customer Customer) (int, error) {
 	tx := getContextTx(ctx)
 
 	if customer.ID > 0 {
-		_, err := tx.Exec(ctx, `UPDATE customer SET 
+		query := `UPDATE customer SET 
 name = $2,
 email = $3,
 address1 = $4,
@@ -30,7 +31,8 @@ postcode = $6,
 city = $7,
 pnr = $8,
 telephone = $9
-WHERE id = $1`, customer.ID,
+WHERE id = $1`
+		_, err := tx.Exec(ctx, query, customer.ID,
 			customer.Name,
 			customer.Email,
 			customer.Address1,
@@ -39,6 +41,9 @@ WHERE id = $1`, customer.ID,
 			customer.City,
 			customer.PNR,
 			customer.Telephone)
+		if err != nil {
+			return 0, zerr.Wrap(err).WithString("query", query).WithAny("customer", customer)
+		}
 		return customer.ID, err
 	}
 
@@ -58,10 +63,8 @@ RETURNING id`
 		customer.PNR,
 		customer.Telephone).Scan(&customer.ID)
 	if err != nil {
-		fmt.Println("cannot create customer:", err)
-		fmt.Println("query:", query)
-		return 0, err
+		return 0, zerr.Wrap(err).WithString("query", query).WithAny("customer", customer)
 	}
 
-	return customer.ID, err
+	return customer.ID, nil
 }

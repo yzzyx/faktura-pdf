@@ -3,12 +3,12 @@ package models
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
 	"strings"
 	"time"
 
 	"github.com/shopspring/decimal"
+	"github.com/yzzyx/zerr"
 )
 
 type Invoice struct {
@@ -279,7 +279,7 @@ func InvoiceGet(ctx context.Context, filter InvoiceFilter) (Invoice, error) {
 	}
 
 	if len(lst) > 1 {
-		return inv, errors.New("too many rows returned")
+		return inv, zerr.Wrap(errTooManyRows).WithAny("filter", filter)
 	}
 
 	inv = lst[0]
@@ -291,7 +291,7 @@ func InvoiceSave(ctx context.Context, invoice Invoice) (int, error) {
 	tx := getContextTx(ctx)
 
 	if invoice.ID > 0 {
-		_, err := tx.Exec(ctx, `UPDATE invoice SET 
+		query := `UPDATE invoice SET 
 name = $2,
 customer_id = $3,
 is_invoiced = $4,
@@ -302,7 +302,8 @@ date_invoiced = $8,
 date_due = $9,
 date_paid = $10,
 rut_applicable = $11
-WHERE id = $1`, invoice.ID,
+WHERE id = $1`
+		_, err := tx.Exec(ctx, query, invoice.ID,
 			invoice.Name,
 			invoice.Customer.ID,
 			invoice.IsInvoiced,
@@ -313,13 +314,16 @@ WHERE id = $1`, invoice.ID,
 			invoice.DateDue,
 			invoice.DatePaid,
 			invoice.RutApplicable)
-		return invoice.ID, err
+		if err != nil {
+			return 0, zerr.Wrap(err).WithString("query", query).WithAny("invoice", invoice)
+		}
+		return invoice.ID, nil
 	}
 
 	query := `INSERT INTO invoice (number, name, customer_id, rut_applicable, company_id) VALUES($1, $2, $3, $4, $5) RETURNING id`
 	err := tx.QueryRow(ctx, query, invoice.Number, invoice.Name, invoice.Customer.ID, invoice.RutApplicable, invoice.Company.ID).Scan(&invoice.ID)
 	if err != nil {
-		return 0, err
+		return 0, zerr.Wrap(err).WithString("query", query).WithAny("invoice", invoice)
 	}
 	return invoice.ID, nil
 }
@@ -395,14 +399,14 @@ INNER JOIN customer ON customer.id = invoice.customer_id`
 	tx := getContextTx(ctx)
 	rows, err := tx.NamedQuery(ctx, query, f)
 	if err != nil {
-		return nil, err
+		return nil, zerr.Wrap(err).WithString("query", query).WithAny("filter", f)
 	}
 
 	for rows.Next() {
 		var invoice Invoice
 		err = rows.StructScan(&invoice)
 		if err != nil {
-			return nil, err
+			return nil, zerr.Wrap(err).WithString("query", query).WithAny("filter", f)
 		}
 
 		invoices = append(invoices, invoice)
@@ -410,9 +414,10 @@ INNER JOIN customer ON customer.id = invoice.customer_id`
 
 	for k := range invoices {
 		inv := &invoices[k]
-		err = tx.Select(ctx, &inv.Rows, "SELECT id, row_order, description, cost, count, unit, vat, is_rot_rut, rot_rut_service_type, rot_rut_hours, cost*count AS total FROM invoice_row WHERE invoice_id = $1 ORDER BY row_order", inv.ID)
+		query := "SELECT id, row_order, description, cost, count, unit, vat, is_rot_rut, rot_rut_service_type, rot_rut_hours, cost*count AS total FROM invoice_row WHERE invoice_id = $1 ORDER BY row_order"
+		err = tx.Select(ctx, &inv.Rows, query, inv.ID)
 		if err != nil {
-			return nil, err
+			return nil, zerr.Wrap(err).WithString("query", query).WithInt("invoice.ID", inv.ID)
 		}
 
 		if f.IncludeCompany {
@@ -451,7 +456,7 @@ func InvoiceRowUpdate(ctx context.Context, row InvoiceRow) error {
 		row.RotRutServiceType,
 		row.RotRutHours)
 	if err != nil {
-		return err
+		return zerr.Wrap(err).WithString("query", query).WithAny("row", row)
 	}
 
 	return nil
@@ -459,11 +464,12 @@ func InvoiceRowUpdate(ctx context.Context, row InvoiceRow) error {
 
 func InvoiceRowAdd(ctx context.Context, invoiceID int, row InvoiceRow) error {
 	tx := getContextTx(ctx)
-	_, err := tx.Exec(ctx, `INSERT INTO invoice_row (invoice_id, row_order, description, cost, count, unit, vat, is_rot_rut, rot_rut_service_type)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+	query := `INSERT INTO invoice_row (invoice_id, row_order, description, cost, count, unit, vat, is_rot_rut, rot_rut_service_type)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`
+	_, err := tx.Exec(ctx, query,
 		invoiceID, row.RowOrder, row.Description, row.Cost, row.Count, row.Unit, row.VAT, row.IsRotRut, row.RotRutServiceType)
 	if err != nil {
-		return err
+		return zerr.Wrap(err).WithString("query", query).WithAny("row", row).WithAny("invoice-id", invoiceID)
 	}
 
 	return nil
@@ -471,9 +477,10 @@ VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
 
 func InvoiceRowRemove(ctx context.Context, invoiceID int, rowID int) error {
 	tx := getContextTx(ctx)
-	_, err := tx.Exec(ctx, `DELETE FROM invoice_row WHERE invoice_id = $1 AND  id = $2`, invoiceID, rowID)
+	query := `DELETE FROM invoice_row WHERE invoice_id = $1 AND  id = $2`
+	_, err := tx.Exec(ctx, query, invoiceID, rowID)
 	if err != nil {
-		return err
+		return zerr.Wrap(err).WithString("query", query).WithAny("row-id", rowID).WithAny("invoice-id", invoiceID)
 	}
 
 	return nil
@@ -482,10 +489,11 @@ func InvoiceRowRemove(ctx context.Context, invoiceID int, rowID int) error {
 func InvoiceGetNextNumber(ctx context.Context) (int, error) {
 	var num int
 	tx := getContextTx(ctx)
-	row := tx.QueryRow(ctx, `
-SELECT COALESCE(MAX(number), 0) + 1 FROM invoice 
-`)
-
+	query := `SELECT COALESCE(MAX(number), 0) + 1 FROM invoice`
+	row := tx.QueryRow(ctx, query)
 	err := row.Scan(&num)
+	if err != nil {
+		return 0, zerr.Wrap(err).WithString("query", query)
+	}
 	return num, err
 }

@@ -8,10 +8,15 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/yzzyx/zerr"
 )
 
 var (
 	dbpool *pgxpool.Pool
+)
+
+var (
+	errTooManyRows = errors.New("too many rows returned")
 )
 
 func Setup(ctx context.Context, dbURL string) error {
@@ -24,13 +29,13 @@ func Setup(ctx context.Context, dbURL string) error {
 	}
 	if err := m.Up(); err != nil {
 		if !errors.Is(err, migrate.ErrNoChange) {
-			return err
+			return zerr.Wrap(err)
 		}
 	}
 
 	dbpool, err = pgxpool.Connect(ctx, dbURL)
 	if err != nil {
-		return err
+		return zerr.Wrap(err).WithString("url", dbURL)
 	}
 	return nil
 }
