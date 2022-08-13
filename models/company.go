@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"errors"
 	"strings"
+
+	"github.com/yzzyx/zerr"
 )
 
 type PaymentType int
@@ -66,7 +68,7 @@ func (c *Company) AddUser(ctx context.Context, u User) error {
 	query := `INSERT INTO company_user (user_id, company_id) VALUES ($1, $2) ON CONFLICT ON CONSTRAINT company_user_unique DO NOTHING`
 	_, err := tx.Exec(ctx, query, u.ID, c.ID)
 	if err != nil {
-		return err
+		return zerr.Wrap(err).WithString("query", query).WithInt("company-id", c.ID).WithInt("user-id", u.ID)
 	}
 	return nil
 }
@@ -130,7 +132,7 @@ FROM company
 	tx := getContextTx(ctx)
 	rows, err := tx.NamedQuery(ctx, query, filter)
 	if err != nil {
-		return nil, err
+		return nil, zerr.Wrap(err).WithString("query", query).WithAny("filter", filter)
 	}
 	defer rows.Close()
 
@@ -141,7 +143,7 @@ FROM company
 		err = rows.StructScan(&c)
 
 		if err != nil {
-			return nil, err
+			return nil, zerr.Wrap(err).WithString("query", query).WithAny("filter", filter)
 		}
 		result = append(result, c)
 	}
@@ -161,7 +163,7 @@ func CompanyGet(ctx context.Context, f CompanyFilter) (Company, error) {
 	}
 
 	if len(lst) > 1 {
-		return c, errors.New("too many rows returned")
+		return c, zerr.Wrap(errTooManyRows).WithAny("filter", f)
 	}
 	c = lst[0]
 
@@ -197,7 +199,10 @@ func CompanySave(ctx context.Context, c Company) (int, error) {
 WHERE id = :id`
 
 		_, err := tx.NamedExec(ctx, query, c)
-		return c.ID, err
+		if err != nil {
+			return 0, zerr.Wrap(err).WithString("query", query).WithAny("company", c)
+		}
+		return c.ID, nil
 	}
 
 	query := `INSERT INTO "company"
@@ -247,14 +252,14 @@ RETURNING id`
 
 	rows, err := tx.NamedQuery(ctx, query, c)
 	if err != nil {
-		return 0, err
+		return 0, zerr.Wrap(err).WithString("query", query).WithAny("company", c)
 	}
 	defer rows.Close()
 
 	for rows.Next() {
 		err = rows.Scan(&c.ID)
 		if err != nil {
-			return 0, err
+			return 0, zerr.Wrap(err).WithString("query", query).WithAny("company", c)
 		}
 	}
 	return c.ID, nil

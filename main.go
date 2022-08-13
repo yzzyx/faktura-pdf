@@ -53,6 +53,12 @@ func main() {
 		os.Exit(1)
 	}
 
+	lg, err := setupLogger(cfg)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Cannot setup logger: %+v\n", err)
+		os.Exit(1)
+	}
+
 	err = models.Setup(ctx, cfg.Database.URL)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to connect to database URL %s: %v\n", cfg.Database.URL, err)
@@ -97,9 +103,10 @@ func main() {
 		http.ServeFile(w, r, filepath.Join(currentDir, "static/img/favicon.ico"))
 	})
 
-	err = RegisterViews("", r)
+	err = RegisterViews("", r, lg)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Could not register views: %+v\n", err)
+		zerr.Wrap(err).LogError(lg)
+		os.Exit(1)
 		return
 	}
 
@@ -115,7 +122,7 @@ func main() {
 		if cfg.Server.CACertFile != "" {
 			caCert, err := ioutil.ReadFile(cfg.Server.CACertFile)
 			if err != nil {
-				_, _ = fmt.Fprintln(os.Stderr, "Failed to load CA certificate:", err)
+				zerr.Wrap(err).LogError(lg)
 				os.Exit(1)
 			}
 
@@ -156,7 +163,7 @@ func main() {
 
 	select {
 	case err := <-errorCh:
-		fmt.Fprintf(os.Stderr, "error: %v\n", err)
+		zerr.Wrap(err).LogError(lg)
 	case <-ctx.Done():
 	}
 }

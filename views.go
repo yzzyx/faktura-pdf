@@ -16,6 +16,8 @@ import (
 	"github.com/yzzyx/faktura-pdf/views/register"
 	"github.com/yzzyx/faktura-pdf/views/rut"
 	"github.com/yzzyx/faktura-pdf/views/start"
+	"github.com/yzzyx/zerr"
+	"go.uber.org/zap"
 )
 
 const (
@@ -50,7 +52,7 @@ var routes = []routeInfo{
 	{URL: "invoice-set-flag", Path: "/invoice/{id}/flag", View: invoice.NewFlag(), RequireLogin: true, RequireCompany: true},
 }
 
-func RegisterViews(baseURL string, r chi.Router) error {
+func RegisterViews(baseURL string, r chi.Router, lg *zap.Logger) error {
 	urlMap := map[string]string{}
 
 	for _, r := range routes {
@@ -88,7 +90,9 @@ func RegisterViews(baseURL string, r chi.Router) error {
 	viewBuilder, err := views.NewBuilder(views.BuilderConfig{
 		BaseURL:   "",
 		PreRender: viewPreRender,
-		//OnError:                viewErrorHandler,
+		OnError: func(err error) {
+			zerr.Wrap(err).LogError(lg)
+		},
 		ErrorTemplate:          "error.html",
 		MaxFileSizeUploadLimit: 0,
 	})

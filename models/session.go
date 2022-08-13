@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"time"
+
+	"github.com/yzzyx/zerr"
 )
 
 // Session describes an active user session
@@ -21,7 +23,7 @@ func SessionRemove(ctx context.Context, sessionID string) error {
 
 	_, err := tx.Exec(ctx, query, sessionID)
 	if err != nil {
-		return err
+		return zerr.Wrap(err).WithString("query", query).WithString("sessionID", sessionID)
 	}
 	return nil
 }
@@ -41,7 +43,7 @@ FROM session WHERE id = $1`
 		if err == sql.ErrNoRows {
 			return s, nil
 		}
-		return s, err
+		return s, zerr.Wrap(err).WithString("query", query).WithString("sessionID", sessionID)
 	}
 
 	s.User, err = UserGet(ctx, UserFilter{ID: s.User.ID})
@@ -83,7 +85,7 @@ func SessionSave(ctx context.Context, s Session) (string, error) {
 
 	_, err := tx.NamedExec(ctx, query, s)
 	if err != nil {
-		return "", err
+		return "", zerr.Wrap(err).WithString("query", query).WithAny("session", s)
 	}
 
 	return s.ID, nil

@@ -3,11 +3,12 @@ package models
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/yzzyx/zerr"
 )
 
 type RUTStatus int
@@ -71,16 +72,20 @@ type RUTFilter struct {
 func RUTSave(ctx context.Context, rut RUT) (int, error) {
 	tx := getContextTx(ctx)
 	if rut.ID > 0 {
-		_, err := tx.Exec(ctx, `UPDATE rut_requests SET 
+		query := `UPDATE rut_requests SET 
 status = $2,
 date_sent = $3,
 date_paid = $4,
 requested_sum = $5
-WHERE id = $1`, rut.ID,
+WHERE id = $1`
+		_, err := tx.Exec(ctx, query, rut.ID,
 			rut.Status,
 			rut.DateSent,
 			rut.DatePaid,
 			rut.RequestedSum)
+		if err != nil {
+			return 0, zerr.Wrap(err).WithString("query", query).WithAny("rut", rut)
+		}
 
 		// If rows are supplied, and rot_rut_hours are set, we update those as well
 		for _, row := range rut.Invoice.Rows {
@@ -100,7 +105,7 @@ WHERE id = $1`, rut.ID,
 	query := `INSERT INTO rut_requests (invoice_id, status, type) VALUES($1, $2, $3) RETURNING id`
 	err := tx.QueryRow(ctx, query, rut.Invoice.ID, rut.Status, rut.Type).Scan(&rut.ID)
 	if err != nil {
-		return 0, err
+		return 0, zerr.Wrap(err).WithString("query", query).WithAny("rut", rut)
 	}
 
 	return rut.ID, nil
@@ -119,7 +124,7 @@ func RUTGet(ctx context.Context, f RUTFilter) (RUT, error) {
 	}
 
 	if len(lst) > 1 {
-		return rutRequest, errors.New("too many rows returned")
+		return rutRequest, zerr.Wrap(errTooManyRows).WithAny("filter", f)
 	}
 
 	rutRequest = lst[0]
@@ -197,7 +202,7 @@ INNER JOIN customer ON customer.id = invoice.customer_id
 	tx := getContextTx(ctx)
 	rows, err := tx.NamedQuery(ctx, query, f)
 	if err != nil {
-		return nil, err
+		return nil, zerr.Wrap(err).WithString("query", query).WithAny("filter", f)
 	}
 	defer rows.Close()
 
@@ -205,7 +210,7 @@ INNER JOIN customer ON customer.id = invoice.customer_id
 		var r RUT
 		err = rows.StructScan(&r)
 		if err != nil {
-			return nil, err
+			return nil, zerr.Wrap(err).WithString("query", query).WithAny("filter", f)
 		}
 
 		rutRequests = append(rutRequests, r)

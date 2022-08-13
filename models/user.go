@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/yzzyx/zerr"
 	"golang.org/x/crypto/pbkdf2"
 )
 
@@ -41,7 +42,7 @@ func GenerateRandomString(length int) ([]byte, error) {
 	rnd := make([]byte, length)
 	_, err := io.ReadFull(rand.Reader, rnd)
 	if err != nil {
-		return []byte{}, err
+		return []byte{}, zerr.Wrap(err)
 	}
 
 	salt := make([]byte, length)
@@ -97,7 +98,7 @@ func (u *User) ValidatePassword(password string) (bool, error) {
 
 	iterations, err := strconv.Atoi(iterationsStr)
 	if err != nil {
-		return false, err
+		return false, zerr.Wrap(err).WithString("iterations", iterationsStr).WithAny("user", u)
 	}
 
 	if hashEncoded[0] == '!' {
@@ -117,14 +118,18 @@ func (u *User) ValidatePassword(password string) (bool, error) {
 func UserSave(ctx context.Context, user User) (int, error) {
 	tx := getContextTx(ctx)
 	if user.ID > 0 {
-		_, err := tx.Exec(ctx, `UPDATE "user" SET 
+		query := `UPDATE "user" SET 
 name = $2,
 password = $3,
 email = $4
-WHERE id = $1`, user.ID,
+WHERE id = $1`
+		_, err := tx.Exec(ctx, query, user.ID,
 			user.Name,
 			user.password,
 			user.Email)
+		if err != nil {
+			return 0, zerr.Wrap(err).WithString("query", query).WithAny("user", user)
+		}
 		return user.ID, err
 	}
 
@@ -140,7 +145,7 @@ RETURNING id`
 		user.Name,
 		user.password).Scan(&user.ID)
 	if err != nil {
-		return 0, err
+		return 0, zerr.Wrap(err).WithString("query", query).WithAny("user", user)
 	}
 
 	return user.ID, err
@@ -168,7 +173,7 @@ SELECT id, username, email, name, password FROM "user"
 	tx := getContextTx(ctx)
 	rows, err := tx.NamedQuery(ctx, query, f)
 	if err != nil {
-		return u, err
+		return u, zerr.Wrap(err).WithString("query", query).WithAny("filter", f)
 	}
 	defer rows.Close()
 
@@ -179,7 +184,7 @@ SELECT id, username, email, name, password FROM "user"
 		}{}
 		err = rows.StructScan(&tu)
 		if err != nil {
-			return u, err
+			return u, zerr.Wrap(err).WithString("query", query).WithAny("filter", f)
 		}
 		tu.User.password = tu.Password
 		u = tu.User
