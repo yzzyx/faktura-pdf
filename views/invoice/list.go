@@ -24,8 +24,9 @@ func (v *List) HandleGet() error {
 	f.CompanyID = v.Session.Company.ID
 
 	filterPaid := false
+	f.FilterPaid = 2
 	if v.FormValueBool("paid") {
-		f.ListPaid = true
+		f.FilterPaid = 1
 		filterPaid = true
 	}
 

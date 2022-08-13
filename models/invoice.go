@@ -172,9 +172,10 @@ type InvoiceRow struct {
 type InvoiceFilter struct {
 	ID        int
 	CompanyID int
-	ListPaid  bool
-	OrderBy   string
-	Direction string
+
+	FilterPaid int // 0 - no filter, 1 - only paid, 2 - only unpaid
+	OrderBy    string
+	Direction  string
 
 	IncludeCompany bool
 }
@@ -379,9 +380,9 @@ INNER JOIN customer ON customer.id = invoice.customer_id`
 
 	filterStrings := []string{}
 
-	if f.ListPaid {
+	if f.FilterPaid == 1 {
 		filterStrings = append(filterStrings, "is_paid")
-	} else {
+	} else if f.FilterPaid == 2 {
 		filterStrings = append(filterStrings, "not is_paid")
 	}
 
