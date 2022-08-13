@@ -1,6 +1,6 @@
 {% for c in companies %}
 <tr>
     <td>{{ c.Name }}</td>
-    <td><a class="btn btn-primary float-right" href="{% url 'company-select' id=c.ID %}">Sätt som aktivt</a></td>
+    <td><a class="btn btn-primary float-right" href="{% url 'company-select' id=c.ID %}{% if redirect %}?r={{redirect}}{% endif %}">Sätt som aktivt</a></td>
 </tr>
 {% endfor %}

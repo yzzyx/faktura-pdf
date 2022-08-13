@@ -22,7 +22,6 @@ func (v *Select) HandleGet() error {
 	var err error
 	var company models.Company
 	id := v.URLParamInt("id")
-
 	company, err = models.CompanyGet(v.Ctx, id)
 	if err != nil {
 		return err
@@ -33,5 +32,11 @@ func (v *Select) HandleGet() error {
 	}
 
 	v.Session.Company = company
+
+	redirect := v.FormValueString("r")
+	if redirect != "" {
+		v.Redirect(redirect)
+		return nil
+	}
 	return v.RedirectRoute("start")
 }

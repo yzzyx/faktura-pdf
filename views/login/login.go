@@ -80,7 +80,15 @@ func (v *Login) HandlePost() error {
 		return v.RedirectRoute("company-view", "id", "-1")
 	} else if len(companyList) > 1 {
 		// Redirect to company selection page
-		return v.RedirectRoute("company-list")
+		u, err := v.URL("company-list")
+		if err != nil {
+			return err
+		}
+		q := u.Query()
+		q.Add("r", redirect)
+		u.RawQuery = q.Encode()
+		v.Redirect(u.String())
+		return nil
 	}
 	s.Company = companyList[0]
 
