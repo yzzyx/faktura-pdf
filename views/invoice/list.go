@@ -21,6 +21,7 @@ func (v *List) HandleGet() error {
 
 	f.OrderBy = v.FormValueString("orderby")
 	f.Direction = v.FormValueString("dir")
+	f.CompanyID = v.Session.Company.ID
 
 	filterPaid := false
 	if v.FormValueBool("paid") {

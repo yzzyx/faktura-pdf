@@ -21,9 +21,16 @@ func NewView() *View {
 
 // HandleGet displays a ROT/RUT request
 func (v *View) HandleGet() error {
-	id := v.URLParamInt("id")
+	f := models.RUTFilter{
+		ID:        v.URLParamInt("id"),
+		CompanyID: v.Session.Company.ID,
+	}
 
-	rutRequest, err := models.RUTGet(v.Ctx, id)
+	if f.ID <= 0 {
+		return views.ErrBadRequest
+	}
+
+	rutRequest, err := models.RUTGet(v.Ctx, f)
 	if err != nil {
 		return err
 	}
@@ -60,9 +67,16 @@ func (v *View) HandleGet() error {
 
 // HandlePost updates a ROT/RUT request
 func (v *View) HandlePost() error {
-	id := v.URLParamInt("id")
+	f := models.RUTFilter{
+		ID:        v.URLParamInt("id"),
+		CompanyID: v.Session.Company.ID,
+	}
 
-	rutRequest, err := models.RUTGet(v.Ctx, id)
+	if f.ID <= 0 {
+		return views.ErrBadRequest
+	}
+
+	rutRequest, err := models.RUTGet(v.Ctx, f)
 	if err != nil {
 		return err
 	}

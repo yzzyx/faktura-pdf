@@ -26,9 +26,16 @@ func NewExport() *Export {
 
 // HandleGet creates an xml export file
 func (v *Export) HandleGet() error {
-	id := v.URLParamInt("id")
+	f := models.RUTFilter{
+		ID:        v.URLParamInt("id"),
+		CompanyID: v.Session.Company.ID,
+	}
 
-	rutRequest, err := models.RUTGet(v.Ctx, id)
+	if f.ID <= 0 {
+		return views.ErrBadRequest
+	}
+
+	rutRequest, err := models.RUTGet(v.Ctx, f)
 	if err != nil {
 		return err
 	}

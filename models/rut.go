@@ -2,6 +2,8 @@ package models
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -55,11 +57,15 @@ type RUT struct {
 }
 
 type RUTFilter struct {
+	ID           int
 	FilterStatus []RUTStatus
 	OrderBy      string
 	Direction    string
 	InvoiceID    int
+	CompanyID    int
 	Type         *RUTType
+
+	IncludeInvoice bool
 }
 
 func RUTSave(ctx context.Context, rut RUT) (int, error) {
@@ -100,29 +106,25 @@ WHERE id = $1`, rut.ID,
 	return rut.ID, nil
 }
 
-func RUTGet(ctx context.Context, id int) (RUT, error) {
+func RUTGet(ctx context.Context, f RUTFilter) (RUT, error) {
 	var rutRequest RUT
 
-	query := `SELECT
-rut_requests.id,
-rut_requests.type,
-rut_requests.status,
-rut_requests.date_sent,
-rut_requests.date_paid,
-rut_requests.invoice_id AS "invoice.id",
-rut_requests.requested_sum
-FROM rut_requests
-WHERE id = $1
-`
-
-	tx := getContextTx(ctx)
-	err := tx.Get(ctx, &rutRequest, query, id)
+	lst, err := RUTList(ctx, f)
 	if err != nil {
 		return rutRequest, err
 	}
 
-	rutRequest.Invoice, err = InvoiceGet(ctx, InvoiceFilter{ID: rutRequest.Invoice.ID})
-	return rutRequest, err
+	if len(lst) == 0 {
+		return rutRequest, sql.ErrNoRows
+	}
+
+	if len(lst) > 1 {
+		return rutRequest, errors.New("too many rows returned")
+	}
+
+	rutRequest = lst[0]
+
+	return rutRequest, nil
 }
 
 func RUTList(ctx context.Context, f RUTFilter) ([]RUT, error) {
@@ -171,11 +173,19 @@ INNER JOIN customer ON customer.id = invoice.customer_id
 	}
 
 	if f.InvoiceID > 0 {
-		filterStrings = append(filterStrings, fmt.Sprintf("rut_requests.invoice_id = %d", f.InvoiceID))
+		filterStrings = append(filterStrings, "rut_requests.invoice_id = :invoice_id")
 	}
 
 	if f.Type != nil {
-		filterStrings = append(filterStrings, fmt.Sprintf("rut_requests.type = %d", *f.Type))
+		filterStrings = append(filterStrings, "rut_requests.type = :type")
+	}
+
+	if f.ID > 0 {
+		filterStrings = append(filterStrings, "rut_requests.id = :id")
+	}
+
+	if f.CompanyID > 0 {
+		filterStrings = append(filterStrings, "invoice.company_id = :company_id")
 	}
 
 	if len(filterStrings) > 0 {
@@ -185,9 +195,29 @@ INNER JOIN customer ON customer.id = invoice.customer_id
 	query += fmt.Sprintf(" ORDER BY %s %s", orderBy, f.Direction)
 
 	tx := getContextTx(ctx)
-	err := tx.Select(ctx, &rutRequests, query)
+	rows, err := tx.NamedQuery(ctx, query, f)
 	if err != nil {
 		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var r RUT
+		err = rows.StructScan(&r)
+		if err != nil {
+			return nil, err
+		}
+
+		rutRequests = append(rutRequests, r)
+	}
+
+	if f.IncludeInvoice {
+		for k := range rutRequests {
+			rutRequests[k].Invoice, err = InvoiceGet(ctx, InvoiceFilter{ID: rutRequests[k].Invoice.ID})
+			if err != nil {
+				return nil, err
+			}
+		}
 	}
 
 	return rutRequests, nil
