@@ -416,7 +416,7 @@ INNER JOIN customer ON customer.id = invoice.customer_id`
 		}
 
 		if f.IncludeCompany {
-			inv.Company, err = CompanyGet(ctx, inv.Company.ID)
+			inv.Company, err = CompanyGet(ctx, CompanyFilter{ID: inv.Company.ID})
 			if err != nil {
 				return nil, err
 			}
