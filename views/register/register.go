@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/yzzyx/faktura-pdf/models"
-	"github.com/yzzyx/faktura-pdf/session"
 	"github.com/yzzyx/faktura-pdf/views"
 )
 
@@ -30,7 +29,7 @@ func (v *Register) HandlePost() error {
 	name := v.FormValueString("name")
 	password := v.FormValueString("password")
 
-	user, err := models.UserGet(v.Ctx, username)
+	user, err := models.UserGet(v.Ctx, models.UserFilter{Username: username})
 	if err != nil {
 		return err
 	}
@@ -63,7 +62,8 @@ func (v *Register) HandlePost() error {
 		return err
 	}
 
-	s, err := session.New(user)
+	s := models.Session{User: user}
+	s.ID, err = models.SessionSave(v.Ctx, s)
 	if err != nil {
 		return err
 	}

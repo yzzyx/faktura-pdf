@@ -7,7 +7,6 @@ import (
 	"github.com/flosch/pongo2"
 	"github.com/go-chi/chi/v5"
 	"github.com/yzzyx/faktura-pdf/models"
-	"github.com/yzzyx/faktura-pdf/session"
 	"github.com/yzzyx/faktura-pdf/tags/static"
 	tagurl "github.com/yzzyx/faktura-pdf/tags/url"
 	"github.com/yzzyx/faktura-pdf/views"
@@ -126,18 +125,21 @@ func RegisterViews(baseURL string, r chi.Router) error {
 }
 
 func viewPreRender(v views.Viewer, r *http.Request, w http.ResponseWriter) error {
-	var currentSession *session.Session
-	var ok bool
+	var currentSession models.Session
+	var err error
 
 	c, err := r.Cookie("_fp_login")
 	if err == nil && c != nil {
-		currentSession, ok = session.Validate(c.Value)
-		if ok {
+		currentSession, err = models.SessionGet(r.Context(), c.Value)
+		if err != nil {
+			return err
+		}
+		if currentSession.ID != "" {
 			v.SetSession(currentSession)
 			v.SetData("session", currentSession)
 			v.SetData("logged_in", true)
 		} else {
-			// Clear session cookie
+			// SessionRemove session cookie
 			http.SetCookie(w, &http.Cookie{Name: "_fp_login", MaxAge: -1})
 		}
 	}
@@ -145,7 +147,7 @@ func viewPreRender(v views.Viewer, r *http.Request, w http.ResponseWriter) error
 	// Make sure that user can access page
 	for _, route := range routes {
 		if route.URL == v.GetData("currentPage").(string) {
-			if route.RequireLogin && currentSession == nil {
+			if route.RequireLogin && currentSession.ID == "" {
 				u, err := v.URL("login")
 				if err != nil {
 					return err
