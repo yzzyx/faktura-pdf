@@ -40,6 +40,7 @@
                     {{c.Postcode}}
                     {{c.City}}
                     {{c.Telephone}}
+                    {{c.Homepage}}
                 </small>
             </div>
             <div class="card-edit"> <!--style="display: none;"> -->
@@ -51,6 +52,7 @@
                 {% include "invoice/field.html" with name="Postnummer" field="postcode" val=c.Postcode %}
                 {% include "invoice/field.html" with name="Ort" field="city" val=c.City %}
                 {% include "invoice/field.html" with name="Telefonnummer" field="telephone" val=c.Telephone %}
+                {% include "invoice/field.html" with name="Hemsida" field="homepage" val=c.Homepage %}
             </div>
         </div>
     </div>
