@@ -1,5 +1,7 @@
 'use strict';
 $(function () {
+    let newRowID = -1;
+
     $(".datepicker").datepicker({
         dateFormat: "yy-mm-dd",
         firstDay: 1,
@@ -82,8 +84,13 @@ $(function () {
 
     $("#delete-row").on('click', function (ev) {
         let id = parseInt($("#invoice-row-id").val());
-        let el = newEl("input", {name: "delete_row[]", type: "hidden", value: id});
-        $("#invoice_rows tbody tr[data-row=" + id +"]").replaceWith(el);
+
+        if (id > 0) {
+            let el = newEl("input", {name: "delete_row[]", type: "hidden", value: id});
+            $("#invoice_rows tbody tr[data-row=" + id +"]").replaceWith(el);
+        } else {
+            $("#invoice_rows tbody tr[data-row=" + id +"]").remove();
+        }
         $('#invoice-row-modal').modal('hide');
         $("#save-btn").show();
     });
@@ -222,8 +229,11 @@ $(function () {
         };
 
         let id = $("#invoice-row-id").val()
-        if (id) {
-            entry.ID = parseInt(id);
+        let isNewEntry = false;
+        entry.ID = parseInt(id);
+        if (entry.ID === 0) {
+            entry.ID = newRowID--;
+            isNewEntry = true;
         }
 
         if (entry.is_rot_rut) {
@@ -256,11 +266,11 @@ $(function () {
             ]
         });
 
-        if (entry.ID) {
-            el.dataset["row"] = entry.ID;
-            $("#invoice_rows tbody tr[data-row=" + entry.ID +"]").replaceWith(el);
-        } else {
+        el.dataset["row"] = entry.ID;
+        if (isNewEntry) {
             $("#invoice_rows tbody").append(el);
+        } else {
+            $("#invoice_rows tbody tr[data-row=" + entry.ID +"]").replaceWith(el);
         }
         $("#invoice-row-modal").modal('hide');
         $("#save-btn").show();
