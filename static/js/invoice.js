@@ -277,4 +277,12 @@ $(function () {
         update_totals();
         return false;
     });
+
+    $("input[name='customer.pnr']").keyup(function () {
+        if (!/\d{12}/.test($(this).val())) {
+            $("#customer-pnr-error").show();
+        } else {
+            $("#customer-pnr-error").hide();
+        }
+    });
 });

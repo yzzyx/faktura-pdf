@@ -101,6 +101,7 @@
                 {% include "invoice/field.html" with name="E-post" field="customer.email" val=invoice.Customer.Email %}
                 {% include "invoice/field.html" with name="Telefonnummer" field="customer.telephone" val=invoice.Customer.Telephone %}
                 {% include "invoice/field.html" with name="Personnummer" field="customer.pnr" val=invoice.Customer.PNR %}
+                <div id="customer-pnr-error" class="font-italic small text-danger" style="display: none;">Personnummer måste anges som 12 siffor utan bindestreck (t.ex. 19990102031234)</div>
                 {% include "invoice/field.html" with name="Adress 1" field="customer.address1" val=invoice.Customer.Address1 %}
                 {% include "invoice/field.html" with name="Adress 2" field="customer.address2" val=invoice.Customer.Address2 %}
                 {% include "invoice/field.html" with name="Postkod" field="customer.postcode" val=invoice.Customer.Postcode %}
