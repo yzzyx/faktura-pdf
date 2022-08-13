@@ -1,0 +1,30 @@
+
+database:
+  url: "postgres://username:password@localhost:2211/dbname?sslmode=disable"
+
+server:
+  # Bind to port 3000
+  address: ":3000"
+
+  # TLS settings
+  enable_tls: false
+  # # Leave empty to use system default CA
+  # ca_cert_file:  "ca.crt"
+  key_file: "cert.key"
+  cert_file: "cert.crt"
+
+logging:
+  # File to log to. Expands variables in the same manner as 'strftime'
+  logfile: "errors-%Y-%m-%d.log"
+
+  # Level can be one of "debug", "info", "warn", "error"
+  level: "error"
+  console_level: "info"
+
+sentry:
+  # # Uncomment the following rows to enable Sentry integration
+  # enabled: true
+  # level: "error"
+  # dsn = "http://cda6208706f741d0933e9a151270e944:5f79782e39eb485d9f1640dd2f538379@127.0.0.1:9000/1"
+
+
