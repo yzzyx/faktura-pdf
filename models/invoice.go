@@ -409,8 +409,8 @@ INNER JOIN customer ON customer.id = invoice.customer_id`
 	}
 
 	for k := range invoices {
-		inv := invoices[k]
-		err = tx.Select(ctx, &inv.Rows, "SELECT id, row_order, description, cost, is_rot_rut, rot_rut_service_type, rot_rut_hours FROM invoice_row WHERE invoice_id = $1 ORDER BY row_order", inv.ID)
+		inv := &invoices[k]
+		err = tx.Select(ctx, &inv.Rows, "SELECT id, row_order, description, cost, count, unit, vat, is_rot_rut, rot_rut_service_type, rot_rut_hours, cost*count AS total FROM invoice_row WHERE invoice_id = $1 ORDER BY row_order", inv.ID)
 		if err != nil {
 			return nil, err
 		}
