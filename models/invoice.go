@@ -381,7 +381,7 @@ INNER JOIN customer ON customer.id = invoice.customer_id`
 	}
 
 	if f.CompanyID > 0 {
-		filterStrings = append(filterStrings, "company_id = :company_id")
+		filterStrings = append(filterStrings, "invoice.company_id = :company_id")
 	}
 
 	query += " WHERE " + strings.Join(filterStrings, " AND ")
@@ -400,7 +400,7 @@ INNER JOIN customer ON customer.id = invoice.customer_id`
 			return nil, err
 		}
 
-		invoices = append(invoices)
+		invoices = append(invoices, invoice)
 	}
 
 	for k := range invoices {
