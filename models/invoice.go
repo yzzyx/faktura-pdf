@@ -28,6 +28,8 @@ type Invoice struct {
 	IsDeleted      bool
 	RutApplicable  bool // Is ROT/RUT applicable for this invoice?
 	AdditionalInfo string
+
+	Company Company
 }
 
 type UnitType int
@@ -173,6 +175,8 @@ type InvoiceFilter struct {
 	ListPaid  bool
 	OrderBy   string
 	Direction string
+
+	IncludeCompany bool
 }
 
 type InvoiceTotals struct {
@@ -312,8 +316,8 @@ WHERE id = $1`, invoice.ID,
 		return invoice.ID, err
 	}
 
-	query := `INSERT INTO invoice (number, name, customer_id, rut_applicable) VALUES($1, $2, $3, $4) RETURNING id`
-	err := tx.QueryRow(ctx, query, invoice.Number, invoice.Name, invoice.Customer.ID, invoice.RutApplicable).Scan(&invoice.ID)
+	query := `INSERT INTO invoice (number, name, customer_id, rut_applicable, company_id) VALUES($1, $2, $3, $4, $5) RETURNING id`
+	err := tx.QueryRow(ctx, query, invoice.Number, invoice.Name, invoice.Customer.ID, invoice.RutApplicable, invoice.Company.ID).Scan(&invoice.ID)
 	if err != nil {
 		return 0, err
 	}
@@ -336,6 +340,7 @@ func InvoiceList(ctx context.Context, f InvoiceFilter) ([]Invoice, error) {
 		is_paid,
 		is_deleted,
 		additional_info,
+		invoice.company_id AS "company.id",
 		customer.id AS "customer.id",
 		customer.name AS "customer.name",
 		customer.email AS "customer.email",
@@ -410,6 +415,12 @@ INNER JOIN customer ON customer.id = invoice.customer_id`
 			return nil, err
 		}
 
+		if f.IncludeCompany {
+			inv.Company, err = CompanyGet(ctx, inv.Company.ID)
+			if err != nil {
+				return nil, err
+			}
+		}
 	}
 	return invoices, nil
 }
