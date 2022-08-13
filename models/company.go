@@ -2,6 +2,7 @@ package models
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"strings"
 )
@@ -148,16 +149,23 @@ FROM company
 	return result, nil
 }
 
-func CompanyGet(ctx context.Context, id int) (Company, error) {
-	l, err := CompanyList(ctx, CompanyFilter{ID: id})
+func CompanyGet(ctx context.Context, f CompanyFilter) (Company, error) {
+	var c Company
+	lst, err := CompanyList(ctx, f)
 	if err != nil {
 		return Company{}, err
 	}
 
-	if len(l) == 0 {
-		return Company{}, nil
+	if len(lst) == 0 {
+		return c, sql.ErrNoRows
 	}
-	return l[0], err
+
+	if len(lst) > 1 {
+		return c, errors.New("too many rows returned")
+	}
+	c = lst[0]
+
+	return c, err
 }
 
 func CompanySave(ctx context.Context, c Company) (int, error) {

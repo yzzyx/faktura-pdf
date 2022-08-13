@@ -22,7 +22,7 @@ func (v *Select) HandleGet() error {
 	var err error
 	var company models.Company
 	id := v.URLParamInt("id")
-	company, err = models.CompanyGet(v.Ctx, id)
+	company, err = models.CompanyGet(v.Ctx, models.CompanyFilter{ID: id, UserID: v.Session.User.ID})
 	if err != nil {
 		return err
 	}

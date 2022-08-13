@@ -31,7 +31,7 @@ func (v *View) HandleGet() error {
 	company.InvoiceDueDays = 30
 
 	if id > 0 {
-		company, err = models.CompanyGet(v.Ctx, id)
+		company, err = models.CompanyGet(v.Ctx, models.CompanyFilter{ID: id, UserID: v.Session.User.ID})
 		if err != nil {
 			return err
 		}
@@ -57,7 +57,7 @@ func (v *View) HandlePost() error {
 	updated := false
 
 	if id > 0 {
-		company, err = models.CompanyGet(v.Ctx, id)
+		company, err = models.CompanyGet(v.Ctx, models.CompanyFilter{ID: id, UserID: v.Session.User.ID})
 	}
 
 	if err != nil {
