@@ -14,9 +14,11 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/yzzyx/faktura-pdf/config"
 	"github.com/yzzyx/faktura-pdf/models"
 	"github.com/yzzyx/faktura-pdf/sqlx"
 	"github.com/yzzyx/zerr"
+	"gopkg.in/yaml.v2"
 )
 
 func main() {
@@ -38,10 +40,22 @@ func main() {
 		}
 	}()
 
-	dbURL := "postgres://faktura:faktura@localhost:2211/faktura?sslmode=disable"
-	err := models.Setup(ctx, dbURL)
+	cfg := config.Config{}
+	configFile, err := os.Open("config.yaml")
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Cannot open config file: %+v\n", err)
+		os.Exit(1)
+	}
+
+	err = yaml.NewDecoder(configFile).Decode(&cfg)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Cannot parse config file: %+v\n", err)
+		os.Exit(1)
+	}
+
+	err = models.Setup(ctx, cfg.Database.URL)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to connect to database URL %s: %v\n", cfg.Database.URL, err)
 		os.Exit(1)
 	}
 	defer models.Shutdown()
@@ -89,28 +103,17 @@ func main() {
 		return
 	}
 
-	serveAddress := ":3000"
-	fmt.Printf("Listening on %s\n", serveAddress)
-	err = http.ListenAndServe(serveAddress, r)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "error: %+v\n", err)
-	}
-
 	tlsConfig := &tls.Config{}
 
-	enableTLS := false
-	caCert := "" //viper.GetString("tls.ca_certificate")
-	key := ""    //viper.GetString("tls.key")
-	cert := ""   //viper.GetString("tls.certificate")
 	protocol := "http"
-	if enableTLS {
+	if cfg.Server.EnableTLS {
 		protocol = "https"
 
 		tlsConfig.ClientAuth = tls.VerifyClientCertIfGiven
 
 		// Use user defined CA
-		if caCert != "" {
-			caCert, err := ioutil.ReadFile(caCert)
+		if cfg.Server.CACertFile != "" {
+			caCert, err := ioutil.ReadFile(cfg.Server.CACertFile)
 			if err != nil {
 				_, _ = fmt.Fprintln(os.Stderr, "Failed to load CA certificate:", err)
 				os.Exit(1)
@@ -123,11 +126,10 @@ func main() {
 		}
 	}
 
-	bindAddr := fmt.Sprintf("%s:%d", "127.0.0.1", "3000")
-	fmt.Printf("Starting webserver on %s://%s\n", protocol, bindAddr)
+	fmt.Printf("Starting webserver on %s://%s\n", protocol, cfg.Server.Address)
 
 	server := http.Server{
-		Addr:      bindAddr,
+		Addr:      cfg.Server.Address,
 		TLSConfig: tlsConfig,
 		Handler:   r,
 	}
@@ -136,12 +138,12 @@ func main() {
 	go func() {
 		var err error
 
-		if !enableTLS {
+		if !cfg.Server.EnableTLS {
 			// start server
 			err = server.ListenAndServe()
 		} else {
 			// start TLS server
-			err = server.ListenAndServeTLS(cert, key)
+			err = server.ListenAndServeTLS(cfg.Server.CertFile, cfg.Server.KeyFile)
 		}
 
 		// ListenAndServer always returns a non-nil error -
