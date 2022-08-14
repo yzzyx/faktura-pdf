@@ -127,15 +127,15 @@
             </div>
         {% endif %}
 
-        <button type="submit" class="btn btn-primary">Spara uppgifter</button>
+        <button id="save-btn" type="submit" class="btn btn-sm btn-success" style="display: none;">Spara uppgifter</button>
 
         {% if canExport %}
-            <a href="{% url 'rut-export' id=rut.ID %}" type="button" class="btn btn-primary">Skapa underlag till skatteverket</a>
+            <a href="{% url 'rut-export' id=rut.ID %}" type="button" class="btn btn-sm btn-primary">Skapa underlag till skatteverket</a>
         {% endif %}
-        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#invoice-row-modal">Markera som inskickad till skatteverket</button>
+        <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#invoice-row-modal">Markera som inskickad till skatteverket</button>
     {% elif rut.Status == 1 %}
-        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#invoice-row-modal">Markera som betalad av skatteverket</button>
-        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#invoice-row-modal">Markera som avslagen av skatteverket</button>
+        <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#invoice-row-modal">Markera som betalad av skatteverket</button>
+        <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#invoice-row-modal">Markera som avslagen av skatteverket</button>
     {% endif %}
 
     {% if canExport %}
@@ -147,4 +147,8 @@
         </small>
     {% endif %}
 </form>
+{% endblock %}
+
+{% block javascript %}
+<script src="{% static 'js/rut.js' %}"></script>
 {% endblock %}
