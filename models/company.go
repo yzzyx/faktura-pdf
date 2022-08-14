@@ -77,6 +77,23 @@ func (c *Company) RemoveUser(ctx context.Context, u User) error {
 	return errors.New("not implemented")
 }
 
+func (c *Company) GetNextInvoiceNumber(ctx context.Context) (int, error) {
+	var num int
+	tx := getContextTx(ctx)
+	query := `
+SELECT MAX(n) FROM 
+(SELECT COALESCE(MAX(number), 0) + 1 AS n FROM invoice 
+			WHERE company_id = $1
+			UNION
+            SELECT invoice_number AS n FROM company WHERE id = $1) x`
+	row := tx.QueryRow(ctx, query, c.ID)
+	err := row.Scan(&num)
+	if err != nil {
+		return 0, zerr.Wrap(err).WithString("query", query)
+	}
+	return num, err
+}
+
 type CompanyFilter struct {
 	ID     int
 	UserID int

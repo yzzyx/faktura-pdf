@@ -33,7 +33,7 @@ func (v *View) HandleGet() error {
 			return err
 		}
 	} else {
-		invoice.Number, err = models.InvoiceGetNextNumber(v.Ctx)
+		invoice.Number, err = v.Session.Company.GetNextInvoiceNumber(v.Ctx)
 		if err != nil {
 			return err
 		}
@@ -69,7 +69,7 @@ func (v *View) HandlePost() error {
 	if id > 0 {
 		invoice, err = models.InvoiceGet(v.Ctx, models.InvoiceFilter{ID: id, CompanyID: v.Session.Company.ID})
 	} else {
-		invoice.Number, err = models.InvoiceGetNextNumber(v.Ctx)
+		invoice.Number, err = v.Session.Company.GetNextInvoiceNumber(v.Ctx)
 		invoice.Company.ID = v.Session.Company.ID
 		updated = true
 	}

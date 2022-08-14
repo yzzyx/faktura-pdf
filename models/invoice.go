@@ -486,15 +486,3 @@ func InvoiceRowRemove(ctx context.Context, invoiceID int, rowID int) error {
 
 	return nil
 }
-
-func InvoiceGetNextNumber(ctx context.Context) (int, error) {
-	var num int
-	tx := getContextTx(ctx)
-	query := `SELECT COALESCE(MAX(number), 0) + 1 FROM invoice`
-	row := tx.QueryRow(ctx, query)
-	err := row.Scan(&num)
-	if err != nil {
-		return 0, zerr.Wrap(err).WithString("query", query)
-	}
-	return num, err
-}
