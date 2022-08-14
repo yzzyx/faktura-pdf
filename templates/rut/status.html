@@ -5,7 +5,7 @@
 {% elif rut.Status == 2 %}
 <span class="badge badge-success">Betalad</span>
 {% elif rut.Status == 3 %}
-<span class="badge badge-error">Avslagen</span>
+<span class="badge badge-danger">Avslagen</span>
 {% else %}
 <span class="badge badge-secondary">okänt status {{rut.Status}}</span>
 {% endif %}
