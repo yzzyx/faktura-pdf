@@ -22,8 +22,9 @@ func NewView() *View {
 // HandleGet displays a ROT/RUT request
 func (v *View) HandleGet() error {
 	f := models.RUTFilter{
-		ID:        v.URLParamInt("id"),
-		CompanyID: v.Session.Company.ID,
+		ID:             v.URLParamInt("id"),
+		CompanyID:      v.Session.Company.ID,
+		IncludeInvoice: true,
 	}
 
 	if f.ID <= 0 {
@@ -68,8 +69,9 @@ func (v *View) HandleGet() error {
 // HandlePost updates a ROT/RUT request
 func (v *View) HandlePost() error {
 	f := models.RUTFilter{
-		ID:        v.URLParamInt("id"),
-		CompanyID: v.Session.Company.ID,
+		ID:             v.URLParamInt("id"),
+		CompanyID:      v.Session.Company.ID,
+		IncludeInvoice: true,
 	}
 
 	if f.ID <= 0 {
