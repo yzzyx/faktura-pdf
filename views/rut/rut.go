@@ -108,9 +108,12 @@ func (v *View) HandlePost() error {
 		}
 	}
 
-	_, err = models.RUTSave(v.Ctx, rutRequest)
-	if err != nil {
-		return err
+	// Only allow changes if RUT request is not already sent
+	if rutRequest.Status == 0 {
+		_, err = models.RUTSave(v.Ctx, rutRequest)
+		if err != nil {
+			return err
+		}
 	}
 
 	return v.RedirectRoute("rut-view", "id", strconv.Itoa(rutRequest.ID))
