@@ -1,5 +1,10 @@
 {% extends "base.html" %}
 
+{% block css %}
+<link rel="stylesheet" href="{% static 'vendor/jquery-ui-1.13.1/jquery-ui.min.css' %}">
+<link rel="stylesheet" href="{% static 'vendor/jquery-ui-1.13.1/jquery-ui.theme.min.css' %}">
+{% endblock %}
+
 {% block content %}
 <div class="card mt-2">
     <div class="card-body">
@@ -128,11 +133,13 @@
         {% endif %}
 
         <button id="save-btn" type="submit" class="btn btn-sm btn-success" style="display: none;">Spara uppgifter</button>
+</form>
 
         {% if canExport %}
             <a href="{% url 'rut-export' id=rut.ID %}" type="button" class="btn btn-sm btn-primary">Skapa underlag till skatteverket</a>
         {% endif %}
-        <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#invoice-row-modal">Markera som inskickad till skatteverket</button>
+        <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#rut-date-modal">Markera som inskickad till skatteverket</button>
+        {% include "rut/date-modal.html" with flagname="sent" title="Markera som inskickad till skatteverket" datetext="Datum" btntext="Spara" %}
     {% elif rut.Status == 1 %}
         <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#invoice-row-modal">Markera som betalad av skatteverket</button>
         <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#invoice-row-modal">Markera som avslagen av skatteverket</button>
@@ -150,5 +157,6 @@
 {% endblock %}
 
 {% block javascript %}
+<script src="{% static 'vendor/jquery-ui-1.13.1/jquery-ui.min.js' %}"></script>
 <script src="{% static 'js/rut.js' %}"></script>
 {% endblock %}

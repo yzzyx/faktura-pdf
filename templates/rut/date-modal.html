@@ -1,0 +1,27 @@
+<div class="modal fade" id="rut-date-modal" tabindex="-1" aria-labelledby="rut-date-modal-title" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form method="POST" action="{% url 'rut-flag' id=rut.ID %}">
+                <input type="hidden" name="flag" value="{{flagname}}">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="invoice-date-modal-title">{{title}}</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="form-group col-12">
+                            <label class="form-label">{{datetext}}</label>
+                            <input required type="text" name="date" id="rut-date" class="datepicker form-control" value="{{today|date:'2006-01-02'}}">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Avbryt</button>
+                    <button type="submit" class="btn btn-primary">{{btntext}}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
