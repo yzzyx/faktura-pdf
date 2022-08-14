@@ -44,6 +44,7 @@ var routes = []routeInfo{
 	{URL: "company-select", Path: "/company/{id}/select", View: company.NewSelect(), RequireLogin: true},
 	{URL: "rut-list", Path: "/rut", View: rut.NewList(), Methods: MethodGET, RequireLogin: true, RequireCompany: true},
 	{URL: "rut-view", Path: "/rut/{id}", View: rut.NewView(), RequireLogin: true, RequireCompany: true},
+	{URL: "rut-flag", Path: "/rut/{id}/flag", View: rut.NewFlag(), RequireLogin: true, Methods: MethodPOST, RequireCompany: true},
 	{URL: "rut-export", Path: "/rut/{id}/export", View: rut.NewExport(), RequireLogin: true, RequireCompany: true},
 	{URL: "invoice-list", Path: "/invoice", View: invoice.NewList(), Methods: MethodGET, RequireLogin: true, RequireCompany: true},
 	{URL: "invoice-view", Path: "/invoice/{id}", View: invoice.NewView(), RequireLogin: true, RequireCompany: true},
