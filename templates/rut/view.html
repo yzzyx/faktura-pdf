@@ -23,8 +23,8 @@
         </div>
         {% endif %}
 
-        <div><small>Faktura betalad {{ rut.Invoice.DatePaid|date }}</small></div>
-        {% if rut.Status > 1 %}
+        <div><small>Kundens faktura betalad {{ rut.Invoice.DatePaid|date }}</small></div>
+        {% if rut.Status > 0 %}
         <div>
             <small>
                 {{rut.Type.String}}-ärende inskickat {{rut.DateSent|date:"2006-01-02"}}
@@ -69,7 +69,12 @@
 <form method="POST">
     <div class="card mt-2">
         <div class="card-body">
-            <h5 class="card-title">Fakturarader att begära ersättning för</h5>
+            {% if rut.Status == 0 %}
+                <h5 class="card-title">Fakturarader att begära ersättning för</h5>
+            {% else %}
+                <h5 class="card-title">Fakturarader som begärts ersättning för</h5>
+            {% endif %}
+
             <table id="invoice_rows" class="table table-hover">
                 <thead>
                 <tr>
@@ -99,7 +104,11 @@
                         {% if r.Unit == 2 %}
                             {{ r.Count }} h
                         {% else %}
-                            <input type="number" class="form-inline" name="hours[{{r.ID}}]" min="0" {% if r.RotRutHours %}value="{{r.RotRutHours}}"{% endif %}>
+                            {% if rut.Status == 0 %}
+                                <input type="number" class="form-inline" name="hours[{{r.ID}}]" min="0" {% if r.RotRutHours %}value="{{r.RotRutHours}}"{% endif %}>
+                            {% else %}
+                                {% if not r.RotRutHours %}0{%else%}{{r.RotRutHours}}{%endif%} h
+                            {% endif %}
                         {% endif %}
                     </td>
                 </tr>
@@ -109,17 +118,25 @@
         </div>
     </div>
 
-    {% if rut.Status == 0 %}
-        <div class="card mt-2 mb-2">
-            <div class="card-body pb-0">
+    <div class="card mt-2 mb-2">
+        <div class="card-body pb-0">
+            {% if rut.Status == 0 %}
                 <h5 class="card-title">Summa att begära från skatteverket</h5>
                 <div class="form-group">
                     <input name="request-sum" type="number" class="form-control" id="field-sum" aria-describedby="field-sum-help" value="{% if hasRequestedSum %}{{rut.RequestedSum}}{% else %}{{maxAmount}}{% endif %}" autocomplete="off">
                     <small id="field-sum-help" class="form-text text-muted">Maximal summa att begära är {{maxAmount}} kr {% if rut.Type == 0 %}(50% för RUT){% else %}(30% för ROT){% endif %}.</small>
                 </div>
-            </div>
+            {% else %}
+                <h5 class="card-title">Begärd summa från skatteverket</h5>
+                <div class="form-group">
+                    {% if hasRequestedSum %}{{rut.RequestedSum}}{% else %}{{maxAmount}}{% endif %} kr
+                    <small class="form-text text-muted">Maximal summa att begära är {{maxAmount}} kr {% if rut.Type == 0 %}(50% för RUT){% else %}(30% för ROT){% endif %}.</small>
+                </div>
+            {% endif %}
         </div>
+    </div>
 
+    {% if rut.Status == 0 %}
         {% if not rut.Invoice.Customer.PNR %}
             <div class="alert alert-warning" role="alert">
                 Inget personnummer är angivet på fakturan - detta krävs för att skapa underlag till skatteverket
@@ -153,7 +170,6 @@
             Det är också möjligt att lämna in ansökan manuellt
         </small>
     {% endif %}
-</form>
 {% endblock %}
 
 {% block javascript %}
