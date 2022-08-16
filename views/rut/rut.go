@@ -65,6 +65,10 @@ func (v *View) HandleGet() error {
 	v.SetData("canExport", canExport)
 	v.SetData("hasRequestedSum", rutRequest.RequestedSum != nil)
 
+	if rutRequest.RequestedSum != nil && rutRequest.ReceivedSum != nil {
+		v.SetData("receivedPercent", int((float32(*rutRequest.ReceivedSum) / float32(*rutRequest.RequestedSum) * 100.0)))
+	}
+
 	return v.Render("rut/view.html")
 }
 

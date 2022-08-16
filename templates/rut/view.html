@@ -132,6 +132,10 @@
                 <h5 class="card-title">Begärd summa från skatteverket</h5>
                 <div class="form-group">
                     {% if hasRequestedSum %}{{rut.RequestedSum}}{% else %}{{maxAmount}}{% endif %} kr
+                    {% if rut.ReceivedSum %}
+                        varav mottaget
+                        <span class="{% if receivedPercent == 100 %}text-success{% else %}text-danger{% endif %}">{{rut.ReceivedSum}} kr ({{receivedPercent}} %)</span>
+                    {% endif %}
                     <small class="form-text text-muted">Maximal summa att begära är {{maxAmount}} kr {% if rut.Type == 0 %}(50% för RUT){% else %}(30% för ROT){% endif %}.</small>
                 </div>
             {% endif %}

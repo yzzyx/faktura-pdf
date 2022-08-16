@@ -53,6 +53,7 @@ type RUT struct {
 	Invoice      Invoice
 	Status       RUTStatus
 	RequestedSum *int
+	ReceivedSum  *int
 	DateSent     *time.Time
 	DatePaid     *time.Time
 }
@@ -76,13 +77,15 @@ func RUTSave(ctx context.Context, rut RUT) (int, error) {
 status = $2,
 date_sent = $3,
 date_paid = $4,
-requested_sum = $5
+requested_sum = $5,
+received_sum = $6
 WHERE id = $1`
 		_, err := tx.Exec(ctx, query, rut.ID,
 			rut.Status,
 			rut.DateSent,
 			rut.DatePaid,
-			rut.RequestedSum)
+			rut.RequestedSum,
+			rut.ReceivedSum)
 		if err != nil {
 			return 0, zerr.Wrap(err).WithString("query", query).WithAny("rut", rut)
 		}
@@ -141,6 +144,7 @@ rut_requests.status,
 rut_requests.date_sent,
 rut_requests.date_paid,
 rut_requests.requested_sum,
+rut_requests.received_sum,
 invoice.id AS "invoice.id",
 invoice.number AS "invoice.number",
 invoice.name AS "invoice.name",

@@ -52,6 +52,8 @@ func (v *Flag) HandlePost() error {
 	case "paid":
 		rutRequest.Status = models.RUTStatusPaid
 		rutRequest.DatePaid = &date
+		receivedAmount := v.FormValueInt("amount")
+		rutRequest.ReceivedSum = &receivedAmount
 	case "rejected":
 		rutRequest.Status = models.RUTStatusRejected
 		rutRequest.DatePaid = &date
