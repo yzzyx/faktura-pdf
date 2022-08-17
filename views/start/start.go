@@ -1,6 +1,7 @@
 package start
 
 import (
+	"github.com/yzzyx/faktura-pdf/models"
 	"github.com/yzzyx/faktura-pdf/views"
 )
 
@@ -16,5 +17,16 @@ func New() *Start {
 
 // HandleGet displays a list of requests
 func (v *Start) HandleGet() error {
-	return v.Render("start.html")
+	if v.Session.User.ID == 0 {
+		return v.Render("start/start.html")
+	}
+
+	if v.Session.Company.ID == 0 {
+		companyList, err := models.CompanyList(v.Ctx, models.CompanyFilter{UserID: v.Session.User.ID})
+		if err != nil {
+			return err
+		}
+		v.SetData("companyList", companyList)
+	}
+	return v.Render("start/logged-in.html")
 }

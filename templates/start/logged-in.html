@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>
+        Faktura-PDF
+    </h1>
+
+    {% if not session.Company.ID %}
+        <div class="card">
+            <div class="card-body">
+                {% if companyList|length == 0 %}
+                    Du har ännu inte skapat något företag.<br/>
+                    För att kunna skapa offerter och fakturor måste ett företag skapas.<br/>
+                    <br/>
+                    Du kan uppdatera företaget med mera information vid ett senare tillfälle, och skapa
+                    nya företag om behovet uppstår.<br/>
+                    <a href="{%url 'company-view' id=-1 %}" class="btn btn-primary">Skapa företag</a>
+                {% else %}
+                    <div class="card-title">
+                        <h5>Välj företag att representera</h5>
+                    </div>
+                        <ul class="list-group">
+                            {% for company in companyList %}
+                            <a class="list-group-item list-group-item-action">{{company.Name}}</a>
+                            {% endfor %}
+                        </ul>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}
