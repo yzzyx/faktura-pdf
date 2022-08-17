@@ -139,6 +139,20 @@ func (v *View) HandlePost() error {
 		}
 	}
 
+	// Only allow updates to invoices we haven't sent yet
+	if !invoice.IsInvoiced {
+		err = v.updateRows(invoice)
+		if err != nil {
+			return err
+		}
+	}
+
+	return v.RedirectRoute("invoice-view", "id", strconv.Itoa(invoice.ID))
+}
+
+func (v *View) updateRows(invoice models.Invoice) error {
+	var err error
+
 	updatedRows := map[int]*models.InvoiceRow{}
 	rowOrderText := v.FormValueString("roworder")
 	if rowOrderText != "" {
@@ -204,5 +218,5 @@ func (v *View) HandlePost() error {
 		}
 	}
 
-	return v.RedirectRoute("invoice-view", "id", strconv.Itoa(invoice.ID))
+	return nil
 }
