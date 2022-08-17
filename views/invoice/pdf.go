@@ -156,6 +156,7 @@ func generatePDF(ctx context.Context, invoice models.Invoice, templateFile strin
 		"companypaymenttype":    invoice.Company.PaymentType.String(),
 		"companyvatnumber":      invoice.Company.VATNumber,
 		"companyreference":      invoice.Company.InvoiceReference,
+		"companyhomepage":       invoice.Company.Homepage,
 	}
 
 	re := regexp.MustCompile("<([^>]*)>")
