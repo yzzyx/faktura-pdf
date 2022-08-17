@@ -126,7 +126,7 @@
                     <th></th>
                 </tr>
                 </thead>
-                <tbody>
+                <tbody {% if invoice.IsInvoiced %}data-disabled="true"{% endif %}>
                 {% for r in invoice.Rows %}
                 <tr data-row="{{r.ID}}" data-json="{{r|json}}">
                     <td>{{ r.Description }}</td>
@@ -144,7 +144,9 @@
             </table>
             <div class="row">
                 <div class="col-2 align-top">
+                    {% if not invoice.IsInvoiced %}
                     <button id="invoice-show-add-row" type="button" class="btn btn-sm btn-primary">Lägg till fakturarad</button>
+                    {% endif %}
                 </div>
                 <div class="col-10 text-right">
                     <div id="total-incl" class="small" {% if totals.Incl.IsZero %}style="display: none;"{% endif %}>Totalt inkl moms: <span class="sum">{{totals.Incl|money}}</span></div>

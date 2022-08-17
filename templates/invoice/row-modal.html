@@ -2,8 +2,12 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title invoice-row-add" id="invoice-row-modal-title">Lägg till rad</h5>
-                <h5 class="modal-title invoice-row-update" id="invoice-row-modal-title">Uppdatera rad</h5>
+                {% if invoice.IsInvoiced %}
+                    <h5 class="modal-title">Fakturarrad</h5>
+                {% else %}
+                    <h5 class="modal-title invoice-row-add" id="invoice-row-modal-title">Lägg till rad</h5>
+                    <h5 class="modal-title invoice-row-update" id="invoice-row-modal-title">Uppdatera rad</h5>
+                {% endif %}
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -14,7 +18,7 @@
                     <div class="row">
                         <div class="form-group col-12">
                             <label class="form-label">Beskrivning</label>
-                            <input type="text" required class="form-control" id="invoice-row-description" placeholder="Ange beskrivning på varan eller tjänsten">
+                            <input type="text" required {% if invoice.IsInvoiced %} disabled {% endif %} class="form-control" id="invoice-row-description" placeholder="Ange beskrivning på varan eller tjänsten">
                             <div class="invalid-feedback">
                                 En beskrivning måste anges
                             </div>
@@ -23,19 +27,19 @@
                             <label class="form-label">Pris per enhet (inkl moms)
                                 <span class="badge badge-pill badge-primary" data-toggle="tooltip" title="Detta är den totala summan, inklusive moms samt ev. RUT/ROT-avdrag">?</span>
                             </label>
-                            <input type="text" class="form-control invoice-row-price" id="invoice-row-price-incl" data-vat-incl="true" data-price-target="#invoice-row-price-exkl" placeholder="" value="0">
+                            <input type="text" {% if invoice.IsInvoiced %} disabled {% endif %} class="form-control invoice-row-price" id="invoice-row-price-incl" data-vat-incl="true" data-price-target="#invoice-row-price-exkl" placeholder="" value="0">
                         </div>
                         <div class="form-group col-6">
                             <label class="form-label">Pris per enhet (exkl moms)</label>
-                            <input type="text" class="form-control invoice-row-price" id="invoice-row-price-exkl" data-price-target="#invoice-row-price-incl" placeholder="" value="0">
+                            <input type="text" {% if invoice.IsInvoiced %} disabled {% endif %} class="form-control invoice-row-price" id="invoice-row-price-exkl" data-price-target="#invoice-row-price-incl" placeholder="" value="0">
                         </div>
                         <div class="form-group col-6">
                             <label class="form-label">Antal</label>
-                            <input type="number" class="form-control" id="invoice-row-count" placeholder="" value="1" min="1">
+                            <input type="number" {% if invoice.IsInvoiced %} disabled {% endif %} class="form-control" id="invoice-row-count" placeholder="" value="1" min="1">
                         </div>
                         <div class="form-group col-6">
                             <label class="form-label">Enhet</label>
-                            <select class="form-control" id="invoice-row-unit">
+                            <select class="form-control" {% if invoice.IsInvoiced %} disabled {% endif %} id="invoice-row-unit">
                                 <option value="0" selected>-</option>
                                 <option value="1">st</option>
                                 <option value="2">timmar</option>
@@ -44,7 +48,7 @@
                         </div>
                         <div class="form-group col-6">
                             <label class="form-label">Moms-sats</label>
-                            <select class="form-control" id="invoice-row-vat" data-price-target=".invoice-row-price">
+                            <select class="form-control" {% if invoice.IsInvoiced %} disabled {% endif %} id="invoice-row-vat" data-price-target=".invoice-row-price">
                                 <option value="0" selected>25 %</option>
                                 <option value="1">12 %</option>
                                 <option value="2">6 %</option>
@@ -55,25 +59,25 @@
                     <div class="row">
                         <div class="form-group col-6">
                             <div class="form-check">
-                                <input type="checkbox" class="form-check-input" id="invoice-row-rut-rot" value="1" checked>
+                                <input type="checkbox" {% if invoice.IsInvoiced %} disabled {% endif %} class="form-check-input" id="invoice-row-rut-rot" value="1" checked>
                                 <label class="form-check-label" for="invoice-row-rut-rot">RUT/ROT-avdrag</label>
                             </div>
                         </div>
                         <div class="form-group col-6 show-rut-rot" style="display: none;">
                             <div class="form-check">
                                 <label class="form-check-label">
-                                <input id="invoice-row-rut-rot-type-rut" type="radio" class="form-check-input" name="invoice-row-rut-rot-type" value="rut" checked autocomplete="off">
+                                <input id="invoice-row-rut-rot-type-rut" {% if invoice.IsInvoiced %} disabled {% endif %} type="radio" class="form-check-input" name="invoice-row-rut-rot-type" value="rut" checked autocomplete="off">
                                 RUT</label>
                             </div>
                             <div class="form-check">
                                 <label class="form-check-label">
-                                <input id="invoice-row-rut-rot-type-rot" type="radio" class="form-check-input" name="invoice-row-rut-rot-type" value="rot" autocomplete="off">
+                                <input id="invoice-row-rut-rot-type-rot" {% if invoice.IsInvoiced %} disabled {% endif %} type="radio" class="form-check-input" name="invoice-row-rut-rot-type" value="rot" autocomplete="off">
                                 ROT</label>
                             </div>
                         </div>
                         <div class="form-group col-12 show-rut-rot" style="display: none;">
                             <label class="form-label" for="invoice-row-rut-rot-service-type">Typ av arbete</label>
-                            <select class="form-control" id="invoice-row-rut-rot-service-type">
+                            <select class="form-control" {% if invoice.IsInvoiced %} disabled {% endif %} id="invoice-row-rut-rot-service-type">
                                 {% for r in rotServices %}
                                     <option value="{{r}}" class="rot{% if r == defaultROTService %} default{% endif %}">{{r.String}}</option>
                                 {% endfor %}
@@ -86,9 +90,13 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-danger mr-auto invoice-row-update" id="delete-row">Ta bort rad</button>
+                {% if not invoice.IsInvoiced %}
+                    <button type="button" class="btn btn-danger mr-auto invoice-row-update" id="delete-row">Ta bort rad</button>
+                {% endif %}
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" id="add-row">Ok</button>
+                {% if not invoice.IsInvoiced %}
+                    <button type="button" class="btn btn-primary" id="add-row">Ok</button>
+                {% endif %}
             </div>
         </div>
     </div>

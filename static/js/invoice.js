@@ -12,31 +12,34 @@ $(function () {
         monthNamesShort: [ "Jan", "Feb", "Mar", "Apr", "Maj", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dec" ]
     });
 
-    $("#invoice_rows tbody").sortable({
-        "axis": "y",
-        "cancel": ".edit",
-        "stop": function (){
-            let x = document.querySelectorAll("#invoice_rows tbody tr");
-            let roworder = [];
-            for (let idx = 0; idx < x.length; idx++) {
-                let id = parseInt(x[idx].dataset["row"]);
+    let rows = $("#invoice_rows tbody");
+    if (!rows.data("disabled")) {
+        $("#invoice_rows tbody").sortable({
+            "axis": "y",
+            "cancel": ".edit",
+            "stop": function () {
+                let x = document.querySelectorAll("#invoice_rows tbody tr");
+                let roworder = [];
+                for (let idx = 0; idx < x.length; idx++) {
+                    let id = parseInt(x[idx].dataset["row"]);
 
-                // For rows that we still haven't created, we need to set the row index directly
-                if (isNaN(id)) {
-                    let input = $("input[name='row[]']", x[idx]);
-                    let row = JSON.parse(input.val());
-                    row.row_order = idx;
-                    input.val(JSON.stringify(row));
-                    id = 0; // placeholder for the new id
+                    // For rows that we still haven't created, we need to set the row index directly
+                    if (isNaN(id)) {
+                        let input = $("input[name='row[]']", x[idx]);
+                        let row = JSON.parse(input.val());
+                        row.row_order = idx;
+                        input.val(JSON.stringify(row));
+                        id = 0; // placeholder for the new id
+                    }
+                    roworder.push(id);
                 }
-                roworder.push(id);
+                $("input[name=roworder]").val(JSON.stringify(roworder));
+                $("#save-btn").show();
             }
-            $("input[name=roworder]").val(JSON.stringify(roworder));
-            $("#save-btn").show();
-        }
-    });
+        });
+    }
 
-    $(".edit").on('click', function (ev) {
+    $(".card-title .edit").on('click', function (ev) {
         let c = $(this).closest(".card");
         $(".card-display", c).hide();
         $(".card-edit", c).show();
