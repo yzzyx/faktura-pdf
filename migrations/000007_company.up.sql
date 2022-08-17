@@ -31,6 +31,6 @@ ALTER TABLE rut_requests ADD COLUMN company_id int REFERENCES company(id);
 CREATE TABLE company_user (
     user_id int REFERENCES "user"(id),
     company_id int REFERENCES company(id),
-    CONSTRAINT user_company_unique UNIQUE (user_id, company_id)
+    CONSTRAINT company_user_unique UNIQUE (user_id, company_id)
 );
 COMMIT;
