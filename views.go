@@ -143,6 +143,28 @@ func viewPreRender(v views.Viewer, r *http.Request, w http.ResponseWriter) error
 			v.SetSession(currentSession)
 			v.SetData("session", currentSession)
 			v.SetData("logged_in", true)
+
+			// Get number of invoices/requests
+			if currentSession.Company.ID > 0 {
+				invoiceCount, err := models.InvoiceCount(r.Context(), models.InvoiceFilter{CompanyID: currentSession.Company.ID, FilterPaid: 2})
+				if err != nil {
+					return err
+				}
+				v.SetData("invoiceCount", invoiceCount)
+
+				rutCount, err := models.RUTCount(r.Context(),
+					models.RUTFilter{
+						CompanyID: currentSession.Company.ID,
+						FilterStatus: []models.RUTStatus{
+							models.RUTStatusPending,
+							models.RUTStatusSent,
+						},
+					})
+				if err != nil {
+					return err
+				}
+				v.SetData("rutCount", rutCount)
+			}
 		} else {
 			// SessionRemove session cookie
 			http.SetCookie(w, &http.Cookie{Name: "_fp_login", MaxAge: -1})

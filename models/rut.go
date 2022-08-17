@@ -135,6 +135,40 @@ func RUTGet(ctx context.Context, f RUTFilter) (RUT, error) {
 	return rutRequest, nil
 }
 
+func rutBuildQuery(q string, f RUTFilter) string {
+	filterStrings := []string{}
+
+	if len(f.FilterStatus) > 0 {
+		var fs []string
+		for _, v := range f.FilterStatus {
+			fs = append(fs, strconv.Itoa(int(v)))
+		}
+		filterStrings = append(filterStrings, fmt.Sprintf(`rut_requests.status IN (%s)`, strings.Join(fs, ",")))
+	}
+
+	if f.InvoiceID > 0 {
+		filterStrings = append(filterStrings, "rut_requests.invoice_id = :invoice_id")
+	}
+
+	if f.Type != nil {
+		filterStrings = append(filterStrings, "rut_requests.type = :type")
+	}
+
+	if f.ID > 0 {
+		filterStrings = append(filterStrings, "rut_requests.id = :id")
+	}
+
+	if f.CompanyID > 0 {
+		filterStrings = append(filterStrings, "invoice.company_id = :company_id")
+	}
+
+	if len(filterStrings) > 0 {
+		q += " WHERE " + strings.Join(filterStrings, " AND ")
+	}
+
+	return q
+}
+
 func RUTList(ctx context.Context, f RUTFilter) ([]RUT, error) {
 	var rutRequests []RUT
 	query := `SELECT
@@ -170,36 +204,7 @@ INNER JOIN customer ON customer.id = invoice.customer_id
 	if strings.ToUpper(f.Direction) != "DESC" {
 		f.Direction = "ASC"
 	}
-
-	filterStrings := []string{}
-
-	if len(f.FilterStatus) > 0 {
-		var fs []string
-		for _, v := range f.FilterStatus {
-			fs = append(fs, strconv.Itoa(int(v)))
-		}
-		filterStrings = append(filterStrings, fmt.Sprintf(`rut_requests.status IN (%s)`, strings.Join(fs, ",")))
-	}
-
-	if f.InvoiceID > 0 {
-		filterStrings = append(filterStrings, "rut_requests.invoice_id = :invoice_id")
-	}
-
-	if f.Type != nil {
-		filterStrings = append(filterStrings, "rut_requests.type = :type")
-	}
-
-	if f.ID > 0 {
-		filterStrings = append(filterStrings, "rut_requests.id = :id")
-	}
-
-	if f.CompanyID > 0 {
-		filterStrings = append(filterStrings, "invoice.company_id = :company_id")
-	}
-
-	if len(filterStrings) > 0 {
-		query += " WHERE " + strings.Join(filterStrings, " AND ")
-	}
+	query = rutBuildQuery(query, f)
 
 	query += fmt.Sprintf(" ORDER BY %s %s", orderBy, f.Direction)
 
@@ -230,4 +235,32 @@ INNER JOIN customer ON customer.id = invoice.customer_id
 	}
 
 	return rutRequests, nil
+}
+
+// RUTCount returns the number of entries matching the filter
+func RUTCount(ctx context.Context, f RUTFilter) (int, error) {
+	var count int
+
+	query := `SELECT
+	COUNT(rut_requests.id)
+	FROM rut_requests
+	INNER JOIN invoice ON invoice.id = rut_requests.invoice_id
+	INNER JOIN customer ON customer.id = invoice.customer_id
+	`
+	query = rutBuildQuery(query, f)
+
+	tx := getContextTx(ctx)
+	rows, err := tx.NamedQuery(ctx, query, f)
+	if err != nil {
+		return 0, zerr.Wrap(err).WithString("query", query)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		err = rows.Scan(&count)
+		if err != nil {
+			return 0, zerr.Wrap(err).WithString("query", query)
+		}
+	}
+	return count, nil
 }

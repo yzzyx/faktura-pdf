@@ -21,11 +21,11 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav">
                     {% if logged_in  && session.Company.ID > 0 %}
-                        <li class="nav-item active">
-                            <a class="nav-link" href="{% url 'invoice-list' %}">Fakturor</a>
+                        <li class="nav-item {% if currentPage == 'invoice-list' %}active{% endif %}">
+                            <a class="nav-link" href="{% url 'invoice-list' %}">Fakturor {% if invoiceCount > 0 %}<span class="badge badge-secondary">{{invoiceCount}}</span>{% endif %}</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'rut-list' %}">ROT/RUT-ärenden</a>
+                        <li class="nav-item {% if currentPage == 'rut-list' %}active{% endif %}">
+                            <a class="nav-link" href="{% url 'rut-list' %}">ROT/RUT-ärenden {% if rutCount > 0 %}<span class="badge badge-secondary">{{rutCount}}</span>{% endif %}</a>
                         </li>
                     {% endif %}
                 </ul>

@@ -329,6 +329,27 @@ WHERE id = $1`
 	return invoice.ID, nil
 }
 
+func invoiceBuildQuery(q string, f InvoiceFilter) string {
+	filterStrings := []string{}
+
+	if f.FilterPaid == 1 {
+		filterStrings = append(filterStrings, "is_paid")
+	} else if f.FilterPaid == 2 {
+		filterStrings = append(filterStrings, "not is_paid")
+	}
+
+	if f.ID > 0 {
+		filterStrings = append(filterStrings, "invoice.id = :id")
+	}
+
+	if f.CompanyID > 0 {
+		filterStrings = append(filterStrings, "invoice.company_id = :company_id")
+	}
+
+	q += " WHERE " + strings.Join(filterStrings, " AND ")
+	return q
+}
+
 func InvoiceList(ctx context.Context, f InvoiceFilter) ([]Invoice, error) {
 	var invoices []Invoice
 	query := `SELECT
@@ -378,23 +399,7 @@ INNER JOIN customer ON customer.id = invoice.customer_id`
 		f.Direction = "ASC"
 	}
 
-	filterStrings := []string{}
-
-	if f.FilterPaid == 1 {
-		filterStrings = append(filterStrings, "is_paid")
-	} else if f.FilterPaid == 2 {
-		filterStrings = append(filterStrings, "not is_paid")
-	}
-
-	if f.ID > 0 {
-		filterStrings = append(filterStrings, "invoice.id = :id")
-	}
-
-	if f.CompanyID > 0 {
-		filterStrings = append(filterStrings, "invoice.company_id = :company_id")
-	}
-
-	query += " WHERE " + strings.Join(filterStrings, " AND ")
+	query = invoiceBuildQuery(query, f)
 	query += fmt.Sprintf(" ORDER BY %s %s", orderBy, f.Direction)
 
 	tx := getContextTx(ctx)
@@ -429,6 +434,32 @@ INNER JOIN customer ON customer.id = invoice.customer_id`
 		}
 	}
 	return invoices, nil
+}
+
+// InvoiceCount returns the number of entries matching the filter
+func InvoiceCount(ctx context.Context, f InvoiceFilter) (int, error) {
+	var count int
+
+	query := `SELECT
+		COUNT(invoice.id)
+FROM invoice
+INNER JOIN customer ON customer.id = invoice.customer_id`
+	query = invoiceBuildQuery(query, f)
+
+	tx := getContextTx(ctx)
+	rows, err := tx.NamedQuery(ctx, query, f)
+	if err != nil {
+		return 0, zerr.Wrap(err).WithString("query", query)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		err = rows.Scan(&count)
+		if err != nil {
+			return 0, zerr.Wrap(err).WithString("query", query)
+		}
+	}
+	return count, nil
 }
 
 func InvoiceRowUpdate(ctx context.Context, row InvoiceRow) error {
