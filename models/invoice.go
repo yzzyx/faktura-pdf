@@ -190,6 +190,19 @@ type InvoiceTotals struct {
 	Customer decimal.Decimal // Amount customer pays
 	ROTRUT   decimal.Decimal // Amount of ROT/RUT
 
+	TotalVAT25 decimal.Decimal // Total excl for 25% VAT
+	TotalVAT12 decimal.Decimal // Total excl for 12% VAT
+	TotalVAT6  decimal.Decimal // Total excl for 6% VAT
+
+	// Total sums for ROT/RUT only
+	ROTRUTTotals struct {
+		Incl  decimal.Decimal // ROT/RUT incl VAT
+		Excl  decimal.Decimal // ROT/RUT excl VAT
+		VAT25 decimal.Decimal // ROT/RUT 25% VAT
+		VAT12 decimal.Decimal // ROT/RUT 12% VAT
+		VAT6  decimal.Decimal // ROT/RUT 6% VAT
+	}
+
 	// For single rows
 	PPU           decimal.Decimal // Price-Per-Unit including or excluding VAT and ROT/RUT, depending on flag
 	PPUIncl       decimal.Decimal // Price-Per-Unit Including VAT
@@ -204,8 +217,17 @@ func (totals InvoiceTotals) Add(rowTotals InvoiceTotals) (combined InvoiceTotals
 	combined.VAT25 = totals.VAT25.Add(rowTotals.VAT25)
 	combined.VAT12 = totals.VAT12.Add(rowTotals.VAT12)
 	combined.VAT6 = totals.VAT6.Add(rowTotals.VAT6)
+	combined.TotalVAT25 = totals.TotalVAT25.Add(rowTotals.TotalVAT25)
+	combined.TotalVAT12 = totals.TotalVAT12.Add(rowTotals.TotalVAT12)
+	combined.TotalVAT6 = totals.TotalVAT6.Add(rowTotals.TotalVAT6)
 	combined.Customer = totals.Customer.Add(rowTotals.Customer)
 	combined.ROTRUT = totals.ROTRUT.Add(rowTotals.ROTRUT)
+
+	combined.ROTRUTTotals.Incl = totals.ROTRUTTotals.Incl.Add(rowTotals.ROTRUTTotals.Incl)
+	combined.ROTRUTTotals.Excl = totals.ROTRUTTotals.Excl.Add(rowTotals.ROTRUTTotals.Excl)
+	combined.ROTRUTTotals.VAT25 = totals.ROTRUTTotals.VAT25.Add(rowTotals.ROTRUTTotals.VAT25)
+	combined.ROTRUTTotals.VAT12 = totals.ROTRUTTotals.VAT12.Add(rowTotals.ROTRUTTotals.VAT12)
+	combined.ROTRUTTotals.VAT6 = totals.ROTRUTTotals.VAT6.Add(rowTotals.ROTRUTTotals.VAT6)
 	return combined
 }
 
@@ -230,6 +252,9 @@ func (row *InvoiceRow) Totals(IncludeVAT bool, IncludeROTRUT bool) (totals Invoi
 			priceInclRUT = row.Cost.Mul(decimal.NewFromFloat(0.5))
 			totals.ROTRUT = totals.ROTRUT.Add(priceInclRUT.Mul(row.Count))
 		}
+
+		totals.ROTRUTTotals.Incl = totals.ROTRUT
+		totals.ROTRUTTotals.Excl = totals.ROTRUT.Div(decimal.NewFromInt(1).Add(row.VAT.Amount()))
 		totals.ROTRUTPerUnit = row.Cost.Mul(row.Count).Sub(priceInclRUT)
 	}
 
@@ -258,10 +283,16 @@ func (row *InvoiceRow) Totals(IncludeVAT bool, IncludeROTRUT bool) (totals Invoi
 	switch row.VAT {
 	case 0:
 		totals.VAT25 = vatAmount
+		totals.TotalVAT25 = totals.Excl
+		totals.ROTRUTTotals.VAT25 = totals.ROTRUTTotals.Incl.Sub(totals.ROTRUTTotals.Excl)
 	case 1:
 		totals.VAT12 = vatAmount
+		totals.TotalVAT12 = totals.Excl
+		totals.ROTRUTTotals.VAT12 = totals.ROTRUTTotals.Incl.Sub(totals.ROTRUTTotals.Excl)
 	case 2:
 		totals.VAT6 = vatAmount
+		totals.TotalVAT6 = totals.Excl
+		totals.ROTRUTTotals.VAT6 = totals.ROTRUTTotals.Incl.Sub(totals.ROTRUTTotals.Excl)
 	}
 
 	return totals
