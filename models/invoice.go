@@ -248,7 +248,7 @@ func (row *InvoiceRow) Totals(IncludeVAT bool, IncludeROTRUT bool) (totals Invoi
 		if IncludeROTRUT {
 			totals.Total = totals.Customer
 			totals.PPU = priceInclRUT
-			vatAmount = priceInclRUT.Sub(priceInclRUT.Div(decimal.NewFromInt(1).Add(row.VAT.Amount())))
+			vatAmount = priceInclRUT.Sub(priceInclRUT.Div(decimal.NewFromInt(1).Add(row.VAT.Amount()))).Mul(row.Count)
 		}
 	} else {
 		totals.Total = totals.Excl
