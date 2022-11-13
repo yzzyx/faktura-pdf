@@ -51,6 +51,8 @@ func (v *Flag) HandleGet() error {
 	case "invoiced":
 		invoice.IsInvoiced = val
 		invoice.DateInvoiced = &date
+	case "deleted":
+		invoice.IsDeleted = val
 	case "offered":
 		invoice.IsOffered = val
 	case "paid":
@@ -71,6 +73,10 @@ func (v *Flag) HandleGet() error {
 		if err != nil {
 			return err
 		}
+	}
+
+	if invoice.IsDeleted {
+		return v.RedirectRoute("invoice-list")
 	}
 
 	return v.RedirectRoute("invoice-view", "id", strconv.Itoa(id))

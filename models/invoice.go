@@ -302,7 +302,8 @@ additional_info = $7,
 date_invoiced = $8,
 date_due = $9,
 date_paid = $10,
-rut_applicable = $11
+rut_applicable = $11,
+is_deleted = $12
 WHERE id = $1`
 		_, err := tx.Exec(ctx, query, invoice.ID,
 			invoice.Name,
@@ -314,7 +315,8 @@ WHERE id = $1`
 			invoice.DateInvoiced,
 			invoice.DateDue,
 			invoice.DatePaid,
-			invoice.RutApplicable)
+			invoice.RutApplicable,
+			invoice.IsDeleted)
 		if err != nil {
 			return 0, zerr.Wrap(err).WithString("query", query).WithAny("invoice", invoice)
 		}
@@ -330,7 +332,7 @@ WHERE id = $1`
 }
 
 func invoiceBuildQuery(q string, f InvoiceFilter) string {
-	filterStrings := []string{}
+	filterStrings := []string{"not is_deleted"}
 
 	if f.FilterPaid == 1 {
 		filterStrings = append(filterStrings, "is_paid")
