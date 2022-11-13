@@ -1,0 +1,22 @@
+<div class="modal fade" id="invoice-confirm-delete-modal" tabindex="-1" aria-labelledby="invoice-confirm-delete-modal-title" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form method="POST" action="{% url 'invoice-set-flag' id=invoice.ID %}">
+                <input type="hidden" name="flag" value="deleted">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="invoice-confirm-delete-modal-title">Ta bort faktura</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Är du säker på att du vill ta bort fakturan?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Avbryt</button>
+                    <button type="submit" class="btn btn-primary">Ta bort faktura</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

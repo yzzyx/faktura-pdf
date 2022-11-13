@@ -19,15 +19,16 @@
     <div class="card mt-2">
         <div class="card-body">
 
-            {% if invoice.ID > 0 and invoice.IsPaid %}
                 <span class="dropdown float-right">
                     <i class="fa fa-cog dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false"></i>
                     <ul class="dropdown-menu dropdown-menu-right">
-                        <li><a class="dropdown-item" href="{% url 'invoice-view-invoice' id=invoice.ID %}">Ladda hem faktura</a></li>
-                        <li><a class="dropdown-item" href="{% url 'invoice-set-flag' id=invoice.ID %}?flag=paid&revoke=true">Markera som obetald</a></li>
+                        <li><a class="dropdown-item" data-toggle="modal" data-target="#invoice-confirm-delete-modal">Ta bort faktura</a></li>
+                        {% if invoice.ID > 0 and invoice.IsPaid %}
+                            <li><a class="dropdown-item" href="{% url 'invoice-view-invoice' id=invoice.ID %}">Ladda hem faktura</a></li>
+                            <li><a class="dropdown-item" href="{% url 'invoice-set-flag' id=invoice.ID %}?flag=paid&revoke=true">Markera som obetald</a></li>
+                        {% endif %}
                     </ul>
                 </span>
-            {% endif %}
 
 
             <h5 class="card-title">Faktura {{invoice.Number}} - {{invoice.Name}} <a href="#" class="edit card-display text-secondary small">editera</a></h5>
@@ -177,6 +178,7 @@
 
 {% include "invoice/row-modal.html" %}
 {% include "invoice/date-modal.html" %}
+{% include "invoice/confirm-modal.html" %}
 {% endblock %}
 
 {% block javascript %}
