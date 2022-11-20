@@ -42,11 +42,8 @@
                 {% include "invoice/flags.html" %}
                 {% if invoice.ID > 0 %}
                     {% if isOffer %}
-                        {% if invoice.IsPaid %}
-                            <small>accepterad {{invoice.DatePaid|date}}</small>
-                        {% else %}
+                        {% if invoice.Status == 1 %}
                             <small class="col-6 card-display">Offert skickad {{invoice.DateInvoiced|date}}</small>
-                            <small class="col-6 card-display">Förfallodatum {{invoice.DateDue|date}}</small>
                         {% endif %}
                     {% else %}
                         {% if invoice.IsPaid %}
@@ -190,12 +187,12 @@
 
     {% if invoice.ID > 0 %}
         {% if isOffer %}
-            {% if not invoice.IsOffered and not invoice.IsPaid %}
+            {% if invoice.Status == 0 %}
                 <a class="btn btn-sm btn-primary" href="{% url 'offer-get-pdf' id=invoice.ID %}">Ladda hem offert</a>
                 <a class="btn btn-sm btn-primary" href="{% url 'offer-set-flag' id=invoice.ID %}?flag=offered">Markera offert som skickad</a>
-            {% elif not invoice.IsPaid%}
-                <a class="btn btn-sm btn-primary" data-toggle="modal" data-target="#invoice-date-modal">Markera offert som accepterad</a>
-                <a class="btn btn-sm btn-danger" href="{% url 'offer-set-flag' id=invoice.ID %}?flag=rejected">Markera offert som avslagen</a>
+            {% elif invoice.Status == 1 %}
+                <a class="btn btn-sm btn-primary" href="{% url 'offer-set-flag' id=invoice.ID %}?flag=accepted">Markera offert som accepterad</a>
+                <a class="btn btn-sm btn-secondary" href="{% url 'offer-set-flag' id=invoice.ID %}?flag=rejected">Markera offert som avslagen</a>
             {% endif %}
         {% else %}
             {% if not invoice.IsInvoiced %}
