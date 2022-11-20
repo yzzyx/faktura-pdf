@@ -31,15 +31,30 @@
                 </span>
 
 
-            <h5 class="card-title">Faktura {{invoice.Number}} - {{invoice.Name}} <a href="#" class="edit card-display text-secondary small">editera</a></h5>
+            <h5 class="card-title">
+                {% if isOffer %}
+                    Offert {{invoice.Number}} - {{invoice.Name}}
+                {% else %}
+                    Faktura {{invoice.Number}} - {{invoice.Name}}
+                {% endif %}
+                <a href="#" class="edit card-display text-secondary small">editera</a></h5>
             <div class="card-subtitle">
                 {% include "invoice/flags.html" %}
                 {% if invoice.ID > 0 %}
-                    {% if invoice.IsPaid %}
-                        <small>betalad {{invoice.DatePaid|date}}</small>
+                    {% if isOffer %}
+                        {% if invoice.IsPaid %}
+                            <small>accepterad {{invoice.DatePaid|date}}</small>
+                        {% else %}
+                            <small class="col-6 card-display">Offert skickad {{invoice.DateInvoiced|date}}</small>
+                            <small class="col-6 card-display">Förfallodatum {{invoice.DateDue|date}}</small>
+                        {% endif %}
                     {% else %}
-                        <small class="col-6 card-display">Fakturadatum {{invoice.DateInvoiced|date}}</small>
-                        <small class="col-6 card-display">Förfallodatum {{invoice.DateDue|date}}</small>
+                        {% if invoice.IsPaid %}
+                            <small>betalad {{invoice.DatePaid|date}}</small>
+                        {% else %}
+                            <small class="col-6 card-display">Fakturadatum {{invoice.DateInvoiced|date}}</small>
+                            <small class="col-6 card-display">Förfallodatum {{invoice.DateDue|date}}</small>
+                        {% endif %}
                     {% endif %}
                 {% endif %}
             </div>
@@ -55,7 +70,8 @@
             </div>
 
             <div class="card-edit"> <!--style="display: none;"> -->
-                {% include "invoice/field.html" with name="Fakturanamn" field="name" val=invoice.Name %}
+                {% include "invoice/field.html" with name="Namn" field="name" val=invoice.Name %}
+
                 {% if invoice.ID > 0 and not invoice.IsPaid %}
                     {% include "invoice/field-date.html" with name="Fakturadatum" field="date_invoiced" val=invoice.DateInvoiced default=today %}
                     {% include "invoice/field-date.html" with name="Förfallodatum" field="date_due" val=invoice.DateDue default=defaultDueDate %}
@@ -161,17 +177,33 @@
         </div>
     </div>
 
-    <button id="save-btn" type="submit" class="btn btn-sm btn-success">{% if invoice.ID > 0 %}Spara ändringar{% else %}Skapa faktura{% endif %}</button>
+    <button id="save-btn" type="submit" class="btn btn-sm btn-success">
+        {% if invoice.ID > 0 %}
+            Spara ändringar
+        {% else %}
+            {% if isOffer %}
+                Skapa offert
+            {% else %}
+                Skapa faktura
+            {% endif %}
+        {% endif %}</button>
 
     {% if invoice.ID > 0 %}
-        {% if not invoice.IsOffered and not invoice.IsInvoiced and not invoice.IsPaid %}
-            <a class="btn btn-sm btn-primary" href="{% url 'invoice-view-offer' id=invoice.ID %}">Ladda hem offert</a>
-            <a class="btn btn-sm btn-primary" href="{% url 'invoice-set-flag' id=invoice.ID %}?flag=offered">Markera offert som skickad</a>
-        {% elif not invoice.IsInvoiced %}
-            <a class="btn btn-sm btn-primary" href="{% url 'invoice-view-invoice' id=invoice.ID %}">Ladda hem faktura</a>
-            <a class="btn btn-sm btn-primary" href="{% url 'invoice-set-flag' id=invoice.ID %}?flag=invoiced">Markera faktura som skickad</a>
-        {% elif not invoice.IsPaid%}
-            <a class="btn btn-sm btn-primary" data-toggle="modal" data-target="#invoice-date-modal">Markera faktura som betalad</a>
+        {% if isOffer %}
+            {% if not invoice.IsOffered and not invoice.IsPaid %}
+                <a class="btn btn-sm btn-primary" href="{% url 'offer-get-pdf' id=invoice.ID %}">Ladda hem offert</a>
+                <a class="btn btn-sm btn-primary" href="{% url 'offer-set-flag' id=invoice.ID %}?flag=offered">Markera offert som skickad</a>
+            {% elif not invoice.IsPaid%}
+                <a class="btn btn-sm btn-primary" data-toggle="modal" data-target="#invoice-date-modal">Markera offert som accepterad</a>
+                <a class="btn btn-sm btn-danger" href="{% url 'offer-set-flag' id=invoice.ID %}?flag=rejected">Markera offert som avslagen</a>
+            {% endif %}
+        {% else %}
+            {% if not invoice.IsInvoiced %}
+                <a class="btn btn-sm btn-primary" href="{% url 'invoice-view-invoice' id=invoice.ID %}">Ladda hem faktura</a>
+                <a class="btn btn-sm btn-primary" href="{% url 'invoice-set-flag' id=invoice.ID %}?flag=invoiced">Markera faktura som skickad</a>
+            {% elif not invoice.IsPaid%}
+                <a class="btn btn-sm btn-primary" data-toggle="modal" data-target="#invoice-date-modal">Markera faktura som betalad</a>
+            {% endif %}
         {% endif %}
     {% endif %}
 </form>
