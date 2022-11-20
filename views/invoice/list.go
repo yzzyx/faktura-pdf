@@ -7,12 +7,13 @@ import (
 
 // List is the view-handler for listing invoices
 type List struct {
+	IsOffer bool
 	views.View
 }
 
 // NewList creates a new handler for listing invoices
-func NewList() *List {
-	return &List{}
+func NewList(isOffer bool) *List {
+	return &List{IsOffer: isOffer}
 }
 
 // HandleGet displays a list of invoices
@@ -22,6 +23,7 @@ func (v *List) HandleGet() error {
 	f.OrderBy = v.FormValueString("orderby")
 	f.Direction = v.FormValueString("dir")
 	f.CompanyID = v.Session.Company.ID
+	f.ListOffers = v.IsOffer
 
 	filterPaid := false
 	f.FilterPaid = 2
@@ -37,6 +39,7 @@ func (v *List) HandleGet() error {
 
 	v.SetData("filterPaid", filterPaid)
 	v.SetData("invoices", invoices)
+	v.SetData("isOffer", v.IsOffer)
 
 	if v.FormValueBool("content") {
 		return v.Render("invoice/list-contents.html")

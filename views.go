@@ -46,12 +46,16 @@ var routes = []routeInfo{
 	{URL: "rut-view", Path: "/rut/{id}", View: rut.NewView(), RequireLogin: true, RequireCompany: true},
 	{URL: "rut-flag", Path: "/rut/{id}/flag", View: rut.NewFlag(), RequireLogin: true, Methods: MethodPOST, RequireCompany: true},
 	{URL: "rut-export", Path: "/rut/{id}/export", View: rut.NewExport(), RequireLogin: true, RequireCompany: true},
-	{URL: "invoice-list", Path: "/invoice", View: invoice.NewList(), Methods: MethodGET, RequireLogin: true, RequireCompany: true},
-	{URL: "invoice-view", Path: "/invoice/{id}", View: invoice.NewView(), RequireLogin: true, RequireCompany: true},
+	{URL: "invoice-list", Path: "/invoice", View: invoice.NewList(false), Methods: MethodGET, RequireLogin: true, RequireCompany: true},
+	{URL: "invoice-view", Path: "/invoice/{id}", View: invoice.NewView(false), RequireLogin: true, RequireCompany: true},
 	{URL: "invoice-view-offer", Path: "/invoice/{id}/offer", View: invoice.NewOfferPDF(), Methods: MethodGET, RequireLogin: true, RequireCompany: true},
 	{URL: "invoice-view-invoice", Path: "/invoice/{id}/invoice", View: invoice.NewInvoicePDF(), Methods: MethodGET, RequireLogin: true, RequireCompany: true},
 	{URL: "invoice-set-flag", Path: "/invoice/{id}/flag", View: invoice.NewFlag(), RequireLogin: true, RequireCompany: true},
 	{URL: "invoice-sie", Path: "/invoice/{id}/sie", View: invoice.NewSIE(), Methods: MethodGET, RequireLogin: true, RequireCompany: true},
+
+	{URL: "offer-list", Path: "/offer", View: invoice.NewList(true), Methods: MethodGET, RequireLogin: true, RequireCompany: true},
+	{URL: "offer-view", Path: "/offer/{id}", View: invoice.NewView(true), RequireLogin: true, RequireCompany: true},
+	{URL: "offer-get-pdf", Path: "/offer/{id}/pdf", View: invoice.NewOfferPDF(), Methods: MethodGET, RequireLogin: true, RequireCompany: true},
 }
 
 func RegisterViews(baseURL string, r chi.Router, lg *zap.Logger) error {
@@ -152,6 +156,12 @@ func viewPreRender(v views.Viewer, r *http.Request, w http.ResponseWriter) error
 					return err
 				}
 				v.SetData("invoiceCount", invoiceCount)
+
+				offerCount, err := models.InvoiceCount(r.Context(), models.InvoiceFilter{CompanyID: currentSession.Company.ID, FilterPaid: 2, ListOffers: true})
+				if err != nil {
+					return err
+				}
+				v.SetData("offerCount", offerCount)
 
 				rutCount, err := models.RUTCount(r.Context(),
 					models.RUTFilter{
