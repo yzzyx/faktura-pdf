@@ -1,9 +1,20 @@
 {% for inv in invoices %}
 <tr>
-    <td><a href="/invoice/{{inv.ID}}">{{ inv.Number }}</a></td>
+    <td>
+        {% if isOffer %}
+            <a href="/offer/{{inv.ID}}">
+        {% else %}
+            <a href="/invoice/{{inv.ID}}">
+        {% endif %}
+            {{ inv.Number }}</a></td>
     <td>{{ inv.DateCreated|date }}</td>
     <td>{% if inv.DateDue %}{{ inv.DateDue|date }}{% else %}-{% endif %}</td>
-    <td><a href="/invoice/{{inv.ID}}">{{ inv.Name }}</a></td>
+    <td>
+        {% if isOffer %}
+            <a href="/offer/{{inv.ID}}">
+        {% else %}
+            <a href="/invoice/{{inv.ID}}">
+        {% endif %}{{ inv.Name }}</a></td>
     <td>{{ inv.TotalSum|money }}</td>
     <td>{{ inv.Customer.Email}}</td>
     <td>
