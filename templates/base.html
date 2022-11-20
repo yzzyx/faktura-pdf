@@ -21,6 +21,9 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav">
                     {% if logged_in  && session.Company.ID > 0 %}
+                        <li class="nav-item {% if currentPage == 'offer-list' %}active{% endif %}">
+                            <a class="nav-link" href="{% url 'offer-list' %}">Offerter {% if offerCount > 0 %}<span class="badge badge-secondary">{{offerCount}}</span>{% endif %}</a>
+                        </li>
                         <li class="nav-item {% if currentPage == 'invoice-list' %}active{% endif %}">
                             <a class="nav-link" href="{% url 'invoice-list' %}">Fakturor {% if invoiceCount > 0 %}<span class="badge badge-secondary">{{invoiceCount}}</span>{% endif %}</a>
                         </li>

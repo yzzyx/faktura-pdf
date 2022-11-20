@@ -13,12 +13,13 @@ import (
 
 // View is the view-handler for viewing an invoice
 type View struct {
+	IsOffer bool
 	views.View
 }
 
 // NewView creates a new handler for viewing an invoice
-func NewView() *View {
-	return &View{}
+func NewView(isOffer bool) *View {
+	return &View{IsOffer: isOffer}
 }
 
 // HandleGet displays an invoice
@@ -28,7 +29,7 @@ func (v *View) HandleGet() error {
 	id := v.URLParamInt("id")
 
 	if id > 0 {
-		invoice, err = models.InvoiceGet(v.Ctx, models.InvoiceFilter{ID: id, CompanyID: v.Session.Company.ID})
+		invoice, err = models.InvoiceGet(v.Ctx, models.InvoiceFilter{ID: id, CompanyID: v.Session.Company.ID, ListOffers: v.IsOffer})
 		if err != nil {
 			return err
 		}
@@ -67,10 +68,11 @@ func (v *View) HandlePost() error {
 	updated := false
 
 	if id > 0 {
-		invoice, err = models.InvoiceGet(v.Ctx, models.InvoiceFilter{ID: id, CompanyID: v.Session.Company.ID})
+		invoice, err = models.InvoiceGet(v.Ctx, models.InvoiceFilter{ID: id, CompanyID: v.Session.Company.ID, ListOffers: v.IsOffer})
 	} else {
 		invoice.Number, err = v.Session.Company.GetNextInvoiceNumber(v.Ctx)
 		invoice.Company.ID = v.Session.Company.ID
+		invoice.IsOffer = v.IsOffer
 		updated = true
 	}
 	if err != nil {
@@ -145,6 +147,10 @@ func (v *View) HandlePost() error {
 		if err != nil {
 			return err
 		}
+	}
+
+	if v.IsOffer {
+		return v.RedirectRoute("offer-view", "id", strconv.Itoa(invoice.ID))
 	}
 
 	return v.RedirectRoute("invoice-view", "id", strconv.Itoa(invoice.ID))
