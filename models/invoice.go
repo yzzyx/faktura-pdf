@@ -338,9 +338,7 @@ date_invoiced = $8,
 date_due = $9,
 date_paid = $10,
 rut_applicable = $11,
-is_deleted = $12,
-is_offer =  $13,
-offer_id = $14
+is_deleted = $12
 WHERE id = $1`
 		_, err := tx.Exec(ctx, query, invoice.ID,
 			invoice.Name,
@@ -353,17 +351,15 @@ WHERE id = $1`
 			invoice.DateDue,
 			invoice.DatePaid,
 			invoice.RutApplicable,
-			invoice.IsDeleted,
-			invoice.IsOffer,
-			invoice.OfferID)
+			invoice.IsDeleted)
 		if err != nil {
 			return 0, zerr.Wrap(err).WithString("query", query).WithAny("invoice", invoice)
 		}
 		return invoice.ID, nil
 	}
 
-	query := `INSERT INTO invoice (number, name, customer_id, rut_applicable, company_id) VALUES($1, $2, $3, $4, $5) RETURNING id`
-	err := tx.QueryRow(ctx, query, invoice.Number, invoice.Name, invoice.Customer.ID, invoice.RutApplicable, invoice.Company.ID).Scan(&invoice.ID)
+	query := `INSERT INTO invoice (number, name, customer_id, rut_applicable, company_id, is_offer, offer_id) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING id`
+	err := tx.QueryRow(ctx, query, invoice.Number, invoice.Name, invoice.Customer.ID, invoice.RutApplicable, invoice.Company.ID, invoice.IsOffer, invoice.OfferID).Scan(&invoice.ID)
 	if err != nil {
 		return 0, zerr.Wrap(err).WithString("query", query).WithAny("invoice", invoice)
 	}
