@@ -61,7 +61,8 @@ func (v *Flag) HandleGet() error {
 		return errors.New("invalid flag")
 	}
 
-	var createRUT bool
+	var createRUT, createInvoice bool
+
 	switch flag {
 
 	// Flags for invoices
@@ -78,6 +79,7 @@ func (v *Flag) HandleGet() error {
 		invoice.Status = models.InvoiceStatusOffered
 	case "accepted":
 		invoice.Status = models.InvoiceStatusAccepted
+		createInvoice = v.FormValueBool("create-invoice")
 	case "rejected":
 		invoice.Status = models.InvoiceStatusRejected
 
@@ -96,6 +98,32 @@ func (v *Flag) HandleGet() error {
 		if err != nil {
 			return err
 		}
+	}
+
+	if createInvoice {
+		newInv := invoice
+		newInv.ID = 0
+		newInv.DateDue = nil
+		newInv.Status = models.InvoiceStatusInitial
+		newInv.IsOffer = false
+		newInv.OfferID = &invoice.ID
+		newInv.Number, err = v.Session.Company.GetNextInvoiceNumber(v.Ctx)
+		if err != nil {
+			return err
+		}
+
+		newInv.ID, err = models.InvoiceSave(v.Ctx, newInv)
+		if err != nil {
+			return err
+		}
+
+		for _, row := range newInv.Rows {
+			err = models.InvoiceRowAdd(v.Ctx, newInv.ID, row)
+			if err != nil {
+				return err
+			}
+		}
+
 	}
 
 	if invoice.IsDeleted {

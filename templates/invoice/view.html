@@ -191,7 +191,7 @@
                 <a class="btn btn-sm btn-primary" href="{% url 'offer-get-pdf' id=invoice.ID %}">Ladda hem offert</a>
                 <a class="btn btn-sm btn-primary" href="{% url 'offer-set-flag' id=invoice.ID %}?flag=offered">Markera offert som skickad</a>
             {% elif invoice.Status == 1 %}
-                <a class="btn btn-sm btn-primary" href="{% url 'offer-set-flag' id=invoice.ID %}?flag=accepted">Markera offert som accepterad</a>
+                <a class="btn btn-sm btn-primary" data-toggle="modal" data-target="#offer-modal">Markera offert som accepterad</a>
                 <a class="btn btn-sm btn-secondary" href="{% url 'offer-set-flag' id=invoice.ID %}?flag=rejected">Markera offert som avslagen</a>
             {% endif %}
         {% else %}
@@ -206,8 +206,12 @@
 </form>
 
 {% include "invoice/row-modal.html" %}
-{% include "invoice/date-modal.html" %}
 {% include "invoice/confirm-modal.html" %}
+{% if isOffer %}
+    {% include "invoice/offer-modal.html" %}
+{% else %}
+    {% include "invoice/date-modal.html" %}
+{% endif %}
 {% endblock %}
 
 {% block javascript %}
