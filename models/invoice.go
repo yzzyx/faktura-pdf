@@ -29,6 +29,9 @@ type Invoice struct {
 	RutApplicable  bool // Is ROT/RUT applicable for this invoice?
 	AdditionalInfo string
 
+	IsOffer bool // Is this an offer, instead of an invoice?
+	OfferID *int // Was this invoice created from an offer?
+
 	Company Company
 }
 
@@ -173,7 +176,8 @@ type InvoiceFilter struct {
 	ID        int
 	CompanyID int
 
-	FilterPaid int // 0 - no filter, 1 - only paid, 2 - only unpaid
+	ListOffers bool // false - list invoices, true, list offers
+	FilterPaid int  // 0 - no filter, 1 - only paid, 2 - only unpaid
 	OrderBy    string
 	Direction  string
 
@@ -334,7 +338,9 @@ date_invoiced = $8,
 date_due = $9,
 date_paid = $10,
 rut_applicable = $11,
-is_deleted = $12
+is_deleted = $12,
+is_offer =  $13,
+offer_id = $14
 WHERE id = $1`
 		_, err := tx.Exec(ctx, query, invoice.ID,
 			invoice.Name,
@@ -347,7 +353,9 @@ WHERE id = $1`
 			invoice.DateDue,
 			invoice.DatePaid,
 			invoice.RutApplicable,
-			invoice.IsDeleted)
+			invoice.IsDeleted,
+			invoice.IsOffer,
+			invoice.OfferID)
 		if err != nil {
 			return 0, zerr.Wrap(err).WithString("query", query).WithAny("invoice", invoice)
 		}
@@ -369,6 +377,12 @@ func invoiceBuildQuery(q string, f InvoiceFilter) string {
 		filterStrings = append(filterStrings, "is_paid")
 	} else if f.FilterPaid == 2 {
 		filterStrings = append(filterStrings, "not is_paid")
+	}
+
+	if f.ListOffers {
+		filterStrings = append(filterStrings, "is_offer")
+	} else {
+		filterStrings = append(filterStrings, "not is_offer")
 	}
 
 	if f.ID > 0 {
@@ -398,6 +412,8 @@ func InvoiceList(ctx context.Context, f InvoiceFilter) ([]Invoice, error) {
 		is_invoiced,
 		is_paid,
 		is_deleted,
+		is_offer,
+		offer_id,
 		additional_info,
 		invoice.company_id AS "company.id",
 		customer.id AS "customer.id",
