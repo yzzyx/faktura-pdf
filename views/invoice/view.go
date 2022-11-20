@@ -44,6 +44,7 @@ func (v *View) HandleGet() error {
 	v.SetData("totals", invoice.Totals(false, false))
 	v.SetData("today", time.Now())
 	v.SetData("defaultDueDate", time.Now().AddDate(0, 1, 0))
+	v.SetData("isOffer", v.IsOffer)
 
 	// Used to create list of ROT/RUT services in invoice row modal
 	v.SetData("rutServices", models.RUTServices)
