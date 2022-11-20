@@ -12,12 +12,13 @@ import (
 
 // Flag is the view-handler for updating invoice flags
 type Flag struct {
+	IsOffer bool
 	views.View
 }
 
 // NewFlag creates a new handler for updating invoice flags
-func NewFlag() *Flag {
-	return &Flag{}
+func NewFlag(isOffer bool) *Flag {
+	return &Flag{IsOffer: isOffer}
 }
 
 // HandleGet updates the flags of an invoice
@@ -27,7 +28,7 @@ func (v *Flag) HandleGet() error {
 
 	id := v.URLParamInt("id")
 
-	invoice, err = models.InvoiceGet(v.Ctx, models.InvoiceFilter{ID: id, CompanyID: v.Session.Company.ID})
+	invoice, err = models.InvoiceGet(v.Ctx, models.InvoiceFilter{ID: id, CompanyID: v.Session.Company.ID, ListOffers: v.IsOffer})
 	if err != nil {
 		return err
 	}
@@ -46,6 +47,18 @@ func (v *Flag) HandleGet() error {
 		}
 	}
 
+	// Valid flags for invoices (0), offers (1), or both (2)
+	validFlags := map[string]int{
+		"invoiced": 0,
+		"deleted":  2,
+		"offered":  1,
+		"paid":     0,
+	}
+
+	if valid, ok := validFlags[flag]; !ok || (valid == 0 && v.IsOffer) || (valid == 1 && !v.IsOffer) {
+		return errors.New("invalid flag")
+	}
+
 	var createRUT bool
 	switch flag {
 	case "invoiced":
@@ -59,8 +72,6 @@ func (v *Flag) HandleGet() error {
 		invoice.IsPaid = val
 		invoice.DatePaid = &date
 		createRUT = invoice.RutApplicable && val
-	default:
-		return errors.New("invalid flag")
 	}
 
 	_, err = models.InvoiceSave(v.Ctx, invoice)
@@ -76,9 +87,15 @@ func (v *Flag) HandleGet() error {
 	}
 
 	if invoice.IsDeleted {
+		if v.IsOffer {
+			return v.RedirectRoute("offer-list")
+		}
 		return v.RedirectRoute("invoice-list")
 	}
 
+	if v.IsOffer {
+		return v.RedirectRoute("offer-view", "id", strconv.Itoa(id))
+	}
 	return v.RedirectRoute("invoice-view", "id", strconv.Itoa(id))
 }
 
