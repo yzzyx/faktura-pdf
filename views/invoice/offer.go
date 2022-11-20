@@ -25,6 +25,7 @@ func (v *OfferPDF) HandleGet() error {
 		ID:             v.URLParamInt("id"),
 		CompanyID:      v.Session.Company.ID,
 		IncludeCompany: true,
+		ListOffers:     true,
 	}
 
 	if f.ID <= 0 {
