@@ -56,7 +56,7 @@ var routes = []routeInfo{
 	{URL: "offer-list", Path: "/offer", View: invoice.NewList(true), Methods: MethodGET, RequireLogin: true, RequireCompany: true},
 	{URL: "offer-view", Path: "/offer/{id}", View: invoice.NewView(true), RequireLogin: true, RequireCompany: true},
 	{URL: "offer-get-pdf", Path: "/offer/{id}/pdf", View: invoice.NewOfferPDF(), Methods: MethodGET, RequireLogin: true, RequireCompany: true},
-	{URL: "offer-set-flag", Path: "/offer/{id}/flag", View: invoice.NewFlag(false), RequireLogin: true, RequireCompany: true},
+	{URL: "offer-set-flag", Path: "/offer/{id}/flag", View: invoice.NewFlag(true), RequireLogin: true, RequireCompany: true},
 }
 
 func RegisterViews(baseURL string, r chi.Router, lg *zap.Logger) error {
