@@ -51,6 +51,16 @@ $(function () {
         $("#invoice-row-description").val("");
         $("#invoice-row-id").val(0);
         $(".invoice-row-update").hide();
+
+        // Only show ROT/RUT info if the invoice accepts it
+        let rutApplicable = $("input[name='rut_applicable']").is(":checked");
+        if (rutApplicable) {
+            $("#invoice-row-rut-rot").prop("disabled", false);
+        } else {
+            $("#invoice-row-rut-rot").prop("disabled", true)
+                .prop("checked", false);
+        }
+
         $(".invoice-row-add").show();
         $('#invoice-row-modal').modal('show');
     });
@@ -73,10 +83,21 @@ $(function () {
         $("#invoice-row-vat").val(v.vat);
 
         $("#invoice-row-rut-rot-service-type").val(v.rot_rut_service_type);
+
+        // Only show ROT/RUT info if the invoice accepts it
+        let isROTRUT = v.is_rot_rut;
+        let rutApplicable = $("input[name='rut_applicable']").is(":checked");
+        if (rutApplicable) {
+            $("#invoice-row-rut-rot").prop("disabled", false);
+        } else {
+            $("#invoice-row-rut-rot").prop("disabled", true);
+            isROTRUT = false;
+        }
+
         // Make sure we don't change dropdowns
         lastType = $("input[name='invoice-row-rut-rot-type']:checked").val();
-        $("#invoice-row-rut-rot").prop("checked", v.is_rot_rut);
-        if (v.is_rot_rut) {
+        $("#invoice-row-rut-rot").prop("checked", isROTRUT);
+        if (isROTRUT) {
             $("#invoice-row-rut-rot-type-rut").prop("checked", v.rot_rut_service_type > 6);
             $("#invoice-row-rut-rot-type-rot").prop("checked", v.rot_rut_service_type < 7);
         }
@@ -123,11 +144,17 @@ $(function () {
 
             let rowTotal = v.cost * v.count;
             let priceInclRUT = v.cost;
+            let isROTRUT = v.is_rot_rut;
 
-            if (v.is_rot_rut && v.rot_rut_service_type < 7) { // ROT
+            let rutApplicable = $("input[name='rut_applicable']").is(":checked");
+            if (!rutApplicable) {
+                isROTRUT = false;
+            }
+
+            if (isROTRUT && v.rot_rut_service_type < 7) { // ROT
                 priceInclRUT = v.cost * 0.7;
                 totalROTRUT = totalROTRUT + (v.cost * 0.3 * v.count)
-            } else if (v.is_rot_rut && v.rot_rut_service_type > 6) { // RUT
+            } else if (isROTRUT && v.rot_rut_service_type > 6) { // RUT
                 priceInclRUT = v.cost * 0.5;
                 totalROTRUT = totalROTRUT + (v.cost * 0.5 * v.count)
             }
@@ -181,6 +208,7 @@ $(function () {
     $("#invoice-row-price-incl").on({keyup: update_price, change: update_price});
     $("#invoice-row-price-exkl").on({keyup: update_price, change: update_price});
     $("#invoice-row-vat").on({change: update_price});
+    $("input[name='rut_applicable']").on({change: update_totals});
 
     let lastType = "";
     let showRutRotService = function () {
