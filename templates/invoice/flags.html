@@ -5,3 +5,10 @@
 {% elif invoice.IsOffered %}
 <span class="badge badge-primary">Offert skickad</span>
 {% endif %}
+{% if invoice.Status == 1 %}
+    <span class="badge badge-info">Skickad</span>
+{% elif invoice.Status == 2 %}
+    <span class="badge badge-success">Accepterad</span>
+{% elif invoice.Status == 3 %}
+    <span class="badge badge-danger">Avslagen</span>
+{% endif %}

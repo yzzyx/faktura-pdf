@@ -4,11 +4,22 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/shopspring/decimal"
 	"github.com/yzzyx/zerr"
+)
+
+// InvoiceStatus is used for mutually exclusive flags
+type InvoiceStatus int
+
+const (
+	InvoiceStatusInitial InvoiceStatus = iota
+	InvoiceStatusOffered
+	InvoiceStatusAccepted
+	InvoiceStatusRejected
 )
 
 type Invoice struct {
@@ -22,12 +33,12 @@ type Invoice struct {
 	TotalSum       decimal.Decimal
 	Customer       Customer
 	Rows           []InvoiceRow
-	IsOffered      bool
 	IsInvoiced     bool
 	IsPaid         bool
 	IsDeleted      bool
 	RutApplicable  bool // Is ROT/RUT applicable for this invoice?
 	AdditionalInfo string
+	Status         InvoiceStatus
 
 	IsOffer bool // Is this an offer, instead of an invoice?
 	OfferID *int // Was this invoice created from an offer?
@@ -180,6 +191,7 @@ type InvoiceFilter struct {
 	FilterPaid int  // 0 - no filter, 1 - only paid, 2 - only unpaid
 	OrderBy    string
 	Direction  string
+	Status     []InvoiceStatus // Accepted statuses
 
 	IncludeCompany bool
 }
@@ -331,35 +343,35 @@ func InvoiceSave(ctx context.Context, invoice Invoice) (int, error) {
 name = $2,
 customer_id = $3,
 is_invoiced = $4,
-is_offered = $5,
-is_paid = $6,
-additional_info = $7,
-date_invoiced = $8,
-date_due = $9,
-date_paid = $10,
-rut_applicable = $11,
-is_deleted = $12
+is_paid = $5,
+additional_info = $6,
+date_invoiced = $7,
+date_due = $8,
+date_paid = $9,
+rut_applicable = $10,
+is_deleted = $11,
+status = $12
 WHERE id = $1`
 		_, err := tx.Exec(ctx, query, invoice.ID,
 			invoice.Name,
 			invoice.Customer.ID,
 			invoice.IsInvoiced,
-			invoice.IsOffered,
 			invoice.IsPaid,
 			invoice.AdditionalInfo,
 			invoice.DateInvoiced,
 			invoice.DateDue,
 			invoice.DatePaid,
 			invoice.RutApplicable,
-			invoice.IsDeleted)
+			invoice.IsDeleted,
+			invoice.Status)
 		if err != nil {
 			return 0, zerr.Wrap(err).WithString("query", query).WithAny("invoice", invoice)
 		}
 		return invoice.ID, nil
 	}
 
-	query := `INSERT INTO invoice (number, name, customer_id, rut_applicable, company_id, is_offer, offer_id) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING id`
-	err := tx.QueryRow(ctx, query, invoice.Number, invoice.Name, invoice.Customer.ID, invoice.RutApplicable, invoice.Company.ID, invoice.IsOffer, invoice.OfferID).Scan(&invoice.ID)
+	query := `INSERT INTO invoice (number, name, customer_id, rut_applicable, company_id, is_offer, offer_id, status) VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`
+	err := tx.QueryRow(ctx, query, invoice.Number, invoice.Name, invoice.Customer.ID, invoice.RutApplicable, invoice.Company.ID, invoice.IsOffer, invoice.OfferID, invoice.Status).Scan(&invoice.ID)
 	if err != nil {
 		return 0, zerr.Wrap(err).WithString("query", query).WithAny("invoice", invoice)
 	}
@@ -389,6 +401,14 @@ func invoiceBuildQuery(q string, f InvoiceFilter) string {
 		filterStrings = append(filterStrings, "invoice.company_id = :company_id")
 	}
 
+	if len(f.Status) > 0 {
+		statusFilter := make([]string, len(f.Status))
+		for k, v := range f.Status {
+			statusFilter[k] = strconv.Itoa(int(v))
+		}
+		filterStrings = append(filterStrings, "invoice.status IN ("+strings.Join(statusFilter, ",")+")")
+	}
+
 	q += " WHERE " + strings.Join(filterStrings, " AND ")
 	return q
 }
@@ -404,11 +424,11 @@ func InvoiceList(ctx context.Context, f InvoiceFilter) ([]Invoice, error) {
 		date_invoiced,
 		date_due,
 		rut_applicable,
-		is_offered,
 		is_invoiced,
 		is_paid,
 		is_deleted,
 		is_offer,
+		status,
 		offer_id,
 		additional_info,
 		invoice.company_id AS "company.id",

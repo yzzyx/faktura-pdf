@@ -27,6 +27,17 @@ func (v *List) HandleGet() error {
 
 	filterPaid := false
 	f.FilterPaid = 2
+
+	if v.IsOffer {
+		// FIXME - add flag "isActive"
+		if v.FormValueExists("inactive") {
+			f.Status = []models.InvoiceStatus{models.InvoiceStatusAccepted, models.InvoiceStatusRejected}
+			v.SetData("filterInactive", true)
+		} else {
+			f.Status = []models.InvoiceStatus{models.InvoiceStatusInitial, models.InvoiceStatusOffered}
+		}
+	}
+
 	if v.FormValueBool("paid") {
 		f.FilterPaid = 1
 		filterPaid = true

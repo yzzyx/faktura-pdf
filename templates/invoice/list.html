@@ -12,12 +12,21 @@
 {% endif %}
 
 <ul class="nav nav-tabs">
-    <li class="nav-item">
-        <a class="nav-link {% if not filterPaid %}active{% endif %}" href="?paid=0">Aktiva</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link {% if filterPaid %}active{% endif %}" href="?paid=1">Avslutade</a>
-    </li>
+    {% if isOffer %}
+        <li class="nav-item">
+            <a class="nav-link {% if not filterInactive %}active{% endif %}" href="?">Aktiva</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if filterInactive %}active{% endif %}" href="?inactive">Avslutade</a>
+        </li>
+    {% else %}
+        <li class="nav-item">
+            <a class="nav-link {% if not filterPaid %}active{% endif %}" href="?paid=0">Aktiva</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if filterPaid %}active{% endif %}" href="?paid=1">Avslutade</a>
+        </li>
+    {% endif %}
 </ul>
 <table id="invoice-list" class="table table-striped sortable" data-target="#invoice-list tbody" data-url="?">
     <thead>

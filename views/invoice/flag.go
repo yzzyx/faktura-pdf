@@ -50,9 +50,11 @@ func (v *Flag) HandleGet() error {
 	// Valid flags for invoices (0), offers (1), or both (2)
 	validFlags := map[string]int{
 		"invoiced": 0,
-		"deleted":  2,
-		"offered":  1,
 		"paid":     0,
+		"offered":  1,
+		"accepted": 1,
+		"rejected": 1,
+		"deleted":  2,
 	}
 
 	if valid, ok := validFlags[flag]; !ok || (valid == 0 && v.IsOffer) || (valid == 1 && !v.IsOffer) {
@@ -61,17 +63,27 @@ func (v *Flag) HandleGet() error {
 
 	var createRUT bool
 	switch flag {
+
+	// Flags for invoices
 	case "invoiced":
 		invoice.IsInvoiced = val
 		invoice.DateInvoiced = &date
-	case "deleted":
-		invoice.IsDeleted = val
-	case "offered":
-		invoice.IsOffered = val
 	case "paid":
 		invoice.IsPaid = val
 		invoice.DatePaid = &date
 		createRUT = invoice.RutApplicable && val
+
+	// Flags for offers
+	case "offered":
+		invoice.Status = models.InvoiceStatusOffered
+	case "accepted":
+		invoice.Status = models.InvoiceStatusAccepted
+	case "rejected":
+		invoice.Status = models.InvoiceStatusRejected
+
+	// Flags for both
+	case "deleted":
+		invoice.IsDeleted = val
 	}
 
 	_, err = models.InvoiceSave(v.Ctx, invoice)
