@@ -48,9 +48,9 @@ WHERE id = $1`
 	}
 
 	query := `INSERT INTO customer 
-(name, email, address1, address2, postcode, city, pnr, telephone)
+(name, email, address1, address2, postcode, city, pnr, telephone, company_id)
 VALUES
-($1, $2, $3, $4, $5, $6, $7, $8)
+($1, $2, $3, $4, $5, $6, $7, $8, $9)
 RETURNING id`
 
 	err := tx.QueryRow(ctx, query,
@@ -61,7 +61,8 @@ RETURNING id`
 		customer.Postcode,
 		customer.City,
 		customer.PNR,
-		customer.Telephone).Scan(&customer.ID)
+		customer.Telephone,
+		customer.CompanyID).Scan(&customer.ID)
 	if err != nil {
 		return 0, zerr.Wrap(err).WithString("query", query).WithAny("customer", customer)
 	}
