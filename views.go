@@ -11,6 +11,7 @@ import (
 	tagurl "github.com/yzzyx/faktura-pdf/tags/url"
 	"github.com/yzzyx/faktura-pdf/views"
 	"github.com/yzzyx/faktura-pdf/views/company"
+	"github.com/yzzyx/faktura-pdf/views/customer"
 	"github.com/yzzyx/faktura-pdf/views/invoice"
 	"github.com/yzzyx/faktura-pdf/views/login"
 	"github.com/yzzyx/faktura-pdf/views/register"
@@ -52,7 +53,7 @@ var routes = []routeInfo{
 	{URL: "invoice-view-invoice", Path: "/invoice/{id}/invoice", View: invoice.NewInvoicePDF(), Methods: MethodGET, RequireLogin: true, RequireCompany: true},
 	{URL: "invoice-set-flag", Path: "/invoice/{id}/flag", View: invoice.NewFlag(true), RequireLogin: true, RequireCompany: true},
 	{URL: "invoice-sie", Path: "/invoice/{id}/sie", View: invoice.NewSIE(), Methods: MethodGET, RequireLogin: true, RequireCompany: true},
-
+	{URL: "customer-list", Path: "/customer", View: customer.NewList(), Methods: MethodGET, RequireLogin: true, RequireCompany: true},
 	{URL: "offer-list", Path: "/offer", View: invoice.NewList(true), Methods: MethodGET, RequireLogin: true, RequireCompany: true},
 	{URL: "offer-view", Path: "/offer/{id}", View: invoice.NewView(true), RequireLogin: true, RequireCompany: true},
 	{URL: "offer-get-pdf", Path: "/offer/{id}/pdf", View: invoice.NewOfferPDF(), Methods: MethodGET, RequireLogin: true, RequireCompany: true},
