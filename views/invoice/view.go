@@ -80,7 +80,9 @@ func (v *View) HandlePost() error {
 		return err
 	}
 
+	var customerID int
 	fields := map[string]interface{}{
+		"customer.id":        &customerID,
 		"customer.name":      &invoice.Customer.Name,
 		"customer.email":     &invoice.Customer.Email,
 		"customer.address1":  &invoice.Customer.Address1,
@@ -94,12 +96,15 @@ func (v *View) HandlePost() error {
 		"date_invoiced":      &invoice.DateInvoiced,
 	}
 
+	customerUpdated := false
 	for formName, field := range fields {
 		if !v.FormValueExists(formName) {
 			continue
 		}
 
 		switch f := field.(type) {
+		case *int:
+			*f = v.FormValueInt(formName)
 		case *string:
 			*f = v.FormValueString(formName)
 		case **time.Time:
@@ -116,6 +121,8 @@ func (v *View) HandlePost() error {
 
 		if !strings.HasPrefix(formName, "customer") {
 			updated = true
+		} else if formName != "customer.id" {
+			customerUpdated = true
 		}
 	}
 
@@ -124,9 +131,29 @@ func (v *View) HandlePost() error {
 		updated = true
 	}
 
-	invoice.Customer.ID, err = models.CustomerSave(v.Ctx, invoice.Customer)
-	if err != nil {
-		return err
+	// Validate customer change
+	if customerID > 0 && customerID != invoice.Customer.ID {
+		c, err := models.CustomerList(v.Ctx, models.CustomerFilter{
+			ID:        customerID,
+			CompanyID: v.Session.Company.ID,
+		})
+		if err != nil {
+			return err
+		}
+
+		if len(c) != 1 {
+			return fmt.Errorf("invalid customer selection")
+		}
+
+		invoice.Customer.ID = customerID
+		updated = true
+	}
+
+	if customerUpdated {
+		invoice.Customer.ID, err = models.CustomerSave(v.Ctx, invoice.Customer)
+		if err != nil {
+			return err
+		}
 	}
 
 	name := v.FormValueString("name")
