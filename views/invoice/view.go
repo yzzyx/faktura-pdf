@@ -73,6 +73,7 @@ func (v *View) HandlePost() error {
 	} else {
 		invoice.Number, err = v.Session.Company.GetNextInvoiceNumber(v.Ctx)
 		invoice.Company.ID = v.Session.Company.ID
+		invoice.Customer.CompanyID = v.Session.Company.ID
 		invoice.IsOffer = v.IsOffer
 		updated = true
 	}
@@ -132,17 +133,19 @@ func (v *View) HandlePost() error {
 	}
 
 	// Validate customer change
-	if customerID > 0 && customerID != invoice.Customer.ID {
-		c, err := models.CustomerList(v.Ctx, models.CustomerFilter{
-			ID:        customerID,
-			CompanyID: v.Session.Company.ID,
-		})
-		if err != nil {
-			return err
-		}
+	if customerID != invoice.Customer.ID {
+		if customerID > 0 {
+			c, err := models.CustomerList(v.Ctx, models.CustomerFilter{
+				ID:        customerID,
+				CompanyID: v.Session.Company.ID,
+			})
+			if err != nil {
+				return err
+			}
 
-		if len(c) != 1 {
-			return fmt.Errorf("invalid customer selection")
+			if len(c) != 1 {
+				return fmt.Errorf("invalid customer selection")
+			}
 		}
 
 		invoice.Customer.ID = customerID

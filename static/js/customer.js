@@ -12,18 +12,23 @@ function debounce(fn, delay) {
     }
 }
 
+// Replace the current customer with an existing or new customer
 $("#customer-change").on('click', function () {
     let c = $(this).closest(".card");
     $(".card-display", c).hide();
     $("#customer-controls").show();
 });
 
+// Create a new customer entry
 $("#customer-new").on('click', function () {
     $("#customer-controls").hide();
     $("#customer-edit").show();
     $("#customer-edit .new-value").removeAttr('disabled');
+    $("input[name='customer.id']").val(0); // Clear existing customer connection
+    $("#save-btn").show();
 });
 
+// Search for existing customers
 $("#customer-search").autocomplete({
     source: function(request, response) {
         $.ajax({
