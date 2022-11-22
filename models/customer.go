@@ -42,6 +42,7 @@ SELECT
     address1,
     address2,
     postcode,
+	city,
     pnr,
     telephone
 FROM customer
