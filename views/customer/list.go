@@ -32,7 +32,7 @@ func (v *List) HandleGet() error {
 		return err
 	}
 
-	v.SetData("customers", lst)
+	v.SetData("data", lst)
 	v.SetData("redirect", v.FormValueString("r"))
 
 	// FIXME - cleanup this code

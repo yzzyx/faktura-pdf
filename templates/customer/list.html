@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'vendor/font-awesome-4.7.0/css/font-awesome.min.css' %}">
+{% endblock %}
+
+{% block content %}
+<h4 class="mt-1 mb-2">Kunder</h4>
+
+<table id="customer-list" class="table" data-target="#customer-list tbody" data-url="{% url 'customer-list' %}">
+    <thead>
+        <tr>
+            <th data-column="name">Namn</th>
+            <th data-column="name">E-post</th>
+            <th data-column="name">Adress</th>
+            <th data-column="name">Postnummer</th>
+            <th data-column="name">Ort</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% include "customer/list-contents.html" %}
+    </tbody>
+</table>
+{% endblock %}
+
+{% block javascript %}
+<script src="/static/js/search.js"></script>
+<script src="/static/js/sort.js"></script>
+{% endblock %}
