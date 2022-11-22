@@ -159,7 +159,11 @@ func viewPreRender(v views.Viewer, r *http.Request, w http.ResponseWriter) error
 				}
 				v.SetData("invoiceCount", invoiceCount)
 
-				offerCount, err := models.InvoiceCount(r.Context(), models.InvoiceFilter{CompanyID: currentSession.Company.ID, FilterPaid: 2, ListOffers: true})
+				offerCount, err := models.InvoiceCount(r.Context(),
+					models.InvoiceFilter{CompanyID: currentSession.Company.ID,
+						ListOffers: true,
+						Status:     []models.InvoiceStatus{models.InvoiceStatusInitial, models.InvoiceStatusOffered},
+					})
 				if err != nil {
 					return err
 				}
