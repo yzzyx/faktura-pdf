@@ -39,7 +39,7 @@ $(function () {
         });
     }
 
-    $(".card-title .edit").on('click', function (ev) {
+    $(".card .edit").on('click', function (ev) {
         let c = $(this).closest(".card");
         $(".card-display", c).hide();
         $(".card-edit", c).show();

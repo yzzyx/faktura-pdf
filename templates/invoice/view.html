@@ -5,9 +5,14 @@
 <link rel="stylesheet" href="{% static 'vendor/jquery-ui-1.13.1/jquery-ui.theme.min.css' %}">
 <link rel="stylesheet" href="{% static 'vendor/font-awesome-4.7.0/css/font-awesome.min.css' %}">
 <style>
+    #customer-edit {
+        display: none;
+    }
+
     {% if invoice.ID > 0 %}
         .card-edit {display: none;}
         #save-btn {display: none;}
+        #customer-controls {display: none;}
     {% else %}
         .card-display {display: none;}
     {% endif %}
@@ -85,22 +90,26 @@
 
     <div class="card mt-2">
         <div class="card-body">
-            <h5 class="card-title">Kund <a href="#" class="edit card-display text-secondary small">editera</a></h5>
+            <h5 class="card-title">Kund
+                <a id="customer-change" href="#" class="card-display text-secondary small">byt kund</a>
+            </h5>
+            <input type="hidden" name="customer.id" value="{{invoice.Customer.ID}}">
             <div class="card-display">
                 <small>
-                    {{invoice.Customer.Name}}
-                    {{invoice.Customer.Email}}
-                    {{invoice.Customer.Telephone}}
+                    <span class="customer-name">{{invoice.Customer.Name}}</span>
+                    <span class="customer-email">{{invoice.Customer.Email}}</span>
+                    <span class="customer-telephone">{{invoice.Customer.Telephone}}</span>
                 </small>
             </div>
             <div class="card-display">
                 <small>
-                    {{invoice.Customer.Address1}}
-                    {{invoice.Customer.Address2}}
-                    {{invoice.Customer.Postcode}}
-                    {{invoice.Customer.City}}
+                    <span class="customer-address1">{{invoice.Customer.Address1}}</span>
+                    <span class="customer-address2">{{invoice.Customer.Address2}}</span>
+                    <span class="customer-postcode">{{invoice.Customer.Postcode}}</span>
+                    <span class="customer-city">{{invoice.Customer.City}}</span>
                 </small>
             </div>
+            <div><a href="#" class="edit card-display text-secondary small">editera uppgifter</a></div>
 
             {% if invoice.RutApplicable %}
                 {% if not invoice.Customer.PNR %}
@@ -110,7 +119,19 @@
                 {% endif %}
             {% endif %}
 
-            <div class="card-edit">
+            <div id="customer-controls">
+                Sök existerande kund
+                <div class="row">
+                    <div class="col">
+                        <input id="customer-search" class="form-control form-control-sm form-inline" type="text"  value="" autocomplete="off">
+                    </div>
+                    <div class="col">
+                    </div>
+                </div>
+                <a id="customer-new" href="#" class="btn btn-primary btn-sm mt-2">Skapa ny kund</a>
+            </div>
+
+            <div id="customer-edit" class="card-edit">
                 {% include "invoice/field.html" with name="Namn" field="customer.name" val=invoice.Customer.Name %}
                 {% include "invoice/field.html" with name="E-post" field="customer.email" val=invoice.Customer.Email %}
                 {% include "invoice/field.html" with name="Telefonnummer" field="customer.telephone" val=invoice.Customer.Telephone %}
@@ -218,4 +239,5 @@
 <script src="{% static 'vendor/jquery-ui-1.13.1/jquery-ui.min.js' %}"></script>
 <script src="{% static 'js/new.js' %}"></script>
 <script src="{% static 'js/invoice.js' %}"></script>
+<script src="{% static 'js/customer.js' %}"></script>
 {% endblock %}
