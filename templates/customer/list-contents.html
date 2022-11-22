@@ -1,0 +1,9 @@
+{% for c in data %}
+<tr data-id="{{c.ID}}">
+    <td>{{ c.Name }}</td>
+    <td>{{ c.Email }}</td>
+    <td>{{ c.Address1 }}</td>
+    <td>{{ c.Postcode }}</td>
+    <td>{{ c.City }}</td>
+</tr>
+{% endfor %}
