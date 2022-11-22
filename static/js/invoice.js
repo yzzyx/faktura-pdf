@@ -309,11 +309,29 @@ $(function () {
         return false;
     });
 
+    // Validate PNR format, which can be one of:
+    //   YYMMDD-XXXX
+    //   YYYYMMDD-XXXX
+    //   YYYYMMDDXXXX
     $("input[name='customer.pnr']").keyup(function () {
-        if (!/\d{12}/.test($(this).val())) {
+        const formats = [/\d{12}/,
+            /\d{6}-\d{4}/,
+            /\d{8}-\d{4}/]
+
+        let valid = false;
+        let v = $(this).val();
+        for (let f of formats) {
+            if (f.test(v)) {
+                valid = true;
+                break;
+            }
+        }
+
+        if (!valid) {
             $("#customer-pnr-error").show();
         } else {
             $("#customer-pnr-error").hide();
+            $("#customer-pnr-required").hide();
         }
     });
 });

@@ -4,6 +4,7 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -24,6 +25,9 @@ func NewExport() *Export {
 	return &Export{}
 }
 
+var rePNR6_4 = regexp.MustCompile(`\d{6}-\d{4}`)
+var rePNR8_4 = regexp.MustCompile(`\d{8}-\d{4}`)
+
 // HandleGet creates an xml export file
 func (v *Export) HandleGet() error {
 	f := models.RUTFilter{
@@ -43,11 +47,28 @@ func (v *Export) HandleGet() error {
 
 	var rutBegaran *rotrut.HushallBegaranTYPE
 
+	// Convert PNR to format YYYYMMDDXXXX, which
+	// is the format required by SKV
+	pnr := rutRequest.Invoice.Customer.PNR
+	if rePNR6_4.MatchString(pnr) {
+		year, err := strconv.Atoi(pnr[0:2])
+		if err != nil {
+			return fmt.Errorf("Personnummret inleds inte med siffra")
+		}
+		if year > 20 {
+			pnr = "19" + strings.ReplaceAll(pnr, "-", "")
+		} else {
+			pnr = "20" + strings.ReplaceAll(pnr, "-", "")
+		}
+	} else if rePNR8_4.MatchString(pnr) {
+		pnr = strings.ReplaceAll(pnr, "-", "")
+	}
+
 	if rutRequest.Type == models.RUTTypeRUT {
 		rutBegaran = &rotrut.HushallBegaranTYPE{
 			Arenden: []rotrut.HushallArendeTYPE{
 				{
-					Kopare:          rotrut.PeOrgNrTYPE(rutRequest.Invoice.Customer.PNR),
+					Kopare:          rotrut.PeOrgNrTYPE(pnr),
 					BegartBelopp:    rotrut.BeloppTYPE(*rutRequest.RequestedSum),
 					FakturaNr:       rotrut.FakturaNrTYPE(strconv.Itoa(rutRequest.Invoice.Number)),
 					BetalningsDatum: rotrut.DatumTYPE(rutRequest.Invoice.DatePaid.Format("2006-01-02")),

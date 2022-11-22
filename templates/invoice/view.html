@@ -113,7 +113,7 @@
 
             {% if invoice.RutApplicable %}
                 {% if not invoice.Customer.PNR %}
-                    <div class="alert alert-warning">Personnummer ej angivet, men fakturan är markerad som ROT/RUT avdragsgill</div>
+                    <div id="customer-pnr-required" class="alert alert-warning">Personnummer ej angivet, men fakturan är markerad som ROT/RUT avdragsgill</div>
                 {% else %}
                     <small class="card-display"><i class="fa fa-check text-success"></i> personnummer angivet</small>
                 {% endif %}
@@ -136,7 +136,9 @@
                 {% include "invoice/field.html" with name="E-post" field="customer.email" val=invoice.Customer.Email %}
                 {% include "invoice/field.html" with name="Telefonnummer" field="customer.telephone" val=invoice.Customer.Telephone %}
                 {% include "invoice/field.html" with name="Personnummer" field="customer.pnr" val=invoice.Customer.PNR %}
-                <div id="customer-pnr-error" class="font-italic small text-danger" style="display: none;">Personnummer måste anges som 12 siffor utan bindestreck (t.ex. 19990102031234)</div>
+                <div id="customer-pnr-error" class="font-italic small text-danger" style="display: none;">
+                    Personnummer måste anges i något av följande format: YYMMDD-XXXX, YYYYMMDD-XXXX eller YYYYMMDDXXXX
+                </div>
                 {% include "invoice/field.html" with name="Adress 1" field="customer.address1" val=invoice.Customer.Address1 %}
                 {% include "invoice/field.html" with name="Adress 2" field="customer.address2" val=invoice.Customer.Address2 %}
                 {% include "invoice/field.html" with name="Postkod" field="customer.postcode" val=invoice.Customer.Postcode %}
