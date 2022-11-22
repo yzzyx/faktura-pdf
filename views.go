@@ -51,7 +51,7 @@ var routes = []routeInfo{
 	{URL: "invoice-view", Path: "/invoice/{id}", View: invoice.NewView(false), RequireLogin: true, RequireCompany: true},
 	{URL: "invoice-view-offer", Path: "/invoice/{id}/offer", View: invoice.NewOfferPDF(), Methods: MethodGET, RequireLogin: true, RequireCompany: true},
 	{URL: "invoice-view-invoice", Path: "/invoice/{id}/invoice", View: invoice.NewInvoicePDF(), Methods: MethodGET, RequireLogin: true, RequireCompany: true},
-	{URL: "invoice-set-flag", Path: "/invoice/{id}/flag", View: invoice.NewFlag(true), RequireLogin: true, RequireCompany: true},
+	{URL: "invoice-set-flag", Path: "/invoice/{id}/flag", View: invoice.NewFlag(false), RequireLogin: true, RequireCompany: true},
 	{URL: "invoice-sie", Path: "/invoice/{id}/sie", View: invoice.NewSIE(), Methods: MethodGET, RequireLogin: true, RequireCompany: true},
 	{URL: "customer-list", Path: "/customer", View: customer.NewList(), Methods: MethodGET, RequireLogin: true, RequireCompany: true},
 	{URL: "offer-list", Path: "/offer", View: invoice.NewList(true), Methods: MethodGET, RequireLogin: true, RequireCompany: true},
