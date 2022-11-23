@@ -335,6 +335,26 @@ func InvoiceGet(ctx context.Context, filter InvoiceFilter) (Invoice, error) {
 	return inv, nil
 }
 
+func InvoiceAddAttachment(ctx context.Context, inv Invoice, f File) error {
+	var err error
+	if f.ID == 0 {
+		f.ID, err = FileAdd(ctx, f)
+		if err != nil {
+			return err
+		}
+	}
+
+	tx := getContextTx(ctx)
+
+	query := `INSERT INTO invoice_attachment (invoice_id, file_id) VALUES ($1, $2)`
+
+	_, err = tx.Exec(ctx, query, inv.ID, f.ID)
+	if err != nil {
+		return zerr.Wrap(err).WithString("query", query).WithInt("invoice_id", inv.ID).WithInt("file_id", f.ID)
+	}
+	return nil
+}
+
 func InvoiceSave(ctx context.Context, invoice Invoice) (int, error) {
 	tx := getContextTx(ctx)
 
