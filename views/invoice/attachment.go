@@ -4,6 +4,7 @@ import (
 	"io"
 	"mime"
 	"path/filepath"
+	"strconv"
 
 	"github.com/yzzyx/faktura-pdf/models"
 	"github.com/yzzyx/faktura-pdf/views"
@@ -51,10 +52,13 @@ func (v *Attachment) HandleGet() error {
 
 	f := lst[0]
 
+	headers := v.ResponseHeaders()
 	if f.MIMEType != "" {
-		headers := v.ResponseHeaders()
 		headers.Set("Content-Type", f.MIMEType)
 	}
+
+	headers.Set("Content-Length", strconv.Itoa(len(f.Contents)))
+
 	return v.RenderBytes(f.Contents)
 }
 
