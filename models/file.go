@@ -68,9 +68,10 @@ func FileList(ctx context.Context, f FileFilter) ([]File, error) {
 
 	var additionalCol string
 	if f.IncludeContent {
-		additionalCol = ", content"
+		additionalCol = ", contents"
 	}
 	query := `SELECT
+id,
 name,
 company_id,
 mimetype,
@@ -83,11 +84,11 @@ FROM file
 	}
 
 	if f.CompanyID != 0 {
-		filterStrings = append(filterStrings, "company_id = :companyid")
+		filterStrings = append(filterStrings, "company_id = :company_id")
 	}
 
 	if f.InvoiceID != 0 {
-		joinStrings = append(joinStrings, "INNER JOIN invoice_attachment ia ON ia.invoice_id = :invoiceid AND ia.file_id = file.id")
+		joinStrings = append(joinStrings, "INNER JOIN invoice_attachments ia ON ia.invoice_id = :invoice_id AND ia.file_id = file.id")
 	}
 
 	if len(joinStrings) > 0 {
@@ -95,7 +96,7 @@ FROM file
 	}
 
 	if len(filterStrings) > 0 {
-		query += "\nWHERE\n" + strings.Join(joinStrings, " AND ")
+		query += "\nWHERE\n" + strings.Join(filterStrings, " AND ")
 	}
 
 	rows, err := tx.NamedQuery(ctx, query, f)
