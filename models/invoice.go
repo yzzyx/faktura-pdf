@@ -346,7 +346,7 @@ func InvoiceAddAttachment(ctx context.Context, inv Invoice, f File) error {
 
 	tx := getContextTx(ctx)
 
-	query := `INSERT INTO invoice_attachment (invoice_id, file_id) VALUES ($1, $2)`
+	query := `INSERT INTO invoice_attachments (invoice_id, file_id) VALUES ($1, $2)`
 
 	_, err = tx.Exec(ctx, query, inv.ID, f.ID)
 	if err != nil {
