@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"reflect"
 	"regexp"
 	"runtime"
 	"strings"
@@ -109,7 +110,18 @@ func (v *ViewBuilder) Wrap(view Viewer) func(w http.ResponseWriter, r *http.Requ
 	return func(w http.ResponseWriter, r *http.Request) {
 		var err error
 
-		view.SetContext(ViewContext{
+		copyObj := reflect.New(reflect.TypeOf(view).Elem())
+		oldVal := reflect.ValueOf(view).Elem()
+		newVal := copyObj.Elem()
+		for i := 0; i < oldVal.NumField(); i++ {
+			newValField := newVal.Field(i)
+			if newValField.CanSet() {
+				newValField.Set(oldVal.Field(i))
+			}
+		}
+		clone := copyObj.Interface().(Viewer)
+
+		clone.SetContext(ViewContext{
 			Request:  r,
 			Response: w,
 			Context:  r.Context(),
@@ -126,7 +138,7 @@ func (v *ViewBuilder) Wrap(view Viewer) func(w http.ResponseWriter, r *http.Requ
 
 				// Combine panic message with stacktrace
 				e := fmt.Errorf("%s\n%s", err, stackTrace)
-				view.HandleError(e)
+				clone.HandleError(e)
 				if v.onError != nil {
 					v.onError(e)
 				} else {
@@ -135,7 +147,7 @@ func (v *ViewBuilder) Wrap(view Viewer) func(w http.ResponseWriter, r *http.Requ
 			}
 		}()
 
-		currentURL, err := view.GetCurrentURL()
+		currentURL, err := clone.GetCurrentURL()
 		if err != nil {
 			_, _ = fmt.Fprintf(w, "cannot get current url: %s", err)
 		}
@@ -146,17 +158,17 @@ func (v *ViewBuilder) Wrap(view Viewer) func(w http.ResponseWriter, r *http.Requ
 			return
 		}
 
-		view.SetData("currentPage", currentPage)
-		view.SetData("currentURL", currentURL.String())
+		clone.SetData("currentPage", currentPage)
+		clone.SetData("currentURL", currentURL.String())
 
 		if v.preRender != nil {
-			err = v.preRender(view, r, w)
+			err = v.preRender(clone, r, w)
 			if err != nil {
 				if errors.Is(err, ErrViewRedirect) {
 					return
 				}
 
-				view.HandleError(err)
+				clone.HandleError(err)
 				if v.onError != nil {
 					v.onError(err)
 				}
@@ -168,22 +180,22 @@ func (v *ViewBuilder) Wrap(view Viewer) func(w http.ResponseWriter, r *http.Requ
 		if err == nil {
 			switch r.Method {
 			case http.MethodGet:
-				err = view.HandleGet()
+				err = clone.HandleGet()
 			case http.MethodPost:
-				err = view.HandlePost()
+				err = clone.HandlePost()
 			case http.MethodPut:
-				err = view.HandlePut()
+				err = clone.HandlePut()
 			case http.MethodDelete:
-				err = view.HandleDelete()
+				err = clone.HandleDelete()
 			default:
-				err = view.HandleMethod(r.Method)
+				err = clone.HandleMethod(r.Method)
 			}
 			if err == nil {
 				return
 			}
 		}
 
-		view.HandleError(err)
+		clone.HandleError(err)
 		if v.onError != nil {
 			v.onError(err)
 			return
