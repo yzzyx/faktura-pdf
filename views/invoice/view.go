@@ -3,6 +3,9 @@ package invoice
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"mime"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -45,6 +48,19 @@ func (v *View) HandleGet() error {
 	v.SetData("today", time.Now())
 	v.SetData("defaultDueDate", time.Now().AddDate(0, 1, 0))
 	v.SetData("isOffer", v.IsOffer)
+
+	if invoice.ID > 0 {
+		attachments, err := models.FileList(v.Ctx, models.FileFilter{
+			CompanyID:      v.Session.Company.ID,
+			InvoiceID:      invoice.ID,
+			IncludeContent: false,
+		})
+		if err != nil {
+			return err
+		}
+		v.SetData("attachments", attachments)
+
+	}
 
 	// Used to create list of ROT/RUT services in invoice row modal
 	v.SetData("rutServices", models.RUTServices)
@@ -146,10 +162,14 @@ func (v *View) HandlePost() error {
 			if len(c) != 1 {
 				return fmt.Errorf("invalid customer selection")
 			}
+
+			invoice.Customer.ID = customerID
+			updated = true
+		} else if customerUpdated {
+			invoice.Customer.ID = 0
+			updated = true
 		}
 
-		invoice.Customer.ID = customerID
-		updated = true
 	}
 
 	if customerUpdated {
@@ -175,6 +195,31 @@ func (v *View) HandlePost() error {
 	// Only allow updates to invoices we haven't sent yet
 	if !invoice.IsInvoiced {
 		err = v.updateRows(invoice)
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, upload := range v.FormFiles("attachment") {
+		f, err := upload.Open()
+		if err != nil {
+			return err
+		}
+
+		mimeType := mime.TypeByExtension(filepath.Ext(upload.Filename))
+		attachment := models.File{
+			Name:      upload.Filename,
+			CompanyID: v.Session.Company.ID,
+			MIMEType:  mimeType,
+			Backend:   nil,
+		}
+
+		attachment.Contents, err = ioutil.ReadAll(f)
+		if err != nil {
+			return err
+		}
+
+		err = models.InvoiceAddAttachment(v.Ctx, invoice, attachment)
 		if err != nil {
 			return err
 		}

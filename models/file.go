@@ -26,6 +26,10 @@ type FileFilter struct {
 	IncludeContent bool
 }
 
+func (f File) IsImage() bool {
+	return strings.HasPrefix(f.MIMEType, "image/")
+}
+
 func FileAdd(ctx context.Context, f File) (int, error) {
 	tx := getContextTx(ctx)
 

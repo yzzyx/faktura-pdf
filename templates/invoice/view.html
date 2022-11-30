@@ -20,7 +20,7 @@
 {% endblock %}
 
 {% block content %}
-<form method="POST">
+<form method="POST" enctype="multipart/form-data">
     <div class="card mt-2">
         <div class="card-body">
 
@@ -144,6 +144,30 @@
                 {% include "invoice/field.html" with name="Postkod" field="customer.postcode" val=invoice.Customer.Postcode %}
                 {% include "invoice/field.html" with name="Stad" field="customer.city" val=invoice.Customer.City %}
             </div>
+        </div>
+    </div>
+
+    <div class="card mt-2">
+        <div class="card-body">
+            <h5 class="card-title">Bilagor</h5>
+            <div class="row">
+                {% for att in attachments %}
+                <div class="col-3">
+                    {% if att.IsImage() %}
+                        <img src="{% url 'invoice-attachment' id=invoice.ID attachment=att.ID %}" class="img-thumbnail">
+                    {% else %}
+                        <a href="{% url 'invoice-attachment' id=invoice.ID attachment=att.ID %}?dl">
+                            <p>placeholder</p>
+                        </a>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+
+            <label class="btn btn-sm btn-primary">
+                <input type="file" name="attachment" class="d-none">
+                Lägg till bilaga
+            </label>
         </div>
     </div>
 
