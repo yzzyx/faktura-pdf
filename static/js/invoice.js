@@ -334,4 +334,23 @@ $(function () {
             $("#customer-pnr-required").hide();
         }
     });
+
+
+    // Show names of files selected for upload
+    $("#upload-file").change(function () {
+        if (!this.files) {
+            return;
+        }
+        let $info = $("#upload-file-info");
+
+        $info.html("");
+        for (let f of this.files) {
+            let e = newEl("li", {
+                className: "small",
+                textContent: f.name,
+            })
+            $info.append(e);
+        }
+        $("#save-btn").show();
+    });
 });
