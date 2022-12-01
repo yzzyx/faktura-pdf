@@ -353,4 +353,16 @@ $(function () {
         }
         $("#save-btn").show();
     });
+
+    $(".attachment-button-remove").click(function () {
+        let $att = $(this).closest(".attachment");
+        let id = $att.data("id");
+        let el = newEl("input", {
+            type: "hidden",
+            name: "removeAttachment[]",
+            value: id,
+        });
+        $att.replaceWith(el)
+        $("#save-btn").show();
+    })
 });
