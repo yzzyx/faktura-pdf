@@ -202,7 +202,7 @@
             <h5 class="card-title">Bilder</h5>
             <div class="row">
                 {% for att in attachments %}
-                <div class="col-3">
+                <div class="col-lg-3 col-md-6 col-sm-12">
                     {% if att.IsImage() %}
                     <img src="{% url 'invoice-attachment' id=invoice.ID attachment=att.ID %}" class="img-thumbnail">
                     {% else %}
