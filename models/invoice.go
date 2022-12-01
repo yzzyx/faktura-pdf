@@ -355,6 +355,36 @@ func InvoiceAddAttachment(ctx context.Context, inv Invoice, f File) error {
 	return nil
 }
 
+func InvoiceRemoveAttachment(ctx context.Context, inv Invoice, attachmentID int) error {
+	var err error
+	tx := getContextTx(ctx)
+
+	query := `DELETE FROM invoice_attachments WHERE invoice_id = :invoice_id AND file_id = :file_id`
+
+	st := struct {
+		InvoiceID int
+		FileID    int
+	}{
+		InvoiceID: inv.ID,
+		FileID:    attachmentID,
+	}
+
+	rows, err := tx.NamedQuery(ctx, query, st)
+	if err != nil {
+		return zerr.Wrap(err).WithString("query", query).WithAny("args", st)
+	}
+
+	// Ignore result
+	rows.Close()
+
+	// Attempt to remove the actual file (if it's no longer in use)
+	err = FileRemove(ctx, File{ID: attachmentID})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func InvoiceSave(ctx context.Context, invoice Invoice) (int, error) {
 	tx := getContextTx(ctx)
 
