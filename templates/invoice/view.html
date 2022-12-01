@@ -16,6 +16,24 @@
     {% else %}
         .card-display {display: none;}
     {% endif %}
+
+    .attachment-button-wrapper {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+    }
+
+    .attachment-button-wrapper .attachment-buttons {
+        position: absolute;
+        top: 0.5em;
+        left: 0.65em;
+        cursor: pointer;
+        display: none;
+    }
+
+    .attachment-button-wrapper:hover .attachment-buttons {
+        display: block;
+    }
 </style>
 {% endblock %}
 
@@ -202,7 +220,14 @@
             <h5 class="card-title">Bilder</h5>
             <div class="row">
                 {% for att in attachments %}
-                <div class="col-lg-3 col-md-6 col-sm-12">
+                <div class="col-lg-3 col-md-6 col-sm-12 attachment" data-id="{{att.ID}}">
+                    <div class="attachment-button-wrapper">
+                        <div class="attachment-buttons">
+                            <div class="attachment-button-remove close" aria-label="Ta bort">
+                                <span>&times;</span>
+                            </div>
+                        </div>
+                    </div>
                     {% if att.IsImage() %}
                     <img src="{% url 'invoice-attachment' id=invoice.ID attachment=att.ID %}" class="img-thumbnail">
                     {% else %}
