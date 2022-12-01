@@ -225,6 +225,19 @@ func (v *View) HandlePost() error {
 		}
 	}
 
+	// Check for any removed attachments
+	for _, remove := range v.FormValueStringSlice("removeAttachment[]") {
+		id, err := strconv.Atoi(remove)
+		if err != nil {
+			continue
+		}
+
+		err = models.InvoiceRemoveAttachment(v.Ctx, invoice, id)
+		if err != nil {
+			return err
+		}
+	}
+
 	if v.IsOffer {
 		return v.RedirectRoute("offer-view", "id", strconv.Itoa(invoice.ID))
 	}

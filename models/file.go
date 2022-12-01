@@ -53,7 +53,13 @@ RETURNING id`
 func FileRemove(ctx context.Context, f File) error {
 	tx := getContextTx(ctx)
 
-	query := "DELETE FROM file WHERE id = $1"
+	query := `DELETE FROM file
+USING file f
+LEFT OUTER JOIN invoice_attachments a ON a.file_id = f.id
+WHERE file.id = $1 AND
+file.id = f.id AND
+a.file_id  IS NULL
+`
 	_, err := tx.Exec(ctx, query, f.ID)
 	if err != nil {
 		return zerr.Wrap(err).
