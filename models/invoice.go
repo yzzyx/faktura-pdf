@@ -323,7 +323,7 @@ func InvoiceGet(ctx context.Context, filter InvoiceFilter) (Invoice, error) {
 	}
 
 	if len(lst) == 0 {
-		return inv, sql.ErrNoRows
+		return inv, zerr.Wrap(sql.ErrNoRows).WithAny("filter", filter)
 	}
 
 	if len(lst) > 1 {

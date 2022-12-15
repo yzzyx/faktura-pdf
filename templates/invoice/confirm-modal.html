@@ -1,20 +1,27 @@
 <div class="modal fade" id="invoice-confirm-delete-modal" tabindex="-1" aria-labelledby="invoice-confirm-delete-modal-title" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <form method="POST" action="{% url 'invoice-set-flag' id=invoice.ID %}">
+            <form method="POST"
+                  {% if isOffer %}
+                      action="{% url 'offer-set-flag' id=invoice.ID %}"
+                  {% else %}
+                      action="{% url 'invoice-set-flag' id=invoice.ID %}"
+                  {% endif %}>
                 <input type="hidden" name="flag" value="deleted">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="invoice-confirm-delete-modal-title">Ta bort faktura</h5>
+                    <h5 class="modal-title" id="invoice-confirm-delete-modal-title">
+                        {% if isOffer %} Ta bort offert {% else %} Ta bort faktura {% endif %}
+                        </h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                    <p>Är du säker på att du vill ta bort fakturan?</p>
+                    <p>Är du säker på att du vill ta bort {% if isOffer %}offerten{% else %}fakturan{% endif %}?</p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Avbryt</button>
-                    <button type="submit" class="btn btn-primary">Ta bort faktura</button>
+                    <button type="submit" class="btn btn-primary">{% if isOffer %}Ta bort offert{% else %}Ta bort faktura{% endif %}</button>
                 </div>
             </form>
         </div>
