@@ -1,0 +1,326 @@
+{% extends "base.html" %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'vendor/font-awesome-4.7.0/css/font-awesome.min.css' %}">
+
+<style>
+    .page-content{
+        min-height: 5em;
+        width: 210mm;
+        height: 297mm;
+        margin: 0 auto;
+        border: 1px solid lightgray;
+        position: relative;
+    }
+
+    .page-content .el {
+        position: absolute;
+        min-width: 1em;
+        min-height: 1em;
+    }
+
+
+    .resize {
+        resize: both;
+        overflow: auto;
+    }
+
+    .el > .move-handle {
+        width: 1em;
+        height: 1em;
+        position: absolute;
+        top: -5px;
+        right: 0;
+        background-color: transparent;
+        cursor: move;
+        z-index: 2;
+        display: none;
+    }
+
+    .el.img {
+        aspect-ratio: 32/32;
+    }
+
+    .el {
+        border: 1px solid #00000000;
+    }
+
+
+    .el:hover {
+        border: 1px solid #cceecc99;
+    }
+    .el:hover > .move-handle {
+        display: block;
+    }
+
+    .el .text.editor {
+        word-wrap: normal;
+    }
+
+    /*
+    .resize .handle {
+        float: right;
+        height: 100%;
+        width: 1px;
+        background-color: blue;
+        z-index: 1;
+    }
+
+    .resize .handle::after {
+        content: "";
+        width: 9px;
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        margin-left: -4px;
+        background-color: transparent;
+        cursor: ew-resize;
+        z-index: 2;
+    }
+     */
+
+    .elements {
+        position: absolute;
+        right: 0;
+        min-width: 10em;
+        min-height: 10em;
+        border-left: 1px solid lightgray;
+    }
+
+    .elements > .element {
+        text-align: center;
+        min-height: 50px;
+        border-bottom: 1px solid lightgray;
+        margin: 0 10px;
+    }
+
+    .elements > .element .icon {
+        font-size: 3em;
+    }
+
+    .elements > .element .name {
+        margin: 0 auto;
+    }
+
+</style>
+{% endblock %}
+
+{% block content %}
+
+<br>
+
+<div class="elements">
+    <div class="element" draggable="true">
+        <div class="icon"><i class="fa fa-font"></i></div>
+        <div class="name">Rubrik</div>
+    </div>
+    <div class="element" draggable="true">
+        <div class="icon"><i class="fa fa-pencil-square-o"></i></div>
+        <div class="name">Text</div>
+    </div>
+    <div class="element" draggable="true">
+        <div class="icon"><i class="fa fa-arrow-circle-down"></i></div>
+        <div class="name">Data</div>
+    </div>
+    <div class="element" draggable="true">
+        <div class="icon"><i class="fa fa-image"></i></div>
+        <div class="name">Bild</div>
+    </div>
+    <div class="element" draggable="true" >
+        <div class="icon"><i class="fa fa-list"></i></div>
+        <div class="name">Fakturarader</div>
+    </div>
+    <div class="element" draggable="true" >
+        <div class="icon"><i class="fa fa-minus"></i></div>
+        <div class="name">Avgränsare</div>
+    </div>
+
+</div>
+
+    <div class="card">
+        <div class="card-header">
+            Dokument (A4)
+        </div>
+        <div class="card-body">
+            <div class="page-content">
+
+                <div class="el resize img">
+                    <div class="move-handle"><i class="fa fa-arrows"></i></div>
+                    <img src="/static/img/favicon-32x32.png" style="width: 100%; height: 100%;">
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascript %}
+<script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+<script>
+
+    const editorCfg = {
+        menubar: false,
+        inline: true,
+        plugins: [
+            'link', 'lists', 'autolink',
+        ],
+        toolbar: [
+            'undo redo | bold italic underline | fontfamily fontsize',
+            'forecolor backcolor | alignleft aligncenter alignright alignfull | numlist bullist outdent indent'
+        ],
+        valid_elements: 'p[style],strong,em,span[style],a[href],ul,ol,li',
+        valid_styles: {
+            '*': 'font-size,font-family,color,text-decoration,text-align'
+        },
+    };
+
+
+    const startMove = (ev) => {
+        ev.preventDefault();
+        const $host = $(ev.target).closest(".el");
+        // const width = $(host).width();
+        const pageX = ev.pageX;
+        const pageY = ev.pageY
+        const top = parseInt($host.css("top"));
+        const left = parseInt($host.css("left"));
+
+        const mouseDragHandler = (ev) => {
+            ev.preventDefault();
+            const primaryButtonPressed = ev.buttons === 1;
+            if (!primaryButtonPressed) {
+                $(".page-content").off('pointermove.elementmove', mouseDragHandler);
+                return;
+            }
+
+            let nt = ev.pageY - pageY + top;
+            if (nt < 0) { nt = 0; }
+            let nl = ev.pageX - pageX + left;
+            if (nl < 0) { nl = 0; }
+
+            $host.css("top", nt+"px");
+            $host.css("left", nl+"px");
+        }
+        $(".page-content").on('pointermove.elementmove', mouseDragHandler);
+    }
+
+    $(".page-content").on('mousedown.elementmove', ".el .move-handle",  startMove);
+
+    function getUniqueID(s) {
+        const array = new Uint32Array(4);
+        window.crypto.getRandomValues(array)
+        for (let x of array) {
+            s += x;
+        }
+        return s;
+    }
+
+    const MAX_FONT_SIZE = 180;
+    const MIN_FONT_SIZE = 12;
+    function onChange(e) {
+
+        // For simplicity, we always start with the max font size and work our way down. This ensures that we also accomodate
+        // the case where the font size should increase, like if we deleted some text. Note that we could make this more
+        // efficient if needed, such as by starting with the initial font size and incrementing or decrementing from there,
+        // or doing a binary search.
+        const el = e.target;
+        const mh = parseInt($(el).closest(".el").css("height"));
+        const mw = parseInt($(el).closest(".el").css("width"));
+        let fontSize = MAX_FONT_SIZE;
+        el.style.fontSize = fontSize + 'px';
+        while (fontSize > MIN_FONT_SIZE && (el.scrollHeight > mh || el.scrollWidth > mw)) {
+            fontSize--;
+            el.style.fontSize = fontSize + 'px';
+        }
+    }
+
+    function checkResize (mutations) {
+        var el = mutations[0].target;
+        var w = el.clientWidth;
+        var h = el.clientHeight;
+
+        var isChange = mutations
+            .map((m) => m.oldValue + '')
+            .some((prev) => prev.indexOf('width: ' + w + 'px') == -1 || prev.indexOf('height: ' + h + 'px') == -1);
+
+        if (!isChange)
+            return;
+
+        var event = new CustomEvent('resize', {detail: {width: w, height: h}});
+        el.dispatchEvent(event);
+    }
+
+    let dragged = null;
+    function dragStart(ev) {
+        dragged = ev.target;
+    }
+
+    function dragOver(ev) {
+        ev.preventDefault();
+    }
+
+    function dragDrop(ev) {
+        ev.preventDefault();
+        console.debug(ev)
+
+        let editorId = getUniqueID("editor");
+
+        let textEditor = newEl("div", {id: editorId, className: "text editor", textContent: "Text", contentEditable: true });
+
+        let el = newEl("div", {
+            className: "el resize",
+            children: [
+                newEl("div", {className: "move-handle", children: [newEl("i", {className:"fa fa-arrows"})]}),
+                textEditor,
+            ]
+        });
+
+        let offset = $(ev.target).offset();
+        el.style.position = "absolute";
+        console.debug("py:", ev.pageY, "tpy:", $(ev.target).css("top"));
+
+        el.style.top = ev.pageY - offset.top + "px";
+        el.style.left = ev.pageX - offset.left + "px";
+        el.style.width = "400px";
+        el.style.height = "150px";
+        $(ev.target).append(el);
+
+        let cfg = Object.assign({}, editorCfg)
+        cfg.selector = "#" + editorId;
+
+        textEditor.addEventListener('input', onChange);
+        textEditor.focus();
+        onChange({ target: textEditor });
+
+        var observer = new MutationObserver(checkResize);
+        observer.observe(el, {attributes: true, attributeOldValue: true, attributeFilter: ['style']});
+        $(el).on("resize", function () {
+            onChange({ target: textEditor });
+        })
+        // tinymce.init(cfg);
+    }
+
+    $(".elements > .element").on('dragstart', dragStart);
+    $(".page-content").on('dragover', dragOver);
+    $(".page-content").on('drop', dragDrop);
+/*
+let el = {
+    name: "Text",
+    icon: "fa-font",
+    attributes: [
+        "font-family",
+        "font-size",
+        "foreground-color",
+        "background-color",
+    ],
+    can_resize: true,
+    ondrop: function () {
+    },
+};
+
+
+*/
+</script>
+<script src="{% static 'js/new.js' %}"></script>
+<!--<script src="{% static 'js/document.js' %}"></script>-->
+{% endblock %}

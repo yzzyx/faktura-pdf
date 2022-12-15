@@ -12,6 +12,7 @@ import (
 	"github.com/yzzyx/faktura-pdf/views"
 	"github.com/yzzyx/faktura-pdf/views/company"
 	"github.com/yzzyx/faktura-pdf/views/customer"
+	"github.com/yzzyx/faktura-pdf/views/document"
 	"github.com/yzzyx/faktura-pdf/views/invoice"
 	"github.com/yzzyx/faktura-pdf/views/login"
 	"github.com/yzzyx/faktura-pdf/views/register"
@@ -64,6 +65,8 @@ var routes = []routeInfo{
 	{URL: "offer-set-flag", Path: "/offer/{id}/flag", View: invoice.NewFlag(true), RequireLogin: true, RequireCompany: true},
 	{URL: "offer-attachment", Path: "/offer/{id}/attachment/{attachment}", View: invoice.NewAttachment(true), Methods: MethodGET, RequireLogin: true, RequireCompany: true},
 	{URL: "offer-attachment-add", Path: "/offer/{id}/attachment", View: invoice.NewAttachment(true), Methods: MethodPOST, RequireLogin: true, RequireCompany: true},
+
+	{URL: "document-view", Path: "/document/{id}", View: document.NewView(), Methods: MethodGET, RequireLogin: true, RequireCompany: true},
 }
 
 func RegisterViews(baseURL string, r chi.Router, lg *zap.Logger) error {
