@@ -45,7 +45,9 @@
                 <span class="dropdown float-right">
                     <i class="fa fa-cog dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false"></i>
                     <ul class="dropdown-menu dropdown-menu-right">
-                        <li><a class="dropdown-item" data-toggle="modal" data-target="#invoice-confirm-delete-modal">Ta bort faktura</a></li>
+                        <li><a class="dropdown-item" href="#" data-toggle="modal" data-target="#invoice-confirm-delete-modal">
+                            {% if isOffer %} Ta bort offert {% else %} Ta bort faktura {% endif %}
+                            </a></li>
                         {% if invoice.ID > 0 and invoice.IsPaid %}
                             <li><a class="dropdown-item" href="{% url 'invoice-view-invoice' id=invoice.ID %}">Ladda hem faktura</a></li>
                             <li><a class="dropdown-item" href="{% url 'invoice-set-flag' id=invoice.ID %}?flag=paid&revoke=true">Markera som obetald</a></li>
