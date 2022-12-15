@@ -239,7 +239,13 @@ func (v *View) FormKeys() []string {
 // FormValueString returns a form value string
 func (v *View) FormValueExists(key string) bool {
 	if len(v.r.Form) == 0 {
-		v.r.ParseForm()
+
+		ct := v.r.Header.Get("Content-Type")
+		if strings.HasPrefix(ct, "multipart/form-data") {
+			v.r.ParseMultipartForm(0)
+		} else {
+			v.r.ParseForm()
+		}
 	}
 	_, ok := v.r.Form[key]
 	return ok
